@@ -1,0 +1,3 @@
+<?hot-include page1-header.hotg ?>
+<div style="background-color: green;height: 500px">content</div>
+<?hot-include page1-footer.hotg ?>

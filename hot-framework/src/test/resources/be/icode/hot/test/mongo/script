@@ -1,0 +1,14 @@
+import com.gmongo.GMongo
+
+import java.util.Map
+
+import be.icode.hot.mongo.groovy.DB
+
+
+GMongo gmongo = new GMongo()
+
+def db = new DB(db:gmongo.getDB("TestMongoTemplat"))
+db.toilettes.insert([proper:"true"])
+db.toilettes.find().each { 
+	print it
+}

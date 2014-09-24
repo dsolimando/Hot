@@ -1,0 +1,29 @@
+{
+	"mappings":[
+	{
+		"paths":["/repository/{group}/{service}/{version}"],
+		"methods":["PUT"],
+		"params":["service=add","version=1.0"],
+		"script":"myscript.java",
+		"class":"ServicesRestAPI",
+		"method":"addService"
+	},
+	{
+		"paths":["/repository/{group}/{service}/{version}"],
+		"methods":["PUT"],
+		"params":["service=add"],
+		"script":"myscript.js"
+	},
+	{
+		"paths":["/repository/{group}/{service}/{version}"],
+		"methods":["GET"],
+		"headers":["Accept: application/xml"],
+		"script":"myscript.py"
+	},
+	{
+		"paths":["/repository/{group}/{service}/{version}"],
+		"methods":["DELETE"],
+		"headers":["Accept: application/xml"],
+		"script":"myscript.groovy"
+	}]
+}

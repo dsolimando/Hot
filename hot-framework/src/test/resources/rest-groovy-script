@@ -1,0 +1,35 @@
+class Test {
+
+	def db
+	
+	def web
+	
+	def logger
+	
+	def f1 () {
+		1
+	}
+	
+	def f2 () {
+		[
+			body: "taratata",
+			status: 500,
+		]
+	}
+	
+	def f3 () {
+		[
+			body: "taratata",
+			status: 500,
+			headers:["Content Type: applocation/xml","Encoding: UTF8"]
+		]
+	}
+	
+	def f4 () {
+		[
+			body: "${web.pathParams.service} ${web.pathParams.content}",
+			status: 500,
+			headers:["Content Type: applocation/xml","Encoding: UTF8"]
+		]
+	}
+}

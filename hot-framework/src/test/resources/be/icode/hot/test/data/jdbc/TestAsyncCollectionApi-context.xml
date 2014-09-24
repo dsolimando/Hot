@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+<!-- 
+	<bean id="mysqlDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" 
+		p:username="dso" p:password="tttttt" p:driverClass="com.mysql.jdbc.Driver" p:url="jdbc:mysql://192.168.0.111/petclinic?user=dso&amp;password=tttttt" />
+		
+	<bean id="pgDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" 
+		p:username="dso" p:password="tttttt" p:driverClass="org.postgresql.Driver" p:url="jdbc:postgresql://192.168.0.112/petclinic" />
+		
+	<bean id="db2DataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" 
+		p:username="dso" p:password="tttttt" p:driverClass="com.ibm.db2.jcc.DB2Driver" p:url="jdbc:db2://192.168.0.102:50000/petcli" />
+		
+	<bean id="oraDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" 
+		p:username="dso" p:password="tttttt" p:driverClass="oracle.jdbc.OracleDriver" p:url="jdbc:oracle:thin:@//192.168.0.101:1521/XE" />
+		
+	
+	<bean id="db2DataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" 
+		p:username="dso" p:password="tttttt" p:driverClass="com.ibm.db2.jcc.DB2Driver" p:url="jdbc:db2://192.168.0.102:50000/petcli" />
+		
+	<jdbc:initialize-database data-source="admindataSource">
+		<jdbc:script location="classpath:sql/h2/petclinic.sql"/>
+		<jdbc:script location="classpath:sql/h2/populate-pet-clinic.sql"/>
+	</jdbc:initialize-database>
+		-->
+	<bean id="admindataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" 
+		p:username="sa" p:password="" p:driverClass="org.hsqldb.jdbcDriver" p:url="jdbc:hsqldb:mem:petdb1" />
+	
+	<jdbc:initialize-database ignore-failures="ALL" data-source="admindataSource">
+		<jdbc:script location="classpath:sql/h2/petclinic.sql"/>
+		<jdbc:script location="classpath:sql/h2/populate-pet-clinic.sql"/>
+	</jdbc:initialize-database>
+	
+	<bean id="dbFactory" class="be.icode.hot.data.jdbc.DBFactory" p:dataSource-ref="admindataSource" p:engine="H2" p:schema="petclinic" />
+	<bean id="db" factory-bean="dbFactory" factory-method="buildGroovyDB" />
+</beans>

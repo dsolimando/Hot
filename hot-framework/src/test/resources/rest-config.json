@@ -1,0 +1,75 @@
+{
+	"mappings":[
+	{
+		"paths":["/repository/groups"],
+		"methods":["GET"],
+		"script":"python-script.py",
+		"class": "GroupRestAPI",
+		"method": "getGroups"
+	},
+	{
+		"paths":["/repository/groups/{groupName}"],
+		"methods":["POST"],
+		"script":"python-script.py",
+		"class": "GroupRestAPI",
+		"method": "saveGroup"
+	},
+	{
+		"paths":["/repository/services/{groupName}/{service}/{version}"],
+		"methods":["GET"],
+		"headers":["Accept=application/json"],
+		"script":"python-script.py",
+		"class": "ServiceRestAPI",
+		"method": "getService"
+	},
+	{
+		"paths":["/repository/services/{groupName}/{service}/{version}"],
+		"methods":["GET"],
+		"script":"python-script.py",
+		"class": "ServiceRestAPI",
+		"method": "getWSDL"
+	},
+	{
+		"paths":["/repository/services/{group}"],
+		"methods":["GET"],
+		"script":"python-script.py",
+		"class": "ServiceRestAPI",
+		"method": "getServices"
+	},
+	{
+		"paths":["/repository/services/{group}/{service}"],
+		"methods":["GET"],
+		"script":"python-script.py",
+		"class": "ServiceRestAPI",
+		"method": "getVersions"
+	},
+	{
+		"paths":["/repository/services/{groupName}/{serviceName}"],
+		"methods":["DELETE"],
+		"script":"python-script.py",
+		"class": "ServiceRestAPI",
+		"method": "deleteService"
+	},
+	{
+		"paths":["/repository/services/{groupName}/{serviceName}/{version}"],
+		"methods":["DELETE"],
+		"script":"python-script.py",
+		"class": "ServiceRestAPI",
+		"method": "deleteServiceVersion"
+	},
+	{
+		"paths":["/repository/services/{groupName}/{serviceName}/{serviceVersion}"],
+		"methods":["POST"],
+		"script":"python-script.py",
+		"class": "ServiceRestAPI",
+		"method": "addWSDL"
+	},
+	{
+		"paths":["/schemas/{group}/{schema}/{version}"],
+		"methods":["POST"],
+		"script":"python-script.py",
+		"class": "SchemaRestAPI",
+		"method": "addSchema"
+	}
+	]
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" threshold="null" debug="null">
+
+	<appender name="Console" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="Hot Framework - %p - %c{3} - [%t] %d{HH:mm:ss} - %m%n" />
+		</layout>
+	</appender>
+
+	<root>
+		<level value="debug" />
+		<appender-ref ref="Console" />
+	</root>
+
+	<logger name="org.eclipse.jetty">
+		<!-- Print only messages of level warn or above in the package com.foo -->
+		<level value="info" />
+	</logger>
+
+</log4j:configuration>

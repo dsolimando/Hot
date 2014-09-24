@@ -1,0 +1,26 @@
+def f1 () {
+	1
+}
+
+def f2 () {
+	[
+		body: "taratata",
+		status: 500,
+	]
+}
+
+def f3 () {
+	[
+		body: "taratata",
+		status: 500,
+		headers:["Content Type: applocation/xml","Encoding: UTF8"]
+	]
+}
+
+def f4 () {
+	[
+		body: "${hot.web.pathParams.service} ${hot.web.pathParams.content}",
+		status: 500,
+		headers:["Content Type: applocation/xml","Encoding: UTF8"]
+	]
+}

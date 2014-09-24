@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/"
+	threshold="null" debug="null">
+
+	<appender name="Console" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="Hot Framework - %d{HH:mm:ss} - %m%n" />
+		</layout>
+	</appender>
+	
+	<appender name="File" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value=".hot.log" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="%19d{ISO8601} [ %-5p ] [ %C{1} ] [%l] - %m%n" />
+		</layout>
+	</appender>
+
+	<!-- Loggers -->
+	<logger name="org.springframework" additivity="false">
+		<level value="debug" />
+		<appender-ref ref="File" />
+	</logger>
+	
+	<logger name="be.icode.hot" additivity="false">
+		<level value="debug" />
+		<appender-ref ref="File" />
+	</logger>
+	
+	<logger name="org.eclipse.jetty" additivity="false">
+		<level value="info" />
+		<appender-ref ref="File" />
+	</logger>
+	
+	<root>
+		<level value="off"/>
+	</root>
+
+</log4j:configuration>

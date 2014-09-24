@@ -1,0 +1,102 @@
+<html>
+<head>
+<title>Login Page</title>
+<style type='text/css'>
+body {
+	padding: 0;
+	background-color: black;
+}
+
+#main {
+	margin-left: auto;
+	margin-right: auto;
+	width: 800px;
+}
+
+#top-banner1 {
+	height: 50px;
+}
+
+#top-banner2 {
+	height: 50px;
+	color: #fff;
+	font-size: 42px;
+	font-family: arial;
+	font-weight: bold;
+	border-bottom: 1px;
+	border-bottom-style: solid;
+}
+
+#middle {
+	min-height: 800px;
+	/*background-color: #000f31;*/
+	font-family: arial;
+	color: #fff;
+	padding-top: 40px;
+	padding-bottom: 10px;
+	clear: both;
+}
+
+.code {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	padding: 10px;
+	border-radius: 5px 30px;
+	-moz-border-radius: 5px 30px;
+	background-color: #fff;
+	color: #000;
+	font-family: courier;
+}
+
+#auth-form {
+	margin-left: auto;
+	margin-right: auto;
+	width: 400px;
+	background-color: rgb(221, 221, 221);
+	color: rgb(0, 0, 0);
+	padding: 15px;
+	-moz-border-radius: 10px 40px;
+	border-radius: 10px 40px;
+}
+
+#bottom {
+	height: 50px;
+	clear: both;
+}
+</style>
+</head>
+<body onload='document.f.j_username.focus();'>
+<div id="main">
+<div id="top-banner1"></div>
+<div id="top-banner2">Authentication needed</div>
+	<div id="middle">
+		<div id="auth-form" style="">
+			<h3>Login with Username and Password</h3>
+			<form method="POST" action="/hot-webapp-ex1/j_spring_security_check" name="f">
+				<table>
+					<tbody>
+						<tr colspan="5">
+							<td colspan="1">User:</td>
+							<td><input name="j_username" value="" type="text"></td>
+						</tr>
+						<tr>
+							<td>Password:</td>
+							<td><input name="j_password" type="password"></td>
+						</tr>
+			
+					</tbody>
+				</table>
+				<table style="padding-top: 20px;">
+					<tbody>
+						<tr>
+							<td colspan="1"><input name="submit" type="submit"></td>
+						</tr>
+					</tbody>
+				</table>
+			</form>
+		</div>
+	</div>
+<div id="bottom"></div>
+</div>
+</body>
+</html>

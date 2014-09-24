@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+
+	<context:annotation-config />
+	<bean id="db2DataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource" 
+		p:username="dso" p:password="tttttt" p:driverClass="com.ibm.db2.jcc.DB2Driver" p:url="jdbc:db2://192.168.0.102:50000/petcli" />
+	
+	<bean id="dbFactory" class="be.icode.hot.data.jdbc.DBFactory" p:dataSource-ref="db2DataSource" p:engine="DB2"  />
+		<bean id="db" factory-bean="dbFactory" factory-method="buildGroovyDB" />
+</beans>

@@ -1,0 +1,1 @@
+result = hot.db.toto

@@ -1,0 +1,80 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+  <title>Welcome to the Hot framework</title> 
+  
+  <style type='text/css'> 
+    body {
+    padding:0;
+    background-color: black;
+}
+ 
+#main {
+    margin-left: auto;
+    margin-right: auto;
+    width: 1000px;
+}
+ 
+#top-banner1 {
+    height: 50px;
+}
+ 
+#top-banner2 {
+    height:50px;
+    color: #fff;
+    font-size: 42px;
+    font-family: arial;
+    font-weight: bold;
+    border-bottom:1px;
+    border-bottom-style: solid;
+}
+ 
+ 
+#middle {
+    min-height: 800px;
+    /*background-color: #000f31;*/
+    font-family: arial;
+    color: #fff;
+    padding-top:40px;
+    padding-bottom:10px;
+    clear:both;
+}
+ 
+.code {
+    margin-top:10px;
+    margin-bottom:10px;
+    padding: 10px;
+    font-size:12px;
+    border-radius:5px 30px;
+    -moz-border-radius:5px 30px;
+    background-color: #fff;
+    color:#000;
+    font-family: courier;
+}
+ 
+#bottom {
+    height:50px;
+    clear:both;
+}
+  </style> 
+</head> 
+<body> 
+  <div id="main"> 
+    <div id="top-banner1"> 
+    </div> 
+    <div id="top-banner2"> 
+        Hot Framework
+    </div> 
+    <div id="middle"> 
+        <h1>An error occurs while accessing page</h1>
+        <div class="code">
+        	errorMessage
+        </div>
+    </div> 
+    <div id="bottom"> 
+    </div> 
+</div> 
+  
+</body> 
+</html> 

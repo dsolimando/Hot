@@ -1,0 +1,24 @@
+{
+  "name" : "testproject",
+  "nature" : "jee",
+  "version" : "0.1",
+  "devMode" : false,
+  
+  "dataSources": [
+  	{
+  		"name":"mongo",
+  		"engine":"MONGODB",
+  		"database":"hottest"
+  	}
+  ],
+  
+  "authList": [
+  	{
+  		"type":"DB",
+  		"dbname": "mongo",
+  		"dbDefaultUsername": "hot",
+  		"dbDefaultPassword": "hot",
+  		"dbDefaultRoles": ["ADMIN","USER"]
+  	}
+  ]
+}

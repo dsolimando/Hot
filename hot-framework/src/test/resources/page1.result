@@ -1,0 +1,14 @@
+println '''<html>
+	<head>
+		<title>title</title>
+	</head>
+	<body>
+		<div style="background-color: black;height: 100px">header</div>
+'''
+
+println '''
+<div style="background-color: green;height: 500px">content</div>
+'''
+println '''		<div style="background-color: yellow;height: 100px">footer</div>
+	</body>
+</html>'''

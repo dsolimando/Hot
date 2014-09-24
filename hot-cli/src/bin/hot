@@ -1,0 +1,7 @@
+#!/bin/sh
+
+PRG=$0
+PROGDIR=$(dirname $PRG)
+export HOT_CP=$PROGDIR/lib:$PROGDIR/lib/*:$(pwd)/.work/resources:$(pwd)/www:$(pwd)/shows:$(pwd)/lib/*:$(pwd)/sql:
+
+java $HOT_OPTIONS -Dpython.cachedir.skip=true -Dhotdir=$PROGDIR -Dhot.app.dir=$(pwd) -cp $HOT_CP be.icode.hot.cli.Hot $@

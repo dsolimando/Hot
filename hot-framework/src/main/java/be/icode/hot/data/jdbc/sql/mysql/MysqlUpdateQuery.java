@@ -1,0 +1,20 @@
+package be.icode.hot.data.jdbc.sql.mysql;
+
+import java.util.Map;
+
+import be.icode.hot.data.criterion.CriterionFactory;
+import be.icode.hot.data.jdbc.TableMetadata;
+import be.icode.hot.data.jdbc.sql.criterion.CriterionImpl;
+import be.icode.hot.data.jdbc.sql.impl.AbstractUpdateQuery;
+
+public class MysqlUpdateQuery extends AbstractUpdateQuery {
+	
+	public MysqlUpdateQuery(TableMetadata tableMetadata, Map<String, Object> updateParameters, CriterionFactory criterionFactory) {
+		super(tableMetadata, updateParameters, criterionFactory);
+	}
+
+	@Override
+	protected CriterionImpl buildRegexpCriterion(String parameterName, int index) {
+		return new RegexpCriterion(parameterName, index);
+	}
+}
