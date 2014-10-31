@@ -283,7 +283,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			
-			HttpSecurity and = http.antMatcher("/rest/**").httpBasic().and();
+			HttpSecurity and = http.antMatcher("/rest/**").httpBasic().and().csrf().disable();
+			
+			and = and.headers().cacheControl().disable();
 			
 			for (Show<?,?> show : showConfig.showsContext().getShows()) {
 				for (ClosureRequestMapping requestMapping :show.getRest().getRequestMappings()) {
