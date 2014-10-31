@@ -37,12 +37,15 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	
 	HttpDataDeserializer httpDatadeSerializer;
 	
+	byte[] body;
+	
 	@SuppressWarnings("unchecked")
 	public RestRequest(
 			Options options,
 			ScriptMapConverter<T> scriptMapConverter,
 			HttpDataDeserializer httpDataDeserializer,
-			HttpServletRequest httpServletRequest) {
+			HttpServletRequest httpServletRequest,
+			byte[] body) {
 		
 		this.httpDatadeSerializer = httpDataDeserializer;
 		
@@ -52,7 +55,7 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 		requestParams = scriptMapConverter.toScriptMap(httpServletRequest.getParameterMap());
 		headers = scriptMapConverter.httpHeadersToMap(httpServletRequest);
 		principal = buildPrincipal(httpServletRequest);
-		requestBody = deserializeBody(httpServletRequest, options);
+		requestBody = deserializeBody(body, options);
 	}
 	
 	public T getPathParams() {
@@ -74,6 +77,8 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	public Object getRequestBody() {
 		return requestBody;
 	}
+	
+	public abstract T getUser();
 
 	public static class Principal {
 		
@@ -104,19 +109,15 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 		return "text/plain; charset=utf-8";
 	}
 	
-	private Object deserializeBody(HttpServletRequest httpServletRequest, Options options) {
+	private Object deserializeBody(byte[] body, Options options) {
+		if (body == null) return null;
+		
 		String contentType = extractContentTypeHttpHeader();
 		
-		try {
-			byte[] body = IOUtils.toByteArray(httpServletRequest.getInputStream());
-			if (options.isProcessRequestData()) {
-				return httpDatadeSerializer.processRequestData(body, contentType);
-			} else {
-				return new String(body);
-			}
-		} catch (IOException e) {
-			LOGGER.error("Failed to deserialize request body",e);
-			return "";
+		if (options.isProcessRequestData()) {
+			return httpDatadeSerializer.processRequestData(body, contentType);
+		} else {
+			return new String(body);
 		}
 	}
 }
