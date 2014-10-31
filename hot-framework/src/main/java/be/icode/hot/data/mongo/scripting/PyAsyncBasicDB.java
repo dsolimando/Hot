@@ -3,6 +3,7 @@ package be.icode.hot.data.mongo.scripting;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
+import org.bson.types.ObjectId;
 import org.python.core.PyDictionary;
 import org.python.core.PyFunction;
 
@@ -23,6 +24,10 @@ public class PyAsyncBasicDB extends PyAsyncDB {
 	@Override
 	protected AsyncCollection<PyFunction, PyDictionary> buildAsyncCollection(Collection<PyDictionary> collection) {
 		return new PyAsyncBasicCollection(collection);
+	}
+	
+	public ObjectId ObjectId(String id) {
+		return ((BasicDB<PyDictionary>)db).ObjectId(id);
 	}
 	
 	public class PyAsyncBasicCollection extends PyAsyncCollection implements MongoAsyncCollection<PyFunction, PyDictionary> {
@@ -71,5 +76,9 @@ public class PyAsyncBasicDB extends PyAsyncDB {
 				}
 			}, successCallback, errorCallback);
 		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(new ObjectId("544cc710e4b09c0980e8452b".getBytes()));
 	}
 }

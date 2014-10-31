@@ -3,6 +3,7 @@ package be.icode.hot.data.mongo.scripting;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
+import org.bson.types.ObjectId;
 import org.mozilla.javascript.NativeFunction;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
@@ -19,6 +20,10 @@ public class JSAsyncBasicDB extends JSAsyncDB {
 
 	public JSAsyncBasicDB(DB<NativeObject> db, ExecutorService blockingTasksThreadPool, ExecutorService eventLoop, Scriptable globalscope) {
 		super(db, blockingTasksThreadPool, eventLoop, globalscope);
+	}
+	
+	public ObjectId ObjectId(String id) {
+		return ((BasicDB<NativeObject>)db).ObjectId(id);
 	}
 
 	@Override

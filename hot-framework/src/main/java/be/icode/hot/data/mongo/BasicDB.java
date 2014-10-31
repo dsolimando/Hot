@@ -59,6 +59,10 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 		return Arrays.asList("_id");
 	}
 	
+	public ObjectId ObjectId (String id) {
+		return new ObjectId(id);
+	}
+	
 	protected void authenticate (com.mongodb.DB db) {
 		if (username != null && !username.isEmpty() && password != null && password.isEmpty()) {
 			db.authenticate(username, password.toCharArray());
@@ -83,13 +87,13 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 		@Override
 		public T findOne(T where) {
 //			authenticate(db);
-			transformId(where);
+//			transformId(where);
 			return dbObjectTransformer.fromDBObject((BasicDBObject) db.getCollection(name).findOne(new BasicDBObject(where)));
 		}
 
 		@Override
 		public Cursor<T> find(T where) {
-			transformId(where);
+//			transformId(where);
 			return buildCursor(where);
 		}
 
@@ -100,7 +104,7 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 
 		@Override
 		public Collection<T> update(T values, T where) {
-			transformId(where);
+//			transformId(where);
 			BasicDBObject valuesDbObject = new BasicDBObject(values);
 			BasicDBObject whereDbObject = new BasicDBObject(where);
 			if (values.keySet().size() == 1 && values.keySet().contains("$set")) {
@@ -113,7 +117,7 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 
 		@Override
 		public Collection<T> remove(T where) {
-			transformId(where);
+//			transformId(where);
 			BasicDBObject whereDbObject = new BasicDBObject(where);
 			db.getCollection(name).remove(whereDbObject);
 			return this;
@@ -180,11 +184,13 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 		}
 		
 		protected void transformId (T where) {
-			Object id = where.get("_id");
-			if (id != null) {
-				if (id instanceof String) {
-					System.out.println(id);
-					dbObjectTransformer.put(where, "_id", new ObjectId((where.get("_id").toString())));
+			if (where.get("_id") != null) {
+				Object id = where.get("_id");
+				if (id != null) {
+					if (id instanceof String) {
+						System.out.println(id);
+						dbObjectTransformer.put(where, "_id", new ObjectId((where.get("_id").toString())));
+					}
 				}
 			}
 		}

@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
+import org.bson.types.ObjectId;
+
 import be.icode.hot.data.mongo.BasicDB;
 import be.icode.hot.data.mongo.Collection;
 import be.icode.hot.data.mongo.MongoAsyncCollection;
@@ -17,6 +19,10 @@ public class GroovyAsyncBasicDB extends GroovyAsyncDB {
 
 	public GroovyAsyncBasicDB(BasicDB<Map<String, Object>> db, ExecutorService blockingTasksThreadPool, ExecutorService eventLoop) {
 		super(db, blockingTasksThreadPool, eventLoop);
+	}
+	
+	public ObjectId ObjectId(String id) {
+		return ((BasicDB<Map<String, Object>>)db).ObjectId(id);
 	}
 	
 	@Override
