@@ -71,7 +71,14 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 			Reactor reactor,
 			Map<String, DB<MAP>> dbs) throws IOException {
 		
-		this(filepath, eventLoop, blockingThreadPool, httpClient, scriptExecutor, taskManager, reactor);
+		this.filepath = filepath;
+		this.scriptExecutor = scriptExecutor;
+		this.eventLoop = eventLoop;
+		this.blockingThreadPool = blockingThreadPool;
+		this.taskManager = taskManager;
+		this.reactor = reactor;
+		this.httpClient = httpClient;
+		this.eventBus = new ReactorEventBus();
 		this.dbs = buildAsyncDBMap(dbs);
 		initScriptContext();
 	}
