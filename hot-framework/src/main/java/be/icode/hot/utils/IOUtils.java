@@ -1,35 +1,24 @@
 package be.icode.hot.utils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jdeferred.DoneCallback;
-import org.jdeferred.FailCallback;
-import org.jdeferred.ProgressCallback;
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+
 import org.jdeferred.Promise;
+import org.jdeferred.impl.DeferredObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xerial.snappy.SnappyOutputStream;
 
-import reactor.core.Environment;
-import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
 import be.icode.hot.utils.FileLoader.Buffer;
-
-import com.lmax.disruptor.YieldingWaitStrategy;
-import com.lmax.disruptor.dsl.ProducerType;
 
 public class IOUtils {
 	public static final int BUFFER_SIZE = 2048;
@@ -44,6 +33,99 @@ public class IOUtils {
 			outputStream.write(buffer,0,read);
 		}
 		inputStream.close();
+	}
+	
+	public static Promise<byte[], Exception, Void> asyncRead (final HttpServletRequest req, final ExecutorService executorService, final ExecutorService promiseResolver) {
+		
+		final DeferredObject<byte[], Exception, Void> deferredObject = new DeferredObject<>();
+		
+//		try {
+//			final ServletInputStream servletInputStream = req.getInputStream();
+//			
+//			servletInputStream.setReadListener(new ReadListener() {
+//				
+//				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//				
+//				@Override
+//				public void onError(final Throwable t) {
+//					promiseResolver.execute(new Runnable() {
+//						@Override
+//						public void run() {
+//							deferredObject.reject(new Exception(t));
+//						}
+//					});
+//				}
+//				
+//				@Override
+//				public void onDataAvailable() throws IOException {
+////					executorService.execute(new Runnable() {
+////						@Override
+////						public void run() {
+//							byte b[] = new byte[2048];
+//							int len = 0;
+//							
+//							try {
+//								while (servletInputStream.isReady() && (len = servletInputStream.read(b)) != -1) {
+//								    baos.write(b, 0, len);
+//								}
+//							} catch (IOException e) {
+//								LOGGER.error("",e);
+//							}
+////						}
+////					});
+//				}
+//				
+//				@Override
+//				public void onAllDataRead() throws IOException {
+//					promiseResolver.execute(new Runnable() {
+//						@Override
+//						public void run() {
+//							deferredObject.resolve(baos.toByteArray());
+//						}
+//					});
+//				}
+//			});
+//		} catch (final IOException e2) {
+//			promiseResolver.execute(new Runnable() {
+//				@Override
+//				public void run() {
+//					deferredObject.reject(new Exception(e2));
+//				}
+//			});
+//			
+//		} catch (final IllegalStateException exception) {
+//			promiseResolver.execute(new Runnable() {
+//				@Override
+//				public void run() {
+//					deferredObject.resolve("".getBytes());
+//				}
+//			});
+//		}
+		
+		executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+				try {
+					IOUtils.toOutputStreamBuffered(req.getInputStream(), outputStream);
+					promiseResolver.execute(new Runnable() {
+						@Override
+						public void run() {
+							deferredObject.resolve(outputStream.toByteArray());
+						}
+					});
+				} catch (final IOException e) {
+					promiseResolver.execute(new Runnable() {
+						@Override
+						public void run() {
+							deferredObject.reject(e);
+						}
+					});
+				}
+			}
+		});
+		
+		return deferredObject.promise();
 	}
 	
 	public static void toGZippedOutputStreamBuffered (InputStream inputStream, OutputStream outputStream) throws IOException {
