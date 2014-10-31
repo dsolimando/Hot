@@ -84,7 +84,6 @@ public abstract class AbstractAsyncDB<CLOSURE,T extends Map<?, ?>> implements As
 				try {
 					// We are faking a thread creation from outside the eventLoop
 					Thread.currentThread().setContextClassLoader(blockingTasksThreadPool.getClass().getClassLoader());
-					System.out.println("blocking db task running");
 					final Object result = callable.call();
 					if (successCallback != null) {
 						eventLoop.execute(new Runnable() {
@@ -94,12 +93,9 @@ public abstract class AbstractAsyncDB<CLOSURE,T extends Map<?, ?>> implements As
 							}
 						});
 					}
-					System.out.println("event loop call");
-					System.out.println("getContextClassLoader "+Thread.currentThread().getContextClassLoader());
 					eventLoop.execute(new Runnable() {
 						@Override
 						public void run() {
-							System.out.println("After result " +Thread.currentThread());
 							deferred.resolve(result);
 						}
 					});
