@@ -341,8 +341,8 @@ usage: hot <command> <options>
 	auth-facebook:		Add/remove facebook based authentication to your web app.
 	auth-twitter:		Add/remove twitter based authentication to your web app.
 	auth-google:		Add/remove google based authentication to your web app.
-	auth-client-facebook:	Add/remove facebook client side authentication to your web app.
-	auth-client-google:	Add/remove google client side authentication to your web app.
+	auth-facebook-client:	Add/remove facebook client side authentication to your web app.
+	auth-google-client:	Add/remove google client side authentication to your web app.
 	
 	run:			Start the dev web server (make sure to be in the project root dir).
 	war:			Build the war artifact for déploying on app server.
@@ -643,7 +643,10 @@ usage: hot <command> <options>
 			
 			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
 			
-			if (!options) return
+			if (!options || (!options.id && !options.sec && !options.r)) {
+				logger.error "hot auth-facebook -id <App id> -sec <App secret>"
+				return
+			}
 			
 			if (!options.r && (!options.id || !options.sec)) {
 				if (!options.id && options.sec)
@@ -669,7 +672,10 @@ usage: hot <command> <options>
 			
 			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
 			
-			if (!options) return
+			if (!options || (!options.id && !options.sec && !options.r)) {
+				logger.error "hot auth-twitter -ck <consumer key> -cp <consumer password>"
+				return
+			}
 			
 			if (!options.r && (!options.ck || !options.cp)) {
 				if (!options.ck && options.cp)
@@ -695,7 +701,10 @@ usage: hot <command> <options>
 			
 			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
 			
-			if (!options) return
+			if (!options || (!options.id && !options.sec && !options.r)) {
+				logger.error "hot auth-google -id <client ID> -sec <client secret>"
+				return
+			}
 			
 			if (!options.r && (!options.id || !options.sec)) {
 				if (!options.id && options.sec)
@@ -714,31 +723,60 @@ usage: hot <command> <options>
 			break
 			
 		case "auth-facebook-client":
-			def cli = new CliBuilder(usage: "hot auth-facebook-client", posix:false)
-			cli.r "remove client based facebook authentication", required: false
+			def cli = new CliBuilder(usage: "hot auth-facebook-client -id <App id> -sec <App secret>", posix:false)
+			cli.id args:1, longOpt:"app-id","Facebook provided application id", required:false
+			cli.sec args:1, longOpt:"app-secret","Facebook provided application secret", required:false
+			cli.r "remove facebook based authentication", required: false
 			
 			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
 			
-			Project project = new Project(projectName, projectsFolder)
-			if (!options) {
-				project.oauthClient "FACEBOOK_CLIENT"
-			} else {
-				project.oauthClient "FACEBOOK_CLIENT",  options.r
+			if (!options || (!options.id && !options.sec && !options.r)) {
+				println "hot auth-facebook-client -id <App id> -sec <App secret>"
+				return
 			}
+			
+			if (!options.r && (!options.id || !options.sec)) {
+				if (!options.id && options.sec)
+					println "error: Missing required option: id"
+				else if (options.id && !options.sec)
+					println "error: Missing required options: sec"
+				else
+					println "error: Missing required options: id, sec"
+			}
+			
+			try {
+				Project project = new Project(projectName, projectsFolder)
+				project.oauth "FACEBOOK_CLIENT", options.id, options.sec, options.r
+			} catch (e) {logger.error e.getMessage()}
 			break
 			
 		case "auth-google-client":
-			def cli = new CliBuilder(usage: "hot auth-facebook-google", posix:false)
-			cli.r "remove client based google authentication", required: false
+			def cli = new CliBuilder(usage: "hot auth-google-google -id <client ID> -sec <client secret>", posix:false)
+			cli.id args:1, longOpt:"client-id","The client ID you obtained from the Google Developers Console", required:false
+			cli.sec args:1, longOpt:"client-secret","The client secret you obtained from the Developers Console", required:false
+			cli.r "remove Google based authentication", required: false
 			
 			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
 			
-			Project project = new Project(projectName, projectsFolder)
-			if (!options) {
-				project.oauthClient "GOOGLE_CLIENT"
-			} else {
-				project.oauthClient "GOOGLE_CLIENT",  options.r
+			if (!options || (!options.id && !options.sec && !options.r)) {
+				println "hot auth-google-google -id <client ID> -sec <client secret>"
+				return
 			}
+			
+			if (!options.r && (!options.id || !options.sec)) {
+				if (!options.id && options.sec)
+					println "error: Missing required option: id"
+				else if (options.id && !options.sec)
+					println "error: Missing required options: sec"
+				else
+					println "error: Missing required options: id, sec"
+			}
+			
+			println "Adding Google based authentication capabilities to the app"
+			try {
+				Project project = new Project(projectName, projectsFolder)
+				project.oauth "GOOGLE_CLIENT", options.id, options.sec, options.r
+			} catch (e) {logger.error e.getMessage()}
 			break
 			
 		case "war":
@@ -1025,34 +1063,6 @@ usage: hot <command> <options>
 			newAuth.consumerKey = consumerKey
 			newAuth.consumerSecret = consumerSecret
 			
-			writeConfig config
-		}
-		
-		def oauthClient = { type, remove ->
-			def config = getConfig()
-			
-			if (!config.authList) config.authList = []
-			
-			if (remove) {
-				config.authList.removeAll {
-					println "Removing ${type} authentication"
-					it.type == type
-				}
-				if (config.authList.empty) config.authList = null;
-				writeConfig config
-				return
-			}
-			
-			def auth = config.authList.find {
-				it.type == type
-			}
-			
-			if (auth) {
-				println "Existing ${type} based authentication already defined"
-				return
-			} else {
-				config.authList << [ type : type ]
-			}
 			writeConfig config
 		}
 		
