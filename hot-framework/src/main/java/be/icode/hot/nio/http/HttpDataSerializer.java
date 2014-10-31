@@ -15,6 +15,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -73,6 +75,8 @@ public class HttpDataSerializer {
 	
 	@SuppressWarnings("rawtypes")
 	public byte[] serialize (Object data, MediaType mediaType) throws HttpDataSerializationException {
+		if (data == null) return "null".getBytes();
+		
 		try {
 			if (data instanceof Map) {
 				return serializeMap((Map) data, mediaType);
