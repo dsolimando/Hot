@@ -111,7 +111,8 @@ public class OAuth2ClientAuthenticationFilter extends GenericFilterBean {
 		}
 		
 		SocialAuthenticationService<?> authService;
-		AccessGrant accessGrant = new AccessGrant(accessToken);
+		// 6140 default facebook expiration time
+		AccessGrant accessGrant = new AccessGrant(accessToken,null,null,6140l);
 		Connection<?> connection = null;
 		if (provider.equals("twitter")) {
 			logger.debug("twitter client OAuth2 authentication not yet implemented");
