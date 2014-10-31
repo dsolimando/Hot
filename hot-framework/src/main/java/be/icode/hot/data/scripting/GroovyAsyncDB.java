@@ -69,7 +69,7 @@ public class GroovyAsyncDB extends AbstractAsyncDB<Closure<?>, Map<String, Objec
 					}
 					return resultList;
 				}
-			}, successClosure, successClosure);
+			}, successClosure, failClosure);
 		}
 	}
 }
