@@ -11,9 +11,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import reactor.core.Reactor;
 import reactor.event.Event;
 import reactor.event.selector.Selectors;
@@ -25,7 +22,6 @@ import be.icode.hot.data.AsyncDB;
 import be.icode.hot.data.DB;
 import be.icode.hot.nio.http.HttpClient;
 import be.icode.hot.nio.http.Request;
-import be.icode.hot.promises.Deferred;
 import be.icode.hot.shows.AbstractWebSocket.Options;
 import be.icode.hot.shows.WebSocket.Handler;
 
@@ -33,8 +29,6 @@ import be.icode.hot.shows.WebSocket.Handler;
 @SuppressWarnings("rawtypes")
 public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> implements Show<CLOSURE,MAP>, ClosureExecutor<CLOSURE>, EventBus<CLOSURE> {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractShow.class);
-
 	final protected URL filepath;
 	
 	protected ExecutorService eventLoop;
