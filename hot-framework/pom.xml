@@ -353,7 +353,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.2.1.v20140609</version>
+			<version>9.2.4.v20141103</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -364,20 +364,21 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-servlets</artifactId>
-			<version>9.2.1.v20140609</version>
+			<artifactId>jetty-server</artifactId>
+			<version>9.2.4.v20141103</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
-			<version>9.2.1.v20140609</version>
+			<version>9.2.4.v20141103</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-server</artifactId>
-			<version>9.2.1.v20140609</version>
+			<version>9.2.4.v20141103</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- <dependency> <groupId>org.apache.tomcat</groupId> <artifactId>jasper</artifactId> <version>6.0.35</version> <exclusions> <exclusion> <groupId>org.apache.tomcat</groupId> 
