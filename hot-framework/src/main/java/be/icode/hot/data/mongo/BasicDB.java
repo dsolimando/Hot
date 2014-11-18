@@ -126,14 +126,14 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 		@Override
 		public T insert(T values) {
 			BasicDBObject valuesDbObject = new BasicDBObject(values);
-			WriteResult wr = db.getCollection(name).insert(valuesDbObject);
+			db.getCollection(name).insert(valuesDbObject);
 			return dbObjectTransformer.put(values, "_id", valuesDbObject.get("_id").toString());
 		}
 		
 		@Override
 		public T save(T values) {
 			BasicDBObject valuesDbObject = new BasicDBObject(values);
-			WriteResult wr = db.getCollection(name).save(valuesDbObject);
+			db.getCollection(name).save(valuesDbObject);
 			return dbObjectTransformer.put(values, "_id", valuesDbObject.get("_id").toString());
 		}
 
