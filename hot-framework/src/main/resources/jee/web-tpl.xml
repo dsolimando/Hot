@@ -1,60 +1,23 @@
-<context-param>
-	<param-name>contextClass</param-name>
-	<param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
-</context-param>
-<context-param>
-	<param-name>contextConfigLocation</param-name>
-	<param-value>be.icode.hot.spring.config.ScriptConfig,be.icode.hot.spring.config.DataConfig</param-value>
-</context-param>
-<listener>
-	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-</listener>
-
-<filter>
-	<filter-name>encodingFilter</filter-name>
-	<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
-	<init-param>
-		<param-name>encoding</param-name>
-		<param-value>UTF-8</param-value>
-	</init-param>
-	<init-param>
-		<param-name>forceEncoding</param-name>
-		<param-value>true</param-value>
-	</init-param>
-</filter>
-
-<servlet>
-	<servlet-name>scriptController</servlet-name>
-	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-	<init-param>
-		<param-name>contextClass</param-name>
-		<param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
-	</init-param>
-	<init-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>be.icode.hot.spring.config.ScriptControllersConfig</param-value>
-	</init-param>
-</servlet>
-
-<servlet-mapping>
-	<servlet-name>scriptController</servlet-name>
-	<url-pattern>/*</url-pattern>
-</servlet-mapping>
-
-<servlet>
-	<servlet-name>restScriptController</servlet-name>
-	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-	<init-param>
-		<param-name>contextClass</param-name>
-		<param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
-	</init-param>
-	<init-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>be.icode.hot.spring.config.RestSciptControllerConfig</param-value>
-	</init-param>
-</servlet>
-
-<servlet-mapping>
-	<servlet-name>restScriptController</servlet-name>
-	<url-pattern>/rest/*</url-pattern>
-</servlet-mapping>
+	<servlet>
+		<servlet-name>hot-rest</servlet-name>
+		<servlet-class>be.icode.hot.shows.rest.RestClosureServlet</servlet-class>
+		<async-supported>true</async-supported>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>hot-rest</servlet-name>
+		<url-pattern>/rest/*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>hot-static</servlet-name>
+		<servlet-class>be.icode.hot.web.AsyncStaticResourceServlet</servlet-class>
+		<async-supported>true</async-supported>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>hot-static</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>

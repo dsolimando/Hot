@@ -1,0 +1,39 @@
+	
+	<context-param>
+		<param-name>contextClass</param-name>
+		<param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
+	</context-param>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>be.icode.hot.spring.config.ShowConfig,be.icode.hot.spring.config.SocialConfig,be.icode.hot.spring.config.SecurityConfig</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+		<load-on-startup>1</load-on-startup>
+	</listener>
+	
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+		<async-supported>true</async-supported>
+		<load-on-startup>1</load-on-startup>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>ASYNC</dispatcher>
+	    <dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+	
+	<servlet>
+		<servlet-name>client-auth</servlet-name>
+		<servlet-class>be.icode.hot.rest.ClientAuthServlet</servlet-class>
+		<async-supported>true</async-supported>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>client-auth</servlet-name>
+		<url-pattern>/client-auth/*</url-pattern>
+	</servlet-mapping>
