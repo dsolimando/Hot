@@ -29,7 +29,7 @@ import be.icode.hot.data.jdbc.DBFactory;
 import be.icode.hot.data.jdbc.sql.QueryBuilderFactory.DBEngine;
 
 @Configuration
-@Import({CommonConfig.class, GaeConfig.class, MongoConfig.class, ThreadPoolsConfig.class})
+@Import({CommonConfig.class, MongoConfig.class, ThreadPoolsConfig.class})
 public class DataConfig {
 	
 	private static final Log logger = LogFactory.getLog(DataConfig.class);
@@ -48,9 +48,6 @@ public class DataConfig {
 	HotConfig hotConfig;
 	
 	@Autowired
-	GaeConfig gaeConfig;
-	
-	@Autowired
 	MongoConfig mongoConfig;
 	
 	@Autowired
@@ -62,42 +59,30 @@ public class DataConfig {
 	@Bean
 	public Map<String,DB<Map<String, Object>>> groovyDbMap() throws Exception {
 		Map<String,DB<Map<String, Object>>> dbMap = new LinkedHashMap<String, DB<Map<String, Object>>>();
-		if (hotConfig.getNature().equals(HotConfig.GAE)) {
-			dbMap.put(HotConfig.GAE, gaeConfig.groovyGaeDB());
-		} else {
-			for (DBFactory dbFactory: dbFactories()) {
-				dbMap.put(dbFactory.getName(),dbFactory.buildGroovyDB());
-			}
-			dbMap.putAll(mongoConfig.groovyMongoDb());
+		for (DBFactory dbFactory: dbFactories()) {
+			dbMap.put(dbFactory.getName(),dbFactory.buildGroovyDB());
 		}
+		dbMap.putAll(mongoConfig.groovyMongoDb());
 		return dbMap;
 	}
 	
 	@Bean
 	public Map<String, DB<NativeObject>> jsDbMap() throws Exception {
 		Map<String, DB<NativeObject>> dbMap = new LinkedHashMap<String, DB<NativeObject>>();
-		if (hotConfig.getNature().equals(HotConfig.GAE)) {
-			dbMap.put(HotConfig.GAE, gaeConfig.jsGaeDB());
-		} else {
-			for (DBFactory dbFactory: dbFactories()) {
-				dbMap.put(dbFactory.getName(),dbFactory.buildJsDB());
-			}
-			dbMap.putAll(mongoConfig.jsMongoDB());
+		for (DBFactory dbFactory: dbFactories()) {
+			dbMap.put(dbFactory.getName(),dbFactory.buildJsDB());
 		}
+		dbMap.putAll(mongoConfig.jsMongoDB());
 		return dbMap;
 	}
 	
 	@Bean
 	public Map<String, DB<PyDictionary>> pythonDbMap() throws Exception {
 		Map<String, DB<PyDictionary>> dbMap = new LinkedHashMap<String, DB<PyDictionary>>();
-		if (hotConfig.getNature().equals(HotConfig.GAE)) {
-			dbMap.put(HotConfig.GAE, gaeConfig.pyGaeDB());
-		} else {
-			for (DBFactory dbFactory: dbFactories()) {
-				dbMap.put(dbFactory.getName(),dbFactory.buildPyDB());
-			}
-			dbMap.putAll(mongoConfig.pyMongoDB());
+		for (DBFactory dbFactory: dbFactories()) {
+			dbMap.put(dbFactory.getName(),dbFactory.buildPyDB());
 		}
+		dbMap.putAll(mongoConfig.pyMongoDB());
 		return dbMap;
 	}
 	
