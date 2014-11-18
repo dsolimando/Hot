@@ -1,5 +1,6 @@
 package be.icode.hot.web;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,12 +13,18 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import be.icode.hot.Script;
@@ -123,8 +131,9 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 				writeBytesToResponse(resp,(requestPath+ " not found").getBytes());
 				async.complete();
 			}
-		} catch (URISyntaxException e) {
-			LOGGER.error("",e);
+		} catch (Exception e) {
+			writeBytesToResponse(resp,extractStackTrace(e).getBytes());
+			async.complete();
 		}
 	}
 	
@@ -148,50 +157,47 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 		}
 		final URI uri = resourceUrl.toURI();
 		
+		// Extract Servlet response of spring response wrapper if needed
+		final ServletOutputStream outputStream;
+		if (servletResponse instanceof SaveContextOnUpdateOrErrorResponseWrapper) {
+			((SaveContextOnUpdateOrErrorResponseWrapper) servletResponse).getResponse();
+			outputStream = ((SaveContextOnUpdateOrErrorResponseWrapper) servletResponse).getResponse().getOutputStream();
+		} else {
+			outputStream = servletResponse.getOutputStream();
+		}
+		
 		eventLoop.execute(new Runnable() {
 			@Override
 			public void run() {
 				try {
+					servletResponse.setHeader(com.google.common.net.HttpHeaders.CONTENT_TYPE, contentType);
 					Path path = getPath(uri);
+					// If file in ZIP, we load fully load it in memory and write it directly 
 					if (path.getFileSystem() instanceof ZipFileSystem) {
-						try {
-							byte[] bytes = Files.readAllBytes(path);
-							servletResponse.setStatus(HttpStatus.OK.value());
-							servletResponse.setHeader(com.google.common.net.HttpHeaders.CONTENT_TYPE, contentType);
-							servletResponse.getOutputStream().write(bytes);
-							
-						} catch (Exception e) {
-							servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-							servletResponse.getOutputStream().write(extractStackTrace(e).getBytes());
-						}
-						async.complete();
+						byte[] bytes = Files.readAllBytes(path);
+						servletResponse.setStatus(HttpStatus.OK.value());
+						writeBytesToResponseAsync(outputStream, bytes, async);
 					} else {
-						Promise<Void, Exception, Buffer> promise = fileLoader.loadResourceAsync(path,!hotConfig.isDevMode());
-						final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-						
-						promise.progress(new ProgressCallback<FileLoader.Buffer>() {
-							public void onProgress(Buffer progress) {
-								outputStream.write(progress.getContent(), 0, progress.getLength());
-							}
-						}).done(new DoneCallback<Void>() {
-							public void onDone(Void result) {
-								servletResponse.setStatus(HttpStatus.OK.value());
-								servletResponse.setHeader(com.google.common.net.HttpHeaders.CONTENT_TYPE, contentType);
-								writeBytesToResponse(servletResponse, outputStream.toByteArray());
-								async.complete();
-							}
-						}).fail(new FailCallback<Exception>() {
-							public void onFail(Exception e) {
-								servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-								writeBytesToResponse(servletResponse, extractStackTrace(e).getBytes());
-								async.complete();
-							}
-						});
+						Promise<Void, Exception, Buffer> promise = fileLoader.loadResourceAsync(path,!hotConfig.isDevMode())
+							.fail(new FailCallback<Exception>() {
+								@Override public void onFail(Exception result) {
+									if (!servletResponse.isCommitted()) {
+										servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+									}
+									try {
+										outputStream.write(extractStackTrace(result).getBytes());
+									} catch (IOException e) {
+										LOGGER.error("",e);
+									} finally {
+										async.complete();
+									}
+								}
+							});
+						writeBytesToResponseAsync(outputStream, promise, async);
 					}
 				} catch (Exception e) {
 					servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-					writeBytesToResponse(servletResponse, extractStackTrace(e).getBytes());
-					async.complete();
+					writeBytesToResponseAsync(outputStream, extractStackTrace(e).getBytes(), async);
 				}
 			}
 		});
@@ -207,10 +213,19 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 		
 		final String scriptName = servletRequest.getPathInfo();
 		
+		final ServletOutputStream servletOutputStream;
+		
+		if (servletResponse instanceof SaveContextOnUpdateOrErrorResponseWrapper) {
+			((SaveContextOnUpdateOrErrorResponseWrapper) servletResponse).getResponse();
+			servletOutputStream = ((SaveContextOnUpdateOrErrorResponseWrapper) servletResponse).getResponse().getOutputStream();
+		} else {
+			servletOutputStream = servletResponse.getOutputStream();
+		}
+		
 		if (!hotConfig.isDevMode() && transpiledScriptCache.keySet().contains(scriptName)) {
 			servletResponse.setStatus(HttpStatus.OK.value());
 			servletResponse.setHeader(com.google.common.net.HttpHeaders.CONTENT_TYPE, contentType);
-			writeBytesToResponse(servletResponse, transpiledScriptCache.get(scriptName));
+			writeBytesToResponseAsync(servletOutputStream, transpiledScriptCache.get(scriptName), async);
 		}
 		
 		eventLoop.execute(new Runnable() {
@@ -229,8 +244,8 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 					}).fail(new FailCallback<Exception>() {
 						public void onFail(Exception e) {
 							servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-							writeBytesToResponse(servletResponse, extractStackTrace(e).getBytes());
-							async.complete();
+							writeBytesToResponseAsync(servletOutputStream, extractStackTrace(e).getBytes(), async);
+//							async.complete();
 						}
 					}).then(new DonePipe<Void, byte[], Exception, Void>() {
 	
@@ -266,21 +281,19 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 							transpiledScriptCache.put(scriptName, result);
 							servletResponse.setStatus(HttpStatus.OK.value());
 							servletResponse.setHeader(com.google.common.net.HttpHeaders.CONTENT_TYPE, contentType);
-							writeBytesToResponse(servletResponse, result);
-							async.complete();
+							writeBytesToResponseAsync(servletOutputStream, result, async);
 						}
 					}).fail(new FailCallback<Exception>() {
 						@Override
 						public void onFail(Exception e) {
 							servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-							writeBytesToResponse(servletResponse, extractStackTrace(e).getBytes());
-							async.complete();
+							writeBytesToResponseAsync(servletOutputStream, extractStackTrace(e).getBytes(), async);
 						}
 					});
 					
 				} catch (Exception e) {
 					servletResponse.setStatus(HttpStatus.NOT_FOUND.value());
-					writeBytesToResponse(servletResponse, extractStackTrace(e).getBytes());
+					writeBytesToResponseAsync(servletOutputStream, extractStackTrace(e).getBytes(), async);
 					async.complete();
 				}
 			}
@@ -293,6 +306,83 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 		} catch (IOException e) {
 			LOGGER.error("",e);
 		}
+	}
+	
+	private void writeBytesToResponseAsync(final ServletOutputStream outputStream, byte[] bytes, final AsyncContext async) {
+
+		final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+		
+		outputStream.setWriteListener(new WriteListener() {
+			@Override
+			public void onWritePossible() throws IOException {
+				eventLoop.execute(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							byte[] buffer = new byte[2048];
+							int len = 0;
+							while (outputStream.isReady() && (len = bais.read(buffer)) != -1) {
+								outputStream.write(buffer, 0, len);
+							}
+							if (len == -1) {
+								async.complete();
+							}
+						} catch (IOException e) {
+							LOGGER.error("", e);
+							async.complete();
+						}
+					}
+				});
+			}
+			@Override
+			public void onError(Throwable t) {
+				LOGGER.error("", t);
+				async.complete();
+			}
+		});
+	}
+	
+	private void writeBytesToResponseAsync(
+			final ServletOutputStream outputStream, 
+			final Promise<Void, Exception, Buffer> promise, 
+			final AsyncContext async) {
+		
+		final LinkedList<Buffer> queue = new LinkedList<>();
+		
+		promise.progress(new ProgressCallback<FileLoader.Buffer>() {
+			@Override public void onProgress(Buffer progress) {
+				queue.add(progress);
+			}
+		});
+		
+		outputStream.setWriteListener(new WriteListener() {
+			@Override
+			public void onWritePossible() throws IOException {
+				eventLoop.execute(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							while (outputStream.isReady() && !queue.isEmpty()) {
+								Buffer buffer = queue.poll();
+								outputStream.write(buffer.getContent(), 0, buffer.getLength());
+							}
+							if (queue.isEmpty() && (promise.isResolved() || promise.isRejected())) {
+								async.complete();
+							}
+						} catch (IOException e) {
+							LOGGER.error("", e);
+							async.complete();
+						}
+					}
+				});
+			}
+			
+			@Override
+			public void onError(Throwable t) {
+				LOGGER.error("", t);
+				async.complete();
+			}
+		});
 	}
 	
 	protected String extractStackTrace (Exception e) {
@@ -312,5 +402,21 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 			return fs.getPath(tokens[1]);
 		}
 		return Paths.get(uri);
+	}
+	
+	public static void main(String[] args) {
+		LinkedBlockingQueue<String> bq = new LinkedBlockingQueue<>();
+		bq.add("h");
+		bq.add("e");
+		bq.add("l");
+		bq.add("l");
+		bq.add("o");
+		
+		System.out.println(bq.poll());
+		System.out.println(bq.poll());
+		System.out.println(bq.poll());
+		System.out.println(bq.poll());
+		System.out.println(bq.poll());
+		System.out.println(bq.isEmpty());
 	}
 }

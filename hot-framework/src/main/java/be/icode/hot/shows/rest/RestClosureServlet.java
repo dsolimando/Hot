@@ -20,15 +20,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jdeferred.DoneCallback;
-import org.jdeferred.DoneFilter;
 import org.jdeferred.FailCallback;
-import org.jdeferred.FailFilter;
+import org.mozilla.javascript.NativeJavaObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import be.icode.hot.groovy.GroovyClosure;
@@ -79,6 +81,8 @@ public class RestClosureServlet extends HttpServlet {
 	
 	ExecutorService						blockingTreadPool;
 	
+	ExecutorService						httpIOEventLoop;
+	
 	@Override
 	synchronized protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		initSpringBeans();
@@ -120,45 +124,71 @@ public class RestClosureServlet extends HttpServlet {
 
 			final ClosureRequestMapping closureRequestMapping = closureRequestMappingHandlerMapping.lookupRequestMapping(req);
 			
+			final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+			
 			if (closureRequestMapping != null) {
-
+				final ExecutorService showEventLoop = closureRequestMapping.getEventLoop();
+				
 				// Async execution
-				IOUtils.asyncRead(req, blockingTreadPool, closureRequestMapping.getEventLoop())
-				.then(new DoneFilter<byte[],Object>() {
-					@Override
-					public Object filterDone(byte[] body) {
-						return handleRequest(closureRequestMapping, req, body);
-					}
-				}, new FailFilter<Exception, Exception>() {
-					@Override
-					public Exception filterFail(Exception e) {
-						return e;
-					}
-				})
-				.done(new DoneCallback<Object>() {
+				IOUtils.asyncRead(req, showEventLoop, showEventLoop)
+				.done(new DoneCallback<byte[]>() {
 					@SuppressWarnings({ "rawtypes" })
 					@Override
-					public void onDone(Object response) {
-						if (response instanceof Promise) {
-							Promise promise = (Promise) response;
-							promise._done(new DCallback() {
-								@Override
-								public void onDone(Object result) {
-									handleResponse(result, acceptMediaTypes.get(0), resp, async);
-								}
-							})._fail(new FCallback() {
-								@Override
-								public void onFail(Throwable throwable) {
-									Exception exception = new Exception(throwable);
-									if (LOGGER.isDebugEnabled()) 
-										LOGGER.debug("",exception);
-									resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-									writeBytesToResponse(resp, extractStackTrace(exception).getBytes(),async);
-//									async.complete();
-								}
-							});
-						} else {
-							handleResponse(response, acceptMediaTypes.get(0), resp, async);
+					public void onDone(byte[] body) {
+						try {
+							Object response = handleRequest(closureRequestMapping, req, body, authentication);
+							if (LOGGER.isDebugEnabled())
+								LOGGER.debug("Response type: "+response.getClass());
+							
+							if (response instanceof NativeJavaObject) {
+								response = ((NativeJavaObject) response).unwrap();
+							}
+							if (response instanceof Promise) {
+								Promise promise = (Promise) response;
+								promise._done(new DCallback() {
+									@Override
+									public void onDone(Object result) {
+										handleResponse(result, acceptMediaTypes.get(0), resp, async, showEventLoop);
+									}
+								})._fail(new FCallback() {
+									@Override
+									public void onFail(Object object) {
+										LOGGER.debug("Exception type "+object.getClass());
+										Exception exception = null;
+										Object o = null;
+										try {
+											// If multiple values in fail callback, we take the first one
+											if (object instanceof Object[]) {
+												o =  ((Object[])object)[0];
+											} else {
+												o = object;
+											}
+											if (o instanceof NativeJavaObject) {
+												o = ((NativeJavaObject) o).unwrap();
+											}
+											if (o instanceof Throwable) {
+												exception = new Exception((Throwable) o);
+											} else {
+												exception = new Exception(o.toString());
+											}
+										} catch (Exception e) {
+											exception = e;
+										}
+										if (LOGGER.isDebugEnabled()) 
+											LOGGER.debug("",exception);
+										resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+										writeBytesToResponseAsync(resp, extractStackTrace(exception).getBytes(),async, showEventLoop);
+//										async.complete();
+									}
+								});
+							} else {
+								handleResponse(response, acceptMediaTypes.get(0), resp, async, showEventLoop);
+							}
+						} catch (Exception e) {
+							if (LOGGER.isDebugEnabled()) 
+								LOGGER.debug("",e);
+							resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+							writeBytesToResponseAsync(resp, extractStackTrace(e).getBytes(), async, showEventLoop);
 						}
 					}
 				}).fail(new FailCallback<Exception>() {
@@ -167,20 +197,17 @@ public class RestClosureServlet extends HttpServlet {
 						if (LOGGER.isDebugEnabled()) 
 							LOGGER.debug("",exception);
 						resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-						writeBytesToResponse(resp, extractStackTrace(exception).getBytes(), async);
-//						async.complete();
+						writeBytesToResponseAsync(resp, extractStackTrace(exception).getBytes(), async, showEventLoop);
 					}
 				});
 			
 			} else {
 				resp.setStatus(HttpStatus.NOT_FOUND.value());
-				writeBytesToResponse(resp, "No closure matching the request".getBytes(), async);
-//				async.complete();
+				writeBytesToResponseAsync(resp, "No closure matching the request".getBytes(), async, httpIOEventLoop);
 			}
 		} catch (Exception e) {
 			resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			writeBytesToResponse(resp, extractStackTrace(e).getBytes(), async);
-//			async.complete();
+			writeBytesToResponseAsync(resp, extractStackTrace(e).getBytes(), async, httpIOEventLoop);
 		}
 	}
 	
@@ -197,22 +224,23 @@ public class RestClosureServlet extends HttpServlet {
 				pythonHttpDataDeserializer = applicationContext.getBean(PythonHttpDataDeserializer.class);
 				jsHttpDataDeserializer = applicationContext.getBean(JsHttpDataDeserializer.class);
 				blockingTreadPool = (ExecutorService) applicationContext.getBean("blockingTasksThreadPool");
+				httpIOEventLoop = (ExecutorService) applicationContext.getBean("httpIOEventLoop");
 			} catch (BeansException e) {
 				LOGGER.error("Failed to init spring beans",e);
 			}
 		}
 	}
 	
-	private Object handleRequest(ClosureRequestMapping closureRequestMapping, HttpServletRequest httpServletRequest, byte[] body) {
+	private Object handleRequest(ClosureRequestMapping closureRequestMapping, HttpServletRequest httpServletRequest, byte[] body, Authentication authentication) {
 		
 		RestRequest<?> restRequest;
 		
 		if (closureRequestMapping.getClosure() instanceof GroovyClosure) {
-			 restRequest = new GroovyRestRequest(closureRequestMapping.getOptions(), groovyDataConverter, groovyHttpDataDeserializer, httpServletRequest, body);
+			 restRequest = new GroovyRestRequest(closureRequestMapping.getOptions(), groovyDataConverter, groovyHttpDataDeserializer, httpServletRequest, body, authentication);
 		} else if (closureRequestMapping.getClosure() instanceof PythonClosure) {
-			restRequest = new PythonRestRequest(closureRequestMapping.getOptions(), pyDictionaryConverter, pythonHttpDataDeserializer, httpServletRequest, body);
+			restRequest = new PythonRestRequest(closureRequestMapping.getOptions(), pyDictionaryConverter, pythonHttpDataDeserializer, httpServletRequest, body, authentication);
 		} else if (closureRequestMapping.getClosure() instanceof JSClosure) {
-			restRequest = new JSRestRequest(closureRequestMapping.getOptions(), jsDataConverter, jsHttpDataDeserializer, httpServletRequest, body);
+			restRequest = new JSRestRequest(closureRequestMapping.getOptions(), jsDataConverter, jsHttpDataDeserializer, httpServletRequest, body, authentication);
 		} else {
 			throw new RuntimeException("showClosure is in the wrong type "+closureRequestMapping.getClosure().getClass());
 		}
@@ -220,11 +248,11 @@ public class RestClosureServlet extends HttpServlet {
 		return closureRequestMapping.getClosure().call(restRequest);
 	}
 	
-	private void handleResponse (Object objectResponse, MediaType acceptContentType, HttpServletResponse resp, AsyncContext async) {
+	private void handleResponse (Object objectResponse, MediaType acceptContentType, HttpServletResponse resp, AsyncContext async, ExecutorService showEventLoop) {
 		
 		try {
 			if (objectResponse == null)
-				writeBytesToResponse(resp, "".getBytes(), async);
+				writeBytesToResponseAsync(resp, "".getBytes(), async, showEventLoop);
 			else if (objectResponse instanceof Response) {
 				Response response = (Response) objectResponse;
 				Map<?,?> headers = response.getHeaders();
@@ -239,15 +267,15 @@ public class RestClosureServlet extends HttpServlet {
 				}
 				byte[] body = httpDataSerializer.serialize(content, extractedResponseContentType == null?acceptContentType:extractedResponseContentType);
 				
-				writeBytesToResponse(resp, body, async);
+				writeBytesToResponseAsync(resp, body, async, showEventLoop);
 			} else {
 				byte[] body = httpDataSerializer.serialize(objectResponse, acceptContentType);
 				resp.setContentType(acceptContentType.toString());
-				writeBytesToResponse(resp, body, async);
+				writeBytesToResponseAsync(resp, body, async, showEventLoop);
 			}
 		} catch (Exception e) {
 			resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			writeBytesToResponse(resp, extractStackTrace(e).getBytes(), async);
+			writeBytesToResponseAsync(resp, extractStackTrace(e).getBytes(), async, showEventLoop);
 		}
 	}
 	
@@ -272,35 +300,51 @@ public class RestClosureServlet extends HttpServlet {
 		return stringWriter.toString();
 	}
 	
-	private void writeBytesToResponseAsync(HttpServletResponse httpServletResponse, byte[] bytes, final AsyncContext async) {
+	private void writeBytesToResponseAsync(HttpServletResponse httpServletResponse, byte[] bytes, final AsyncContext async, final ExecutorService eventLoop) {
 		
 		try {
 			final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-			final ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-			
+			final ServletOutputStream outputStream;
+
+			if (httpServletResponse instanceof SaveContextOnUpdateOrErrorResponseWrapper) {
+				((SaveContextOnUpdateOrErrorResponseWrapper) httpServletResponse).getResponse();
+				outputStream = ((SaveContextOnUpdateOrErrorResponseWrapper) httpServletResponse).getResponse().getOutputStream();
+			} else {
+				outputStream = httpServletResponse.getOutputStream();
+			}
+
 			outputStream.setWriteListener(new WriteListener() {
-				
+
 				@Override
 				public void onWritePossible() throws IOException {
-					byte[] buffer = new byte[2048];
-					int len = 0;
-					while (outputStream.isReady() && (len = bais.read(buffer)) != -1) {
-						outputStream.write(buffer,0,len);
-					}
-					if (len == -1) {
-						async.complete();
-					}
+					eventLoop.execute(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								byte[] buffer = new byte[2048];
+								int len = 0;
+								while (outputStream.isReady() && (len = bais.read(buffer)) != -1) {
+									outputStream.write(buffer, 0, len);
+								}
+								if (len == -1) {
+									async.complete();
+								}
+							} catch (IOException e) {
+								LOGGER.error("", e);
+								async.complete();
+							}
+						}
+					});
 				}
-				
 				@Override
 				public void onError(Throwable t) {
-					LOGGER.error("",t);
+					LOGGER.error("", t);
 					async.complete();
 				}
 			});
-//			httpServletResponse.getOutputStream().write(bytes);
+			
 		} catch (IOException e) {
-			LOGGER.error("",e);
+			LOGGER.error("", e);
 			async.complete();
 		}
 	}

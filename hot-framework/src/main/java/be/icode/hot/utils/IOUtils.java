@@ -39,91 +39,91 @@ public class IOUtils {
 		
 		final DeferredObject<byte[], Exception, Void> deferredObject = new DeferredObject<>();
 		
-//		try {
-//			final ServletInputStream servletInputStream = req.getInputStream();
-//			
-//			servletInputStream.setReadListener(new ReadListener() {
-//				
-//				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//				
-//				@Override
-//				public void onError(final Throwable t) {
-//					promiseResolver.execute(new Runnable() {
-//						@Override
-//						public void run() {
-//							deferredObject.reject(new Exception(t));
-//						}
-//					});
-//				}
-//				
-//				@Override
-//				public void onDataAvailable() throws IOException {
-////					executorService.execute(new Runnable() {
-////						@Override
-////						public void run() {
-//							byte b[] = new byte[2048];
-//							int len = 0;
-//							
-//							try {
-//								while (servletInputStream.isReady() && (len = servletInputStream.read(b)) != -1) {
-//								    baos.write(b, 0, len);
-//								}
-//							} catch (IOException e) {
-//								LOGGER.error("",e);
-//							}
-////						}
-////					});
-//				}
-//				
-//				@Override
-//				public void onAllDataRead() throws IOException {
-//					promiseResolver.execute(new Runnable() {
-//						@Override
-//						public void run() {
-//							deferredObject.resolve(baos.toByteArray());
-//						}
-//					});
-//				}
-//			});
-//		} catch (final IOException e2) {
-//			promiseResolver.execute(new Runnable() {
-//				@Override
-//				public void run() {
-//					deferredObject.reject(new Exception(e2));
-//				}
-//			});
-//			
-//		} catch (final IllegalStateException exception) {
-//			promiseResolver.execute(new Runnable() {
-//				@Override
-//				public void run() {
-//					deferredObject.resolve("".getBytes());
-//				}
-//			});
-//		}
-		
-		executorService.execute(new Runnable() {
-			@Override
-			public void run() {
-				final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-				try {
-					IOUtils.toOutputStreamBuffered(req.getInputStream(), outputStream);
+		try {
+			final ServletInputStream servletInputStream = req.getInputStream();
+			
+			servletInputStream.setReadListener(new ReadListener() {
+				
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				
+				@Override
+				public void onError(final Throwable t) {
 					promiseResolver.execute(new Runnable() {
 						@Override
 						public void run() {
-							deferredObject.resolve(outputStream.toByteArray());
-						}
-					});
-				} catch (final IOException e) {
-					promiseResolver.execute(new Runnable() {
-						@Override
-						public void run() {
-							deferredObject.reject(e);
+							deferredObject.reject(new Exception(t));
 						}
 					});
 				}
-			}
-		});
+				
+				@Override
+				public void onDataAvailable() throws IOException {
+					executorService.execute(new Runnable() {
+						@Override
+						public void run() {
+							byte b[] = new byte[2048];
+							int len = 0;
+							
+							try {
+								while (servletInputStream.isReady() && (len = servletInputStream.read(b)) != -1) {
+								    baos.write(b, 0, len);
+								}
+							} catch (IOException e) {
+								LOGGER.error("",e);
+							}
+						}
+					});
+				}
+				
+				@Override
+				public void onAllDataRead() throws IOException {
+					promiseResolver.execute(new Runnable() {
+						@Override
+						public void run() {
+							deferredObject.resolve(baos.toByteArray());
+						}
+					});
+				}
+			});
+		} catch (final IOException e2) {
+			promiseResolver.execute(new Runnable() {
+				@Override
+				public void run() {
+					deferredObject.reject(new Exception(e2));
+				}
+			});
+			
+		} catch (final IllegalStateException exception) {
+			promiseResolver.execute(new Runnable() {
+				@Override
+				public void run() {
+					deferredObject.resolve("".getBytes());
+				}
+			});
+		}
+		
+//		executorService.execute(new Runnable() {
+//			@Override
+//			public void run() {
+//				final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//				try {
+//					IOUtils.toOutputStreamBuffered(req.getInputStream(), outputStream);
+//					promiseResolver.execute(new Runnable() {
+//						@Override
+//						public void run() {
+//							deferredObject.resolve(outputStream.toByteArray());
+//						}
+//					});
+//				} catch (final IOException e) {
+//					promiseResolver.execute(new Runnable() {
+//						@Override
+//						public void run() {
+//							deferredObject.reject(e);
+//						}
+//					});
+//				}
+//			}
+//		});
 		
 		return deferredObject.promise();
 	}
