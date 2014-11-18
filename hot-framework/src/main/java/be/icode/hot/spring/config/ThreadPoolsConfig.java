@@ -9,6 +9,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +27,8 @@ import com.lmax.disruptor.dsl.ProducerType;
 @Configuration
 @Import({CommonConfig.class})
 public class ThreadPoolsConfig {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(ThreadPoolsConfig.class);
 	
 	private int blockingTasksThreadPoolSize = Runtime.getRuntime().availableProcessors()*2;
 	
@@ -59,11 +63,22 @@ public class ThreadPoolsConfig {
 	@Bean(name="staticResourcesEventLoop")
 	public ExecutorService staticResourcesEventLoop() throws Exception {
 		WorkQueueAsyncTaskExecutor rbate = new WorkQueueAsyncTaskExecutor(reactorEnvironment())
-	        .setName("ringBufferExecutor")
+	        .setName("ringBufferAsyncTaskExecutor")
 	        .setBacklog(2048)
-	        .setThreads(AVAILABLE_PROCESSORS)
+	        .setThreads(1)
 	        .setProducerType(ProducerType.SINGLE);
-//	        .setWaitStrategy(new YieldingWaitStrategy());
+		rbate.afterPropertiesSet();
+		if (commonConfig != null && commonConfig.hotConfig().getAuthList().size() > 0) {
+			return new DelegatingSecurityContextExecutorService(rbate);
+		}
+		return rbate;
+	}
+	
+	@Bean(name="httpIOEventLoop")
+	public ExecutorService httpIOEventLoop() throws Exception {
+		RingBufferAsyncTaskExecutor rbate = new RingBufferAsyncTaskExecutor(reactorEnvironment())
+	        .setName("httpIOEventLoop")
+	        .setBacklog(2048);
 		rbate.afterPropertiesSet();
 		if (commonConfig != null && commonConfig.hotConfig().getAuthList().size() > 0) {
 			return new DelegatingSecurityContextExecutorService(rbate);
@@ -91,6 +106,9 @@ public class ThreadPoolsConfig {
 				rbate.afterPropertiesSet();
 				
 				if (authEnabled) {
+					if (LOGGER.isDebugEnabled()) {
+						LOGGER.debug("Wrapping ExecutorService with DelegatingSecurityContextExecutorService");
+					}
 					DelegatingSecurityContextExecutorService securityRbate = new DelegatingSecurityContextExecutorService(rbate);
 					executorServices.add(securityRbate);
 				} else {
