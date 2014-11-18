@@ -16,7 +16,7 @@
 		<param name="File" value=".hot.log" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern"
-				value="%19d{ISO8601} [ %-5p ] [ %C{1} ] [%l] - %m%n" />
+				value="%19d{ISO8601} [%t] [ %-5p ] [ %C{1} ] [%l] - %m%n" />
 		</layout>
 	</appender>
 
