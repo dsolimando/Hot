@@ -15,21 +15,24 @@ public class JSDeferred extends JSPromise implements Deferred<NativeFunction> {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public void resolve(Object... objects) {
+	public JSDeferred resolve(Object... objects) {
 		((DeferredObject)promise).resolve(objects);
+		return this;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public void reject(Object... objects) {
+	public JSDeferred reject(Object... objects) {
 		((DeferredObject)promise).reject(objects);
+		return this;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void notify(Object... notificationValues) {
+	public JSDeferred notify(Object... notificationValues) {
 		DeferredObject deferredObject = (DeferredObject) super.promise;
 		deferredObject.notify(notificationValues);
+		return this;
 	}
 
 	@Override

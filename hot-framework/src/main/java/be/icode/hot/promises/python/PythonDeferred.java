@@ -14,23 +14,26 @@ public class PythonDeferred extends PythonPromise implements Deferred<PyFunction
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public void resolve(Object... resolveValues) {
+	public PythonDeferred resolve(Object... resolveValues) {
 		DeferredObject deferredObject = (DeferredObject) super.promise;
 		deferredObject.resolve(resolveValues);
+		return this;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void reject(Object... resolveValues) {
+	public PythonDeferred reject(Object... resolveValues) {
 		DeferredObject deferredObject = (DeferredObject) super.promise;
 		deferredObject.reject(resolveValues);
+		return this;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void notify(Object... notificationValues) {
+	public PythonDeferred notify(Object... notificationValues) {
 		DeferredObject deferredObject = (DeferredObject) super.promise;
 		deferredObject.reject(notificationValues);
+		return this;
 	}
 
 	@Override

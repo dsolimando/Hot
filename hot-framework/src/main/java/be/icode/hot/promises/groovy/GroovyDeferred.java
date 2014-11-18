@@ -15,36 +15,38 @@ public class GroovyDeferred extends GroovyPromise implements Deferred<Closure<?>
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public void resolve(Object... resolveValues) {
+	public GroovyDeferred resolve(Object... resolveValues) {
 		DeferredObject deferredObject = (DeferredObject) super.promise;
 		if (resolveValues.length == 1) {
 			deferredObject.resolve(resolveValues[0]);
 		} else {
 			deferredObject.resolve(resolveValues);
 		}
-		
+		return this;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public void reject(Object... rejectValues) {
+	public GroovyDeferred reject(Object... rejectValues) {
 		DeferredObject deferredObject = (DeferredObject) super.promise;
 		if (rejectValues.length == 1) {
 			deferredObject.reject(rejectValues[0]);
 		} else {
 			deferredObject.reject(rejectValues);
 		}
+		return this;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void notify(Object... notificationValues) {
+	public GroovyDeferred notify(Object... notificationValues) {
 		DeferredObject deferredObject = (DeferredObject) super.promise;
 		if (notificationValues.length == 1) {
 			deferredObject.notify(notificationValues[0]);
 		} else {
 			deferredObject.notify(notificationValues);
 		}
+		return this;
 	}
 
 	@Override

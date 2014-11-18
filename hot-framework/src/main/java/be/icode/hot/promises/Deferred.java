@@ -2,9 +2,9 @@ package be.icode.hot.promises;
 
 public interface Deferred<CLOSURE> extends Promise<CLOSURE> {
 
-	void resolve	(Object... object);
-	void reject		(Object... object);
-	void notify		(Object... object);
+	Deferred<CLOSURE> resolve	(Object... object);
+	Deferred<CLOSURE> reject		(Object... object);
+	Deferred<CLOSURE> notify		(Object... object);
 	Promise<CLOSURE> promise	();
 	
 	
