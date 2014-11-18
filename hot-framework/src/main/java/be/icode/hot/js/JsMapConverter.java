@@ -1,5 +1,6 @@
 package be.icode.hot.js;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -9,6 +10,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeObject;
 import org.springframework.util.MultiValueMap;
@@ -23,9 +27,17 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 		for (Object key: map.keySet()) {
 			Object o = map.get(key);
 			if (key instanceof String) {
-				if (o instanceof Object[]) {
-					Object[] oa = (Object[]) o;
-					javascriptMap.put(key.toString(), javascriptMap,oa[0]);
+				if (o instanceof List) {
+					List<Object> lo = new ArrayList<>();
+					for (Object ob : (List<?>)o) {
+						if (ob instanceof Map<?,?>)
+							lo.add(toScriptMap((Map<?, ?>) ob));
+						else
+							lo.add(ob);
+					}
+					javascriptMap.put(key.toString(), javascriptMap, new NativeArray(lo.toArray()));
+				} else if(o instanceof Map<?,?>) {
+					javascriptMap.put(key.toString(), javascriptMap, toScriptMap((Map<?, ?>) o));
 				} else {
 					javascriptMap.put(key.toString(), javascriptMap,o);
 				}
@@ -33,6 +45,7 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 		}
 		return javascriptMap;
 	}
+	
 	
 	public Map<?,?> toMap(NativeObject nativeObject) {
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
@@ -93,5 +106,12 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 			headers.put(headerName, headers, new NativeArray(values.toArray()));
 		}
 		return headers;
+	}
+	
+	public static void main(String[] args) throws JsonParseException, JsonMappingException, IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		JsMapConverter converter = new JsMapConverter();
+		NativeObject nativeObject = converter.toScriptMap(mapper.readValue("{\"extraInfos\":[{\"code\":\"ALLOC_ETP\",\"description\":\"Temps alloué à la gestion du DU employeur (100%=temps plein)\",\"valeurs\":[\"25\"]}]}".getBytes(), Map.class));
+		
 	}
 }
