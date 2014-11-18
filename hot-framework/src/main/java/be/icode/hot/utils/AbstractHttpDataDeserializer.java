@@ -5,9 +5,13 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 
 public abstract class AbstractHttpDataDeserializer implements HttpDataDeserializer {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractHttpDataDeserializer.class);
 	
 	ObjectMapper objectMapper;
 	
@@ -18,6 +22,11 @@ public abstract class AbstractHttpDataDeserializer implements HttpDataDeserializ
 	@Override
 	public Object processRequestData (byte[] data, String contentType) {
 		MediaType ct = MediaType.parseMediaType(contentType);
+		
+		if (LOGGER.isDebugEnabled())
+			LOGGER.debug("Content-type: "+contentType);
+		
+		// Subtypes arre used because of possible encoding definitions
 		if (ct.getSubtype().equals(MediaType.APPLICATION_OCTET_STREAM.getSubtype())) {
 			return data;
 		} else if (ct.getSubtype().equals(MediaType.APPLICATION_JSON.getSubtype())) {
@@ -66,5 +75,9 @@ public abstract class AbstractHttpDataDeserializer implements HttpDataDeserializ
 		public DeserializationException(Throwable cause) {
 			super(cause);
 		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(MediaType.parseMediaType("application/json").getSubtype());
 	}
 }
