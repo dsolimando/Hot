@@ -24,6 +24,6 @@ public interface Promise<CLOSURE> {
 		void onDone (Object result);
 	}
 	public interface FCallback {
-		void onFail (Throwable throwable);
+		void onFail (Object throwable);
 	}
 }

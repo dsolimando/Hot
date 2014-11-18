@@ -29,9 +29,9 @@ public abstract class AbstractPromise<CLOSURE> implements Promise<CLOSURE> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Promise<CLOSURE> _fail(final FCallback callback) {
-		promise.fail(new FailCallback<Throwable>() {
+		promise.fail(new FailCallback<Object>() {
 			@Override
-			public void onFail(Throwable throwable) {
+			public void onFail(Object throwable) {
 				callback.onFail(throwable);
 			}
 		});
