@@ -193,14 +193,14 @@ class TestSecuredRests {
 	
 	static def main(args) {
 		
-//		def test = new TestSecuredRests()
-//		
-//		System.setProperty("configFileLocation", "be/icode/hot/test/shows/secured-config.json")
-//		
-//		def server = test.createServer()
-//		
-//		server.start()
+		def test = new TestSecuredRests()
 		
-		mongoTest()
+		System.setProperty("configFileLocation", "be/icode/hot/test/shows/secured-config.json")
+		
+		def server = test.createServer()
+		
+		server.start()
+		
+//		mongoTest()
 	}
 }

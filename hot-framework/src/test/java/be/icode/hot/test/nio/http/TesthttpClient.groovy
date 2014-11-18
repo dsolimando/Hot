@@ -2,9 +2,6 @@ package be.icode.hot.test.nio.http;
 
 import static org.junit.Assert.*
 
-import groovy.transform.CompileStatic;
-
-import java.util.Map;
 import java.util.concurrent.Executors
 
 import javax.script.CompiledScript
@@ -13,7 +10,6 @@ import javax.xml.parsers.DocumentBuilderFactory
 
 import org.apache.commons.io.IOUtils
 import org.codehaus.jackson.map.ObjectMapper
-import org.eclipse.jetty.server.HttpConfiguration
 import org.eclipse.jetty.server.HttpConnectionFactory
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
@@ -21,7 +17,7 @@ import org.eclipse.jetty.server.SslConnectionFactory
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.util.ssl.SslContextFactory
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.junit.Test
 import org.mozilla.javascript.Scriptable
 import org.python.apache.xerces.jaxp.DocumentBuilderFactoryImpl
@@ -32,14 +28,13 @@ import be.icode.hot.Script
 import be.icode.hot.js.JSScriptExecutor
 import be.icode.hot.js.JsMapConverter
 import be.icode.hot.nio.http.GroovyHttpClient
-import be.icode.hot.nio.http.HttpDataSerializer;
+import be.icode.hot.nio.http.HttpDataSerializer
 import be.icode.hot.nio.http.JsHttpClient
 import be.icode.hot.nio.http.PythonHttpClient
 import be.icode.hot.nio.http.SSLContextBuilder
 import be.icode.hot.python.PyDictionaryConverter
 import be.icode.hot.python.PythonScriptExecutor
-import be.icode.hot.spring.config.ThreadPoolsConfig;
-import be.icode.hot.test.promises.TestPromises
+import be.icode.hot.spring.config.ThreadPoolsConfig
 
 import com.thoughtworks.xstream.XStream
 
@@ -577,28 +572,5 @@ class TesthttpClient {
 		runPyHttpsClient 'http-client-post-xml.py', server
 		
 		server.threadPool.join()
-	}
-	
-	def static main(args)  {
-		
-		def scell = [seller:[email:'dsolimando@gmail.com',name:"Damien Solimando"]]
-		def data = [
-				key:'gDdRF4gzxPwYZyLmVQYvyQ',
-				message:[
-					html:'<div>Dear ${scell.seller.name}<br> Your item has just been sold</div>',
-					subject:'You got a mail',
-					from_email:'admin@scell.it',
-					to: [
-						[ 
-							email: "${scell.seller.email}",
-							name: "${scell.seller.name}",
-							type: 'to'
-						]
-					]
-				],
-				async:true
-			]
-		ObjectMapper om = new ObjectMapper()
-		om.readVa
 	}
 }
