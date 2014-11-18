@@ -166,8 +166,6 @@ public class Hot {
 		
 		ServletHolder restHolder = new ServletHolder(RestClosureServlet.class)
 		restHolder.name = "hot-rest"
-//		restHolder.initParameters["contextClass"] = "org.springframework.web.context.support.AnnotationConfigWebApplicationContext"
-//		restHolder.initParameters["contextConfigLocation"] = "be.icode.hot.spring.config.RestShowConfig"
 		servletContextHandler.addServlet(restHolder, "/rest/*")
 		
 		ServletHolder websocketHolder = new ServletHolder(DispatcherServlet.class)
@@ -184,11 +182,8 @@ public class Hot {
 			servletContextHandler.addServlet(datastoreHolder, "/data/*")
 		}
 		
-		
 		ServletHolder staticHolder = new ServletHolder(AsyncStaticResourceServlet.class)
 		staticHolder.name = "hot-static"
-//		staticHolder.initParameters["contextClass"] = "org.springframework.web.context.support.AnnotationConfigWebApplicationContext"
-//		staticHolder.initParameters["contextConfigLocation"] = "be.icode.hot.spring.config.ControllersConfig"
 		servletContextHandler.addServlet(staticHolder, "/*")
 
 		server.start()
@@ -225,16 +220,23 @@ public class Hot {
 		// create web.xml webapp descriptor
 		def webxml = new File (webinf, "web.xml")
 		def webxmltpl = getClass().getResourceAsStream("/jee/web-tpl.xml").text.trim()
+		if (config.authList && !config.authList.isEmpty()) {
+			webxmltpl = getClass().getResourceAsStream("/jee/web-tpl-auth-contextLoaderListener.xml").text.trim() + webxmltpl
+		} else {
+			webxmltpl = getClass().getResourceAsStream("/jee/web-tpl-contextLoaderListener.xml").text.trim() + webxmltpl
+		}
 		def restds = config.dataSources.find {
 			it.rest == true
 		}
 		if (restds)
 			webxmltpl += "\n\n"+getClass().getResourceAsStream("/jee/web-tpl-datastore.xml").text.trim()
-		webxml.text = """<?xml version="1.0" encoding="UTF-8"?>
-<web-app>
+		webxml.text = """
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.1">
 			${webxmltpl}
 </web-app>
 		""".trim()
+		
 		// Make a copy of resources
 		def warClassesFolder = new File (build,"classes")
 		warClassesFolder.mkdir()
@@ -281,20 +283,34 @@ public class Hot {
 		// Create log4j.xml
 		def logFile = new File (warClassesFolder.path+"/log4j.xml")
 		logFile.text = """
-			<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-				  <appender name="console" class="org.apache.log4j.ConsoleAppender">
-					<param name="Target" value="System.out"/>
-					<layout class="org.apache.log4j.PatternLayout">
-					  <param name="ConversionPattern" value="%-5p %c{1} - %m%n"/>
-					</layout>
-				  </appender>
-				
-				  <root>
-					<priority value ="debug" />
-					<appender-ref ref="console" />
-				  </root>
-				  
-			</log4j:configuration>
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%19d{ISO8601} [%t] [ %-5p ] [ %C{1} ] [%l] - %m%n" />
+		</layout>
+	</appender>
+
+	<logger name="org.springframework" additivity="false">
+		<level value="debug" />
+		<appender-ref ref="console" />
+	</logger>
+
+	<logger name="be.icode.hot" additivity="false">
+		<level value="debug" />
+		<appender-ref ref="console" />
+	</logger>
+
+	<logger name="org.eclipse.jetty" additivity="false">
+		<level value="info" />
+		<appender-ref ref="console" />
+	</logger>
+
+	<root>
+		<level value="off" />
+	</root>
+</log4j:configuration>
+
 		"""
 		// ant war task
 		def params = [
@@ -309,8 +325,7 @@ public class Hot {
 			]
 		
 		// write war hot config file
-		new File(warClassesFolder.path+"/"+Project.CONFIG_FILENAME).text = project.printJson()
-		
+		project.toJSON(new File(warClassesFolder.path+"/"+Project.CONFIG_FILENAME),config)
 		params
 	}
 	
@@ -904,6 +919,10 @@ usage: hot <command> <options>
 		
 		def writeConfig  = { config ->
 			objectMapper.writeValue getConfigFile(), config
+		}
+		
+		def toJSON(file, config) {
+			objectMapper.writeValue file, config
 		}
 		
 		def getBuildFolder() {
