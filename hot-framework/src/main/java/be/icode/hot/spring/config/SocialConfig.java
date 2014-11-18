@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -43,7 +44,7 @@ public class SocialConfig implements SocialConfigurer {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SocialConfig.class);
 
-	@Inject
+	@Autowired
 	CommonConfig commonConfig;
 	
 	@Override
