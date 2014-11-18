@@ -33,6 +33,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.social.UserIdSource;
 import org.springframework.social.connect.UsersConnectionRepository;
 import org.springframework.social.security.SocialAuthenticationProvider;
@@ -49,6 +50,7 @@ import be.icode.hot.spring.config.HotConfig.Auth;
 import be.icode.hot.spring.config.HotConfig.AuthType;
 import be.icode.hot.spring.config.HotConfig.DBEngine;
 import be.icode.hot.spring.config.HotConfig.DataSource;
+import be.icode.hot.spring.security.AntPathContentTypeRequestMatcher;
 import be.icode.hot.spring.security.OAuth2ClientAuthenticationFilter;
 
 @Configuration
@@ -172,7 +174,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					}
 				}
 			} else if (hotauth.ldapServerUrl != null && !hotauth.ldapServerUrl.isEmpty()) {
-				LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> ldapConfigurer = and.ldapAuthentication().contextSource().url(hotauth.ldapServerUrl).and();
+				LdapAuthenticationProviderConfigurer<AuthenticationManagerBuilder> ldapConfigurer = and.ldapAuthentication()
+						.contextSource().url(hotauth.ldapServerUrl).and();
 				
 				if (hotauth.userDnPatterns != null && !(hotauth.userDnPatterns.length == 0)) {
 					ldapConfigurer = ldapConfigurer.userDnPatterns(hotauth.userDnPatterns);
@@ -204,7 +207,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	@Configuration
-	@Order(3)
+	@Order(4)
 	public static class StaticResourcesConfig extends WebSecurityConfigurerAdapter {
 		
 		@Autowired
@@ -227,7 +230,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			for (String path : commonConfig.secureDirs()) {
 				and = and.authorizeRequests().antMatchers(path+"/*").authenticated().and();
 			}
-			and = and.formLogin().and();
+			
+			if (getClass().getResource("/login.html") != null || getClass().getResource("/www/login.html") != null) {
+				and = and.formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll().and();
+			} else {
+				and = and.formLogin().and();
+			}
+			
 			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
 				if ((auth.getType() == AuthType.FACEBOOK
 						|| auth.getType() == AuthType.TWITTER
@@ -240,7 +249,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	@Configuration
-	@Order(2)
+	@Order(3)
 	public static class ClientAuthConfig extends WebSecurityConfigurerAdapter {
 		
 		@Autowired
@@ -268,7 +277,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	@Configuration
-	@Order(1)
+	@Order(2)
 	public static class RestShowsConfig extends WebSecurityConfigurerAdapter {
 		
 		@Autowired
@@ -311,6 +320,87 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					}
 				}
 			}
+			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
+				if ((auth.getType() == AuthType.FACEBOOK
+						|| auth.getType() == AuthType.TWITTER
+						|| auth.getType() == AuthType.GOOGLE)) {
+					and = and.apply(springSocialConfigurer).and();
+					break;
+				}
+			}
+		}
+	}
+	
+	@Configuration
+	@Order(1)
+	public static class HtmlRestShowsConfig extends WebSecurityConfigurerAdapter {
+		
+		@Autowired
+		ShowConfig showConfig;
+		
+		@Autowired
+		CommonConfig commonConfig;
+		
+		@Autowired
+		SpringSocialConfigurer springSocialConfigurer;
+		
+		@Override
+		protected void configure(HttpSecurity http) throws Exception {
+			
+			HttpSecurity and = http.requestMatcher(
+					new AntPathContentTypeRequestMatcher(
+							"text/html,application/xhtml", 
+							new AntPathRequestMatcher("/rest/**")))
+							.headers().cacheControl().disable();
+			
+			boolean staticLoginPage = false;
+			boolean hasauth = false;
+			String dynamicLoginPage = null;
+			
+			if (getClass().getResource("/www/login.html") != null){
+				staticLoginPage = true;
+			}
+			
+			for (Show<?,?> show : showConfig.showsContext().getShows()) {
+				for (ClosureRequestMapping requestMapping :show.getRest().getRequestMappings()) {
+					if (requestMapping.isAuth()) {
+						hasauth = true;
+						List<String> paths = new ArrayList<>();
+						for (String path : requestMapping.getPaths()) {
+								paths.add("/rest"+path);
+								
+						}
+						if (requestMapping.getRoles().length > 0) {
+							and = and.authorizeRequests()
+									.antMatchers(
+											HttpMethod.valueOf(requestMapping.getRequestMethod().name()), 
+											paths.toArray(new String[]{}))
+									.hasAnyRole(requestMapping.getRoles()).and();
+						} else {
+							and = and.authorizeRequests()
+									.antMatchers(
+											HttpMethod.valueOf(requestMapping.getRequestMethod().name()), 
+											paths.toArray(new String[]{}))
+									.authenticated()
+									.and();
+						}
+					} else {
+						for (String path : requestMapping.getPaths()) {
+							if (path.startsWith("/login")) {
+								dynamicLoginPage = "/rest"+path;
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			if (hasauth && dynamicLoginPage != null) {
+				and.formLogin().loginPage(dynamicLoginPage).loginProcessingUrl("/login").permitAll();
+			} else if (hasauth && staticLoginPage) {
+				and.formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll().and();
+			}
+			
 			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
 				if ((auth.getType() == AuthType.FACEBOOK
 						|| auth.getType() == AuthType.TWITTER
@@ -409,6 +499,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Bean
 	public PasswordEncoder passwordEncoder () {
 		return new BCryptPasswordEncoder();
+	}
+	
+	public static void main(String[] args) {
+		System.out.println("/login".startsWith("/login"));
 	}
 	
 //	public UserDetailsService hotJdbcUserDetailsService(final DB<Map<String, Object>> db, final Auth auth) {
