@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 import org.springframework.social.connect.ConnectionData;
 import org.springframework.social.security.SocialAuthenticationToken;
 
@@ -24,48 +24,64 @@ import be.icode.hot.utils.ScriptMapConverter;
 public class GroovyRestRequest extends RestRequest<Map<?, ?>> {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(GroovyRestRequest.class);
+	
+	Map<String, Object> user = new HashMap<>();
 
 	public GroovyRestRequest(
 			Options options, 
 			ScriptMapConverter<Map<?, ?>> scriptMapConverter, 
 			HttpDataDeserializer httpDataDeserializer,
 			HttpServletRequest httpServletRequest,
-			byte[] body) {
+			byte[] body,
+			Authentication authentication) {
 		super(options, scriptMapConverter, httpDataDeserializer, httpServletRequest, body);
+		initUser(authentication);
 	}
 	
-	@Override
-	public Map<String, Object> getUser() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	private void initUser(Authentication authentication) {
 		
-		LOGGER.debug("Authentication Object found in context holder: "+authentication);
-		
-		if (authentication == null) return null;
+		if (authentication == null) return;
 		
 		LOGGER.debug("Authentication Type: "+authentication.getClass());
-
 		
-		Map<String, Object> map = new HashMap<>();
 		if (authentication instanceof UsernamePasswordAuthenticationToken) {
 			UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = (UsernamePasswordAuthenticationToken) authentication;
-			map.put("name", usernamePasswordAuthenticationToken.getPrincipal());
-			map.put("password", usernamePasswordAuthenticationToken.getCredentials());
-			List<String> roles = new ArrayList<>();
-			for (GrantedAuthority authority : usernamePasswordAuthenticationToken.getAuthorities()) {
-				roles.add(authority.getAuthority());
+			
+			if (usernamePasswordAuthenticationToken.getPrincipal() instanceof LdapUserDetailsImpl) {
+				LdapUserDetailsImpl detailsImpl = (LdapUserDetailsImpl) usernamePasswordAuthenticationToken.getPrincipal();
+				user.put("name", detailsImpl.getUsername());
+				user.put("password", detailsImpl.getPassword());
+				user.put("dn", detailsImpl.getDn());
+				List<String> roles = new ArrayList<>();
+				for (GrantedAuthority authority : detailsImpl.getAuthorities()) {
+					roles.add(authority.getAuthority());
+				}
+				user.put("roles", roles);
+			} else {
+				user.put("name", usernamePasswordAuthenticationToken.getPrincipal());
+				user.put("password", usernamePasswordAuthenticationToken.getCredentials());
+				List<String> roles = new ArrayList<>();
+				for (GrantedAuthority authority : usernamePasswordAuthenticationToken.getAuthorities()) {
+					roles.add(authority.getAuthority());
+				}
+				user.put("roles", roles);
 			}
-			map.put("roles", roles);
+			
 		} else if (authentication instanceof SocialAuthenticationToken) {
 			SocialAuthenticationToken socialAuthenticationToken = (SocialAuthenticationToken) authentication;
 			ConnectionData connectionData = socialAuthenticationToken.getConnection().createData();
-			map.put("name", connectionData.getDisplayName());
-			map.put("accessToken", connectionData.getAccessToken());
-			map.put("picture", connectionData.getImageUrl());
-			map.put("link", connectionData.getProfileUrl());
-			map.put("id", connectionData.getProviderUserId());
-			map.put("provider", connectionData.getProviderId());
-			map.put("expiresIn", connectionData.getExpireTime());
+			user.put("name", connectionData.getDisplayName());
+			user.put("accessToken", connectionData.getAccessToken());
+			user.put("picture", connectionData.getImageUrl());
+			user.put("link", connectionData.getProfileUrl());
+			user.put("id", connectionData.getProviderUserId());
+			user.put("provider", connectionData.getProviderId());
+			user.put("expiresIn", connectionData.getExpireTime());
 		}
-		return map;
+	}
+	
+	@Override
+	public Map<?, ?> getUser() {
+		return user;
 	}
 }
