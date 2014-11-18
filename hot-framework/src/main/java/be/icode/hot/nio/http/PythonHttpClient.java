@@ -2,6 +2,7 @@ package be.icode.hot.nio.http;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import javax.xml.parsers.DocumentBuilder;
 
@@ -22,26 +23,38 @@ import be.icode.hot.promises.Deferred;
 import be.icode.hot.promises.python.PythonDeferred;
 import be.icode.hot.python.PyDictionaryConverter;
 
+import com.google.common.net.HttpHeaders;
+
 public class PythonHttpClient extends HttpClient<PyFunction, PyDictionary> {
 
 	private PyDictionaryConverter pyDataConverter;
 	
 	private DocumentBuilder documentBuilder;
 	
-	public PythonHttpClient(NioClientSocketChannelFactory nioClientSocketChannelFactory, 
+	public PythonHttpClient(
+			ExecutorService eventLoop,
+			NioClientSocketChannelFactory nioClientSocketChannelFactory, 
 			SSLContextBuilder sslContextBuilder, 
 			ObjectMapper objectMapper, 
 			HttpDataSerializer httpDataSerializer,
 			DocumentBuilder documentBuilder,
 			PyDictionaryConverter pyDataConverter) {
-		super(nioClientSocketChannelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
+		super(eventLoop,nioClientSocketChannelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
 		this.pyDataConverter = pyDataConverter;
 		this.documentBuilder = documentBuilder;
 	}
 
 	@Override
 	public Request<PyFunction, PyDictionary> buildRequest(PyDictionary options) {
-		PyRequest request = new PyRequest(options, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer, documentBuilder, pyDataConverter);
+		PyRequest request = new PyRequest(
+				options,
+				eventLoop,
+				channelFactory, 
+				sslContextBuilder, 
+				objectMapper, 
+				httpDataSerializer, 
+				documentBuilder, 
+				pyDataConverter);
 		request.init(channelFactory);
 		return request;
 	}
@@ -50,9 +63,17 @@ public class PythonHttpClient extends HttpClient<PyFunction, PyDictionary> {
 		
 		PyDictionaryConverter pyDataConverter;
 
-		public PyRequest(Map<String, Object> options, ChannelFactory channelFactory, SSLContextBuilder sslContextBuilder, ObjectMapper objectMapper,
-				HttpDataSerializer httpDataSerializer, DocumentBuilder documentBuilder, PyDictionaryConverter pyDataConverter) {
-			super(options, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
+		public PyRequest(
+				Map<String, Object> options, 
+				ExecutorService eventLoop,
+				ChannelFactory channelFactory, 
+				SSLContextBuilder sslContextBuilder, 
+				ObjectMapper objectMapper,
+				HttpDataSerializer httpDataSerializer, 
+				DocumentBuilder documentBuilder, 
+				PyDictionaryConverter pyDataConverter) {
+			
+			super(options, eventLoop, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
 			this.pyDataConverter = pyDataConverter;
 			this.documentBuilder = documentBuilder;
 		}
@@ -77,7 +98,6 @@ public class PythonHttpClient extends HttpClient<PyFunction, PyDictionary> {
 			return Py.JavaError(exception);
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		PyDictionary fromJSON(byte[] json) throws JsonParseException, JsonMappingException, IOException {
 			return pyDataConverter.toScriptMap(objectMapper.readValue(json, Map.class));
@@ -110,6 +130,19 @@ public class PythonHttpClient extends HttpClient<PyFunction, PyDictionary> {
 		@Override
 		protected byte[] processRequestData() {
 			return processRequestData(null);
+		}
+		
+		@Override
+		protected void addLoginPasswordBase64(String base64Data) {
+			Object o = super.options.get(HEADERS);
+			if (o != null) {
+				PyDictionary headers = (PyDictionary) o;
+				headers.put(HttpHeaders.AUTHORIZATION, base64Data);
+			} else {
+				PyDictionary headers = new PyDictionary();
+				headers.put(HttpHeaders.AUTHORIZATION, base64Data);
+				super.options.put(HEADERS, headers);
+			}
 		}
 		
 		public static class PyResponse extends Response<PyFunction, PyDictionary>{

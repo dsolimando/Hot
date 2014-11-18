@@ -5,8 +5,10 @@ import groovy.util.XmlSlurper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -17,6 +19,8 @@ import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.xml.sax.SAXException;
 
+import com.google.common.net.HttpHeaders;
+
 import be.icode.hot.nio.http.Request.Response;
 import be.icode.hot.promises.Deferred;
 import be.icode.hot.promises.groovy.GroovyDeferred;
@@ -25,8 +29,13 @@ public class GroovyHttpClient extends HttpClient<Closure<?>, Map<String, Object>
 
 	XmlSlurper xmlSlurper;
 	
-	public GroovyHttpClient(NioClientSocketChannelFactory channelFactory, SSLContextBuilder sslContextBuilder, ObjectMapper objectMapper, HttpDataSerializer httpDataSerializer)  {
-		super(channelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
+	public GroovyHttpClient(
+			ExecutorService eventLoop,
+			NioClientSocketChannelFactory channelFactory, 
+			SSLContextBuilder sslContextBuilder, 
+			ObjectMapper objectMapper, 
+			HttpDataSerializer httpDataSerializer)  {
+		super(eventLoop, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
 		try {
 			xmlSlurper = new XmlSlurper();
 		} catch (ParserConfigurationException | SAXException e) {}
@@ -34,7 +43,14 @@ public class GroovyHttpClient extends HttpClient<Closure<?>, Map<String, Object>
 
 	@Override
 	public Request<Closure<?>, Map<String, Object>> buildRequest(Map<String, Object> options) {
-		Request<Closure<?>, Map<String, Object>> request = new GroovyRequest((Map<String, Object>) options, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer, xmlSlurper);
+		Request<Closure<?>, Map<String, Object>> request = new GroovyRequest(
+				(Map<String, Object>) options,
+				eventLoop,
+				channelFactory, 
+				sslContextBuilder, 
+				objectMapper, 
+				httpDataSerializer, 
+				xmlSlurper);
 		request.init(channelFactory);
 		return request;
 	}
@@ -44,12 +60,13 @@ public class GroovyHttpClient extends HttpClient<Closure<?>, Map<String, Object>
 		XmlSlurper xmlSlurper;
 		
 		public GroovyRequest(Map<String, Object> options, 
+				ExecutorService eventLoop,
 				ChannelFactory channelFactory, 
 				SSLContextBuilder sslContextBuilder, 
 				ObjectMapper objectMapper,
 				HttpDataSerializer httpDataSerializer,
 				XmlSlurper xmlSlurper) {
-			super(options, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
+			super(options, eventLoop, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
 			this.xmlSlurper = xmlSlurper;
 		}
 
@@ -95,6 +112,20 @@ public class GroovyHttpClient extends HttpClient<Closure<?>, Map<String, Object>
 		@Override
 		protected Object fromXML(byte[] xmlData) throws Exception {
 			return xmlSlurper.parse(new ByteArrayInputStream(xmlData));
+		}
+		
+		@SuppressWarnings("unchecked")
+		@Override
+		protected void addLoginPasswordBase64(String base64Data) {
+			Object o = super.options.get(HEADERS);
+			if (o != null) {
+				Map<String, Object> headers = (Map<String, Object>) o;
+				headers.put(HttpHeaders.AUTHORIZATION, base64Data);
+			} else {
+				Map<String, Object> headers = new HashMap<>();
+				headers.put(HttpHeaders.AUTHORIZATION, base64Data);
+				super.options.put(HEADERS, headers);
+			}
 		}
 	}
 	

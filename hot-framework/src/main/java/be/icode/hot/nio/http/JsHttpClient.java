@@ -2,6 +2,7 @@ package be.icode.hot.nio.http;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import javax.xml.parsers.DocumentBuilder;
 
@@ -23,6 +24,8 @@ import be.icode.hot.nio.http.Request.Response;
 import be.icode.hot.promises.Deferred;
 import be.icode.hot.promises.js.JSDeferred;
 
+import com.google.common.net.HttpHeaders;
+
 public class JsHttpClient extends HttpClient<NativeFunction, NativeObject> {
 
 	final Scriptable globalScope;
@@ -31,14 +34,16 @@ public class JsHttpClient extends HttpClient<NativeFunction, NativeObject> {
 	
 	final JsMapConverter jsDataConverter;
 	
-	public JsHttpClient(NioClientSocketChannelFactory nioClientSocketChannelFactory, 
+	public JsHttpClient(
+			ExecutorService eventLoop,
+			NioClientSocketChannelFactory nioClientSocketChannelFactory, 
 			SSLContextBuilder sslContextBuilder, 
 			ObjectMapper objectMapper, 
 			HttpDataSerializer httpDataSerializer,
 			DocumentBuilder documentBuilder,
 			Scriptable globalScope, 
 			JsMapConverter jsDataConverter) {
-		super(nioClientSocketChannelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
+		super(eventLoop, nioClientSocketChannelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
 		this.globalScope = globalScope;
 		this.documentBuilder = documentBuilder;
 		this.jsDataConverter = jsDataConverter;
@@ -46,7 +51,16 @@ public class JsHttpClient extends HttpClient<NativeFunction, NativeObject> {
 
 	@Override
 	public Request<NativeFunction, NativeObject> buildRequest(NativeObject options) {
-		Request<NativeFunction, NativeObject> request = new JsRequest(options, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer, documentBuilder, globalScope, jsDataConverter);
+		Request<NativeFunction, NativeObject> request = new JsRequest(
+				options, 
+				eventLoop,
+				channelFactory, 
+				sslContextBuilder, 
+				objectMapper, 
+				httpDataSerializer, 
+				documentBuilder, 
+				globalScope, 
+				jsDataConverter);
 		request.init(channelFactory);
 		return request;
 	}
@@ -57,6 +71,7 @@ public class JsHttpClient extends HttpClient<NativeFunction, NativeObject> {
 		final JsMapConverter 	jsDataConverter;
 		
 		public JsRequest(Map<String, Object> options, 
+				ExecutorService eventLoop,
 				ChannelFactory channelFactory, 
 				SSLContextBuilder sslContextBuilder, 
 				ObjectMapper objectMapper, 
@@ -64,7 +79,7 @@ public class JsHttpClient extends HttpClient<NativeFunction, NativeObject> {
 				DocumentBuilder documentBuilder,
 				Scriptable globalScope, 
 				JsMapConverter jsDataConverter) {
-			super(options, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
+			super(options, eventLoop, channelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
 			this.globalScope = globalScope;
 			this.jsDataConverter = jsDataConverter;
 			this.documentBuilder = documentBuilder;
@@ -122,12 +137,25 @@ public class JsHttpClient extends HttpClient<NativeFunction, NativeObject> {
 				MediaType contentType = ct;
 				if (contentType == null) contentType = requestContentType();
 				try {
-					return httpDataSerializer.serialize(jsDataConverter.toMap((NativeObject) options.get(DATA)), contentType);
+					return httpDataSerializer.serialize(options.get(DATA), contentType);
 				} catch (HttpDataSerializationException e) {
 					return null;
 				}
 			}
 			return null;
+		}
+		
+		@Override
+		protected void addLoginPasswordBase64(String base64Data) {
+			Object o = super.options.get(HEADERS);
+			if (o != null) {
+				NativeObject headers = (NativeObject)o;
+				headers.put(HttpHeaders.AUTHORIZATION, headers, base64Data);
+			} else {
+				NativeObject headers = new NativeObject();
+				headers.put(HttpHeaders.AUTHORIZATION,headers, base64Data);
+				super.options.put(HEADERS, headers);
+			}
 		}
 	}
 	
