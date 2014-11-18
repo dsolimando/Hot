@@ -1,18 +1,13 @@
 package be.icode.hot.shows;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.HandlerMapping;
 
 import be.icode.hot.shows.ClosureRequestMapping.Options;
@@ -23,8 +18,6 @@ import com.google.common.net.HttpHeaders;
 
 public abstract class RestRequest<T extends Map<?, ?>> {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(RestRequest.class);
-
 	T pathParams;
 	
 	Principal principal;
@@ -38,6 +31,8 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	HttpDataDeserializer httpDatadeSerializer;
 	
 	byte[] body;
+	
+	protected Authentication authentication;
 	
 	@SuppressWarnings("unchecked")
 	public RestRequest(
