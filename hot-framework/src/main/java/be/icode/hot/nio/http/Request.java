@@ -3,6 +3,7 @@ package be.icode.hot.nio.http;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,6 +11,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -40,7 +42,10 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.codec.Base64;
 import org.w3c.dom.Document;
 
 import be.icode.hot.nio.http.HttpDataSerializer.HttpDataSerializationException;
@@ -50,6 +55,8 @@ import be.icode.hot.promises.Promise;
 import com.google.common.net.HttpHeaders;
 
 public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(Request.class);
 	
 	protected static final String TARGET_URL = "url";
 	protected static final String TYPE = "type";
@@ -62,6 +69,8 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 	protected static final String SUCCESS = "success";
 	protected static final String ERROR = "error";
 	protected static final String PROGRESS = "pagress";
+	protected static final String USERNAME = "username";
+	protected static final String PASSWORD = "password";
 	protected static final String CANCEL_MESSAGE 	= "Request to Server has been canceled";
 	
 	private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/octet-stream";
@@ -71,6 +80,7 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 	final SSLContextBuilder sslContextBuilder;
 	final ObjectMapper 		objectMapper;
 	final HttpDataSerializer httpDataSerializer;
+	final ExecutorService 	eventLoop;
 	
 	ClientBootstrap 		clientBootstrap;
 	
@@ -87,8 +97,9 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 	DocumentBuilder documentBuilder;
 	
 	public Request(Map<String, Object> options, 
+			ExecutorService eventLoop,
 			ChannelFactory channelFactory, 
-			SSLContextBuilder sslContextBuilder, 
+			SSLContextBuilder sslContextBuilder,
 			ObjectMapper objectMapper,
 			HttpDataSerializer httpDataSerializer) {
 		
@@ -96,6 +107,7 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 		this.objectMapper = objectMapper;
 		this.sslContextBuilder = sslContextBuilder;
 		this.httpDataSerializer = httpDataSerializer;
+		this.eventLoop = eventLoop;
 	}
 	
 	@Override
@@ -258,7 +270,7 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 	@SuppressWarnings("unchecked")
 	private void loadOptions (Map<String, Object> options) {
 		this.options = new HashMap<>();
-		this.options.putAll(options);
+//		this.options.putAll(options);
 		if (options.get(TYPE) != null) {
 			this.options.put(TYPE, HttpMethod.valueOf(options.get(TYPE).toString()));
 		} else {
@@ -284,6 +296,22 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 		
 		if (options.get(HEADERS) != null && options.get(HEADERS) instanceof Map) {
 			this.options.put(HEADERS, options.get(HEADERS));
+		}
+		
+		if (options.get(USERNAME) != null) {
+			String password = "";
+			if (options.get(PASSWORD) != null) {
+				password = options.get(PASSWORD).toString();
+			}
+			
+			try {
+				String base64Auth = "Basic "+ new String(Base64.encode(String.format("%s:%s", options.get(USERNAME), password).getBytes("UTF-8")));
+				LOGGER.debug("Base64 auth: "+base64Auth);
+				addLoginPasswordBase64(base64Auth);
+				
+			} catch (UnsupportedEncodingException e) {
+				LOGGER.error("",e);
+			}
 		}
 		
 		if (options.get(SUCCESS) != null) {
@@ -321,6 +349,8 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 			this.options.put(DATA, options.get(DATA));
 		}
 	}
+	
+	protected abstract void addLoginPasswordBase64(String base64Data);
 	
 	private boolean convertBoolean (Object input) {
 		if (input instanceof String) {
@@ -404,19 +434,30 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 		}
 		
 		@Override
-		public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+		public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception {
 //			super.exceptionCaught(ctx, e);
-			deferred.reject(null, e.getCause().getMessage(), e.getCause());
-			if (errorClosure != null) {
-				executeErrorClosure(null, e.getCause().getMessage(), e.getCause());
-			}
+			if (LOGGER.isDebugEnabled())
+				LOGGER.debug("",e);
+			
+			if (deferred.getPromise().isRejected()) 
+				return;
+			
+			eventLoop.execute(new Runnable() {
+				@Override
+				public void run() {
+					deferred.reject(e.getCause(), e.getCause().getMessage(), null);
+					if (errorClosure != null) {
+						executeErrorClosure(null, e.getCause().getMessage(), e.getCause());
+					}
+				}
+			});
 		}
 
 		@Override
 		public void messageReceived(ChannelHandlerContext ctx, MessageEvent event) throws Exception {
 			if (!chunked) {
 				
-				HttpResponse httpResponse = (HttpResponse) event.getMessage();
+				final HttpResponse httpResponse = (HttpResponse) event.getMessage();
 				mapResponseParameters(httpResponse);
 				
 				String contentType = httpResponse.headers().get(com.google.common.net.HttpHeaders.CONTENT_TYPE);
@@ -432,12 +473,17 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 					chunked = true;
 				} else {
 					byte[] data = httpResponse.getContent().array();
-					Object processedResponseData = ((Boolean)options.get(PROCESS_RESPONSE))?processResponseData(data):processChunkData(data);
+					final Object processedResponseData = ((Boolean)options.get(PROCESS_RESPONSE))?processResponseData(data):processChunkData(data);
 					
-					if (successClosure != null) {
-						executeSuccessClosure(processedResponseData, response.statusText, response);
-					}
-					deferred.resolve(processedResponseData, httpResponse.getStatus().getReasonPhrase(), response);
+					eventLoop.execute(new Runnable() {
+						@Override
+						public void run() {
+							if (successClosure != null) {
+								executeSuccessClosure(processedResponseData, response.statusText, response);
+							}
+							deferred.resolve(processedResponseData, httpResponse.getStatus().getReasonPhrase(), response);
+						}
+					});
 //					eventLoopPool.execute(new Runnable() {
 //						@Override
 //						public void run() {
@@ -449,11 +495,16 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 			} else {
 				HttpChunk chunk = (HttpChunk)event.getMessage();
 				if (chunk.isLast()) {
-					Object processedResponseData = processResponseData(chunkedBytes.toByteArray());
-					if (successClosure != null) {
-						executeSuccessClosure(processedResponseData, response.statusText, response);
-					}
-					deferred.resolve(processedResponseData, response.statusText, response);
+					final Object processedResponseData = processResponseData(chunkedBytes.toByteArray());
+					eventLoop.execute(new Runnable() {
+						@Override
+						public void run() {
+							if (successClosure != null) {
+								executeSuccessClosure(processedResponseData, response.statusText, response);
+							}
+							deferred.resolve(processedResponseData, response.statusText, response);
+						}
+					});
 //					eventLoopPool.execute(new Runnable() {
 //						@Override
 //						public void run() {
@@ -462,11 +513,16 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 //					});
 				} else {
 					byte[] receivedBytes = chunk.getContent().array();
-					Object processedChunk = processChunkData(receivedBytes);
-					if (progressClosure != null) {
-						executeProgressClosure(processedChunk, response.statusText, response);
-					}
-					deferred.notify(processedChunk, response.statusText, response);
+					final Object processedChunk = processChunkData(receivedBytes);
+					eventLoop.execute(new Runnable() {
+						@Override
+						public void run() {
+							if (progressClosure != null) {
+								executeProgressClosure(processedChunk, response.statusText, response);
+							}
+							deferred.notify(processedChunk, response.statusText, response);
+						}
+					});
 					chunkedBytes.write(receivedBytes);
 				}
 			}
@@ -479,13 +535,15 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 				try {
 					return fromJSON(data);
 				} catch (IOException e) {
-					throw new RuntimeException(e.getMessage(), e.getCause());
+					LOGGER.error("Failed to convert JSON response",e);
+					return new String(data,response.encoding);
 				}
 			} else if (response.contentType.equals(MediaType.APPLICATION_XML.toString())) {
 				try {
 					return fromXML(data);
 				} catch (Exception e) {
-					throw new RuntimeException(e.getMessage(), e.getCause());
+					LOGGER.error("Failed to convert XML response",e);
+					return new String(data,response.encoding);
 				}
 			} else {
 				return new String(data,response.encoding);
