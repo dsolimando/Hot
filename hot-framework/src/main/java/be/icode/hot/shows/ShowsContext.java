@@ -233,7 +233,7 @@ public class ShowsContext implements  ApplicationEventPublisherAware, Applicatio
 				ExecutorService eventLoop = eventLoopFactory.eventLoop();
 				GroovyHttpClient groovyHttpClient = groovyHttpClientMap.get(eventLoop);
 				if (groovyHttpClient == null) {
-					groovyHttpClient = new GroovyHttpClient(nioClientSocketChannelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
+					groovyHttpClient = new GroovyHttpClient(eventLoop, nioClientSocketChannelFactory, sslContextBuilder, objectMapper, httpDataSerializer);
 					groovyHttpClientMap.put(eventLoop, groovyHttpClient);
 				}
 				show = new GroovyShow(showUrl, eventLoop, blockingThreadPool, groovyHttpClient, groovyScriptExecutor, taskManager, reactor, groovyDbMap);
@@ -242,6 +242,7 @@ public class ShowsContext implements  ApplicationEventPublisherAware, Applicatio
 				JsHttpClient jsHttpClient = jsHttpClientMap.get(eventLoop);
 				if (jsHttpClient == null) {
 					jsHttpClient = new JsHttpClient(
+							eventLoop,
 							nioClientSocketChannelFactory, 
 							sslContextBuilder, 
 							objectMapper, 
@@ -257,6 +258,7 @@ public class ShowsContext implements  ApplicationEventPublisherAware, Applicatio
 				PythonHttpClient pythonHttpClient = pyHttpClientMap.get(eventLoop);
 				if (pythonHttpClient == null) {
 					pythonHttpClient = new PythonHttpClient(
+							eventLoop,
 							nioClientSocketChannelFactory, 
 							sslContextBuilder, 
 							objectMapper, 
