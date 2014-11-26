@@ -12,6 +12,7 @@ import org.codehaus.jackson.map.SerializationConfig.Feature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -68,7 +69,7 @@ public class CommonConfig {
 		return new DataConverter();
 	}
 	
-	@Bean
+	@Bean(name="secureDirs")
 	public List<String> secureDirs () throws IOException {
 		
 		Resource[] secureMarkers;
@@ -101,8 +102,8 @@ public class CommonConfig {
 					if (securepath.isEmpty()) 
 						securepath = "/";
 					
-					if (LOGGER.isDebugEnabled()) 
-						LOGGER.debug("Adding secure path "+securepath);
+					if (LOGGER.isInfoEnabled()) 
+						LOGGER.info("Adding secure path "+securepath);
 					
 					paths.add(securepath);
 				} catch (Exception e) {
@@ -112,6 +113,55 @@ public class CommonConfig {
 		}
 		return paths;
 	}
+	
+	@Bean
+	public List<String> securityBypassDirs () throws IOException {
+		
+		URL configFileURL = configFileURL();
+		boolean appServer = false;
+		
+		List<String> secureDirs = secureDirs ();
+		List<String> paths = new ArrayList<>();
+		String path = null;
+		String projectDir = configFileURL.getPath().substring(0, configFileURL.getPath().lastIndexOf("/"));
+		
+		Resource[] projectResources;
+		// Application server
+		if (configFileURL().getPath().contains("WEB-INF/classes")) {
+			projectResources = applicationContext.getResources("classpath:**");
+			appServer = true;
+		} else {
+			projectResources = applicationContext.getResources("classpath*:/www/**");
+		}
+		
+		for (Resource resource : projectResources) {
+			
+			if (!resource.getFile().isDirectory()) continue;
+			
+			path = resource.getURL().getPath();
+			
+			if (appServer) {
+				path = path.split("WEB-INF/classes")[1];
+			} else {
+				path = path.split(projectDir+"/www")[1];
+			}
+			
+			path = path.substring(0, path.length()-1);
+			
+			if (path.isEmpty())
+				path = "/";
+			
+			if (!secureDirs.contains(path)) {
+				if (LOGGER.isInfoEnabled()) {
+					LOGGER.info("Path "+path +" will bypass security filter chain");
+				}
+				paths.add(path);
+			}
+		}
+		return paths;
+	}
+	
+	
 	
 	@Bean
 	public URL configFileURL() {

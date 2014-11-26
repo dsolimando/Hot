@@ -22,6 +22,8 @@ import org.springframework.security.config.annotation.authentication.configurers
 import org.springframework.security.config.annotation.authentication.configurers.provisioning.JdbcUserDetailsManagerConfigurer;
 import org.springframework.security.config.annotation.authentication.configurers.provisioning.UserDetailsManagerConfigurer.UserDetailsBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity.IgnoredRequestConfigurer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.GrantedAuthority;
@@ -221,6 +223,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		
 		@Autowired
 		SpringSocialConfigurer springSocialConfigurer;
+		
+		
+		@Override
+		public void configure(WebSecurity web) throws Exception {
+			super.configure(web);
+			
+			if (commonConfig.secureDirs().isEmpty()) return;
+			
+			IgnoredRequestConfigurer configurer = web.ignoring();
+			for (String path : commonConfig.securityBypassDirs()) {
+				configurer.antMatchers(path+"/*.*");
+			}
+		}
 		
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
