@@ -57,6 +57,13 @@ public class FileLoader {
 		}
 		
 		final ByteBuffer byteBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+		final ByteArrayOutputStream byteArrayOutputStream;
+		
+		if (touchCache) {
+			byteArrayOutputStream = new ByteArrayOutputStream();
+		} else {
+			byteArrayOutputStream = null;
+		}
 		
 		Set<OpenOption> options = new HashSet<>();
 		options.add(StandardOpenOption.READ);
@@ -67,23 +74,24 @@ public class FileLoader {
 
 			int pos = 0;
 			
-			final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-			
 			@Override
 			public void completed(Integer result, Void attachment) {
 				if (result == -1) {
 					deferred.resolve(null);
 					try {
-						byteArrayOutputStream.flush();
-						filecache.put(path, byteArrayOutputStream.toByteArray());
+						if (touchCache) {
+							byteArrayOutputStream.flush();
+							filecache.put(path, byteArrayOutputStream.toByteArray());
+						}
 						asyncChannel.close();
 					} catch (IOException e) {
 						LOGGER.error("",e);
 					}
 				} else {
 					deferred.notify(new Buffer(byteBuffer.array(), result));
-					if (touchCache)
+					if (touchCache) {
 						byteArrayOutputStream.write(byteBuffer.array(),0,result);
+					}
 					byteBuffer.clear();
 					pos += result;
 					asyncChannel.read(byteBuffer, pos, null, this);
@@ -105,7 +113,9 @@ public class FileLoader {
 		int length;
 		
 		public Buffer(byte[] content, int length) {
-			this.content = Arrays.copyOf(content, length);
+			this.content = new byte[length];
+//			this.content = Arrays.copyOf(content, length);
+			System.arraycopy(content, 0, this.content, 0, length);
 			this.length = length;
 		}
 		
