@@ -19,10 +19,7 @@ import org.springframework.security.concurrent.DelegatingSecurityContextExecutor
 
 import reactor.core.Environment;
 import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
-import reactor.spring.core.task.WorkQueueAsyncTaskExecutor;
 import be.icode.hot.utils.FileLoader;
-
-import com.lmax.disruptor.dsl.ProducerType;
 
 @Configuration
 @Import({CommonConfig.class})
@@ -62,11 +59,9 @@ public class ThreadPoolsConfig {
 	
 	@Bean(name="staticResourcesEventLoop")
 	public ExecutorService staticResourcesEventLoop() throws Exception {
-		WorkQueueAsyncTaskExecutor rbate = new WorkQueueAsyncTaskExecutor(reactorEnvironment())
-	        .setName("ringBufferAsyncTaskExecutor")
-	        .setBacklog(2048)
-	        .setThreads(1)
-	        .setProducerType(ProducerType.SINGLE);
+		RingBufferAsyncTaskExecutor rbate = new RingBufferAsyncTaskExecutor(reactorEnvironment())
+	        .setName("httpIOEventLoop")
+	        .setBacklog(2048);
 		rbate.afterPropertiesSet();
 		if (commonConfig != null && commonConfig.hotConfig().getAuthList().size() > 0) {
 			return new DelegatingSecurityContextExecutorService(rbate);
