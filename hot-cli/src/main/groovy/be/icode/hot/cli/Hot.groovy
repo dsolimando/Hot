@@ -84,13 +84,15 @@ public class Hot {
 			eclipseClassPath+= """<classpathentry kind="lib" path="${it.path}"/> """
 		}
 		file = new File ("lib")
-		file.eachFile {
-			eclipseClassPath+= """<classpathentry kind="lib" path="${it.path}"/> """
+		if (file.exists()) {
+			file.eachFile {
+				eclipseClassPath+= """<classpathentry kind="lib" path="${it.path}"/> """
+			}
+			eclipseClassPath += """
+							<classpathentry kind="output" path=".ide/bin"/>
+					</classpath>
+			"""
 		}
-		eclipseClassPath += """
-					<classpathentry kind="output" path=".ide/bin"/>
-			</classpath>
-		"""
 		
 		def projectFile = new File (".project")
 		if (projectFile.exists()) projectFile.delete()
