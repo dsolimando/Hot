@@ -9,6 +9,8 @@ import java.util.Map;
 import org.bson.types.ObjectId;
 import org.python.core.Py;
 import org.python.core.PyObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import be.icode.hot.data.Cursor;
 import be.icode.hot.data.DB;
@@ -22,6 +24,8 @@ import com.mongodb.Mongo;
 import com.mongodb.WriteResult;
 
 public class BasicDB<T extends Map<?,?>> implements DB<T> {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(BasicDB.class);
 
 	protected Mongo mongo;
 	
@@ -103,16 +107,25 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 		}
 
 		@Override
-		public Collection<T> update(T values, T where) {
-//			transformId(where);
+		public T update(T values, T where) {
 			BasicDBObject valuesDbObject = new BasicDBObject(values);
 			BasicDBObject whereDbObject = new BasicDBObject(where);
-			if (values.keySet().size() == 1 && values.keySet().contains("$set")) {
-				db.getCollection(name).update(whereDbObject, valuesDbObject,false,true);
-			} else {
-				db.getCollection(name).update(whereDbObject, valuesDbObject);
+			WriteResult wr = db.getCollection(name).update(whereDbObject, valuesDbObject);
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug(wr.toString());
 			}
-			return this;
+			return dbObjectTransformer.put(values, "_id", valuesDbObject.get("_id").toString());
+		}
+		
+		@Override
+		public T update(T values, T where, boolean upsert, boolean update) {
+			BasicDBObject valuesDbObject = new BasicDBObject(values);
+			BasicDBObject whereDbObject = new BasicDBObject(where);
+			WriteResult wr = db.getCollection(name).update(whereDbObject, valuesDbObject, upsert, update);
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug(wr.toString());
+			}
+			return dbObjectTransformer.put(values, "_id", valuesDbObject.get("_id").toString());
 		}
 
 		@Override
@@ -231,7 +244,7 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 
 		@Override
 		public Cursor<T> skip(Integer at) {
-			dbCursor.limit(at);
+			dbCursor.skip(at);
 			return this;
 		}
 
