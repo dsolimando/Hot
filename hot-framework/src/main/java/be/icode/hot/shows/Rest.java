@@ -16,13 +16,16 @@ public interface Rest<CLOSURE> {
 	RestAuthHeaders<CLOSURE> delete(String path);
 
 	public interface RestAuthHeaders<CLOSURE> extends RestClosure<CLOSURE> {
+		
 		RestHeaders<CLOSURE> auth (String...roles);
+		RestHeaders<CLOSURE> anonymous ();
 		RestAuth<CLOSURE> headers (String[] headers);
 		RestAuth<CLOSURE> headers (String header);
 	}
 	
 	public interface RestAuth<CLOSURE> extends RestClosure<CLOSURE> {
 		RestClosure<CLOSURE> auth (String... roles);
+		RestClosure<CLOSURE> anonymous ();
 	}
 	
 	public interface RestHeaders<CLOSURE> extends RestClosure<CLOSURE> {

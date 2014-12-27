@@ -9,8 +9,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +39,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.social.UserIdSource;
 import org.springframework.social.connect.UsersConnectionRepository;
 import org.springframework.social.security.SocialAuthenticationProvider;
@@ -48,18 +52,22 @@ import be.icode.hot.data.jdbc.DB;
 import be.icode.hot.data.mongo.BasicDB;
 import be.icode.hot.shows.ClosureRequestMapping;
 import be.icode.hot.shows.Show;
+import be.icode.hot.shows.rest.HotContext;
+import be.icode.hot.shows.spring.ClosureRequestMappingHandlerMapping;
 import be.icode.hot.spring.config.HotConfig.Auth;
 import be.icode.hot.spring.config.HotConfig.AuthType;
 import be.icode.hot.spring.config.HotConfig.DBEngine;
 import be.icode.hot.spring.config.HotConfig.DataSource;
-import be.icode.hot.spring.security.AntPathContentTypeRequestMatcher;
 import be.icode.hot.spring.security.OAuth2ClientAuthenticationFilter;
+
+import com.google.common.net.HttpHeaders;
 
 @Configuration
 @EnableWebSecurity
 @Import({CommonConfig.class, ShowConfig.class, DataConfig.class})
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
 	// auth-db -name ds 
 	// auth-ldap -server ldap://springframework.org:389/dc=springframework,dc=org -user-dn-pattern uid={0},ou=people -group-search-base ou=groups
 	// auth-ldap -server ldap://springframework.org:389/dc=springframework,dc=org --ldap-user-search-filter uid={0} --ldap-user-search-base ou=people
@@ -209,7 +217,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	@Configuration
-	@Order(4)
+	@Order(1)
 	public static class StaticResourcesConfig extends WebSecurityConfigurerAdapter {
 		
 		@Autowired
@@ -227,11 +235,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		
 		@Override
 		public void configure(WebSecurity web) throws Exception {
-			super.configure(web);
 			
 			if (commonConfig.secureDirs().isEmpty()) return;
 			
 			IgnoredRequestConfigurer configurer = web.ignoring();
+			
 			for (String path : commonConfig.securityBypassDirs()) {
 				configurer.antMatchers(path+"/*.*");
 			}
@@ -240,7 +248,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			
-			HttpSecurity and = http.csrf().disable();
+			HttpSecurity and = http.requestMatcher(new RequestMatcher() {
+				@Override
+				public boolean matches(HttpServletRequest request) {
+					return !request.getRequestURI().startsWith("/rest") && !request.getRequestURI().startsWith("/client-auth");
+				}
+			}).csrf().disable();
 			
 			for (String path : commonConfig.secureDirs()) {
 				and = and.authorizeRequests().antMatchers(path+"/*").authenticated().and();
@@ -264,7 +277,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	@Configuration
-	@Order(3)
+	@Order(2)
 	public static class ClientAuthConfig extends WebSecurityConfigurerAdapter {
 		
 		@Autowired
@@ -276,7 +289,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			
-			HttpSecurity and = http.antMatcher("/client-auth");
+			HttpSecurity and = http.requestMatcher(new RequestMatcher() {
+				@Override
+				public boolean matches(HttpServletRequest request) {
+					return request.getRequestURI().startsWith("/client-auth");
+				}
+			});
 			
 			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
 				if (auth.getType() == AuthType.FACEBOOK_CLIENT || auth.getType() == AuthType.GOOGLE_CLIENT) {
@@ -292,62 +310,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	@Configuration
-	@Order(2)
-	public static class RestShowsConfig extends WebSecurityConfigurerAdapter {
-		
-		@Autowired
-		ShowConfig showConfig;
-		
-		@Autowired
-		CommonConfig commonConfig;
-		
-		@Autowired
-		SpringSocialConfigurer springSocialConfigurer;
-		
-		@Override
-		protected void configure(HttpSecurity http) throws Exception {
-			
-			HttpSecurity and = http.antMatcher("/rest/**").httpBasic().and().csrf().disable();
-			
-			and = and.headers().cacheControl().disable();
-			
-			for (Show<?,?> show : showConfig.showsContext().getShows()) {
-				for (ClosureRequestMapping requestMapping :show.getRest().getRequestMappings()) {
-					if (requestMapping.isAuth()) {
-						
-						List<String> paths = new ArrayList<>();
-						for (String path : requestMapping.getPaths()) {
-							paths.add("/rest"+path);
-						}
-						if (requestMapping.getRoles().length > 0) {
-							and = and.authorizeRequests()
-									.antMatchers(
-											HttpMethod.valueOf(requestMapping.getRequestMethod().name()), 
-											paths.toArray(new String[]{}))
-									.hasAnyRole(requestMapping.getRoles()).and();
-						} else {
-							and = and.authorizeRequests()
-									.antMatchers(
-											HttpMethod.valueOf(requestMapping.getRequestMethod().name()), 
-											paths.toArray(new String[]{}))
-									.authenticated().and();
-						}
-					}
-				}
-			}
-			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
-				if ((auth.getType() == AuthType.FACEBOOK
-						|| auth.getType() == AuthType.TWITTER
-						|| auth.getType() == AuthType.GOOGLE)) {
-					and = and.apply(springSocialConfigurer).and();
-					break;
-				}
-			}
-		}
-	}
-	
-	@Configuration
-	@Order(1)
+	@Order(3)
 	public static class HtmlRestShowsConfig extends WebSecurityConfigurerAdapter {
 		
 		@Autowired
@@ -359,14 +322,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		@Autowired
 		SpringSocialConfigurer springSocialConfigurer;
 		
+		@Autowired
+		ClosureRequestMappingHandlerMapping closureRequestMappingHandlerMapping;
+		
+		@Override
+		public void configure(WebSecurity web) throws Exception {
+			web.ignoring().requestMatchers(new AuthRequestMatcher(closureRequestMappingHandlerMapping));
+		}
+		
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			
-			HttpSecurity and = http.requestMatcher(
-					new AntPathContentTypeRequestMatcher(
-							"text/html,application/xhtml", 
-							new AntPathRequestMatcher("/rest/**")))
-							.headers().cacheControl().disable();
+			HttpSecurity and = http.requestMatcher(new RequestMatcher() {
+				@Override
+				public boolean matches(HttpServletRequest request) {
+					return request.getHeader(HttpHeaders.ACCEPT).contains("text/html,application/xhtml")
+							&& request.getRequestURI().startsWith("/rest");
+				}
+			})
+			.csrf().disable()
+			.headers().cacheControl().disable();
 			
 			boolean staticLoginPage = false;
 			boolean hasauth = false;
@@ -385,12 +360,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 								paths.add("/rest"+path);
 								
 						}
-						if (requestMapping.getRoles().length > 0) {
+						String[] rolesArray = requestMapping.getRoles();
+						if (rolesArray.length > 0) {
 							and = and.authorizeRequests()
 									.antMatchers(
 											HttpMethod.valueOf(requestMapping.getRequestMethod().name()), 
 											paths.toArray(new String[]{}))
-									.hasAnyRole(requestMapping.getRoles()).and();
+									.hasAnyRole(rolesArray).and();
+							
 						} else {
 							and = and.authorizeRequests()
 									.antMatchers(
@@ -423,6 +400,85 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					and = and.apply(springSocialConfigurer).and();
 					break;
 				}
+			}
+		}
+	}
+	
+	@Configuration
+	@Order(4)
+	public static class RestShowsConfig extends WebSecurityConfigurerAdapter {
+		
+		@Autowired
+		ShowConfig showConfig;
+		
+		@Autowired
+		CommonConfig commonConfig;
+		
+		@Autowired
+		SpringSocialConfigurer springSocialConfigurer;
+		
+		@Override
+		protected void configure(HttpSecurity http) throws Exception {
+			
+			HttpSecurity and = http.antMatcher("/rest/**").httpBasic().and().csrf().disable().headers().cacheControl().disable();
+			
+			for (Show<?,?> show : showConfig.showsContext().getShows()) {
+				for (ClosureRequestMapping requestMapping :show.getRest().getRequestMappings()) {
+					if (requestMapping.isAuth()) {
+						
+						List<String> paths = new ArrayList<>();
+						for (String path : requestMapping.getPaths()) {
+							paths.add("/rest"+path);
+						}
+						if (requestMapping.getRoles().length > 0) {
+							and = and.authorizeRequests()
+									.antMatchers(
+											HttpMethod.valueOf(requestMapping.getRequestMethod().name()), 
+											paths.toArray(new String[]{}))
+									.hasAnyRole(requestMapping.getRoles()).and();
+						} else {
+							and = and.authorizeRequests()
+									.antMatchers(
+											HttpMethod.valueOf(requestMapping.getRequestMethod().name()), 
+											paths.toArray(new String[]{}))
+									.authenticated().and();
+						}
+					} 
+				}
+			}
+			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
+				if ((auth.getType() == AuthType.FACEBOOK
+						|| auth.getType() == AuthType.TWITTER
+						|| auth.getType() == AuthType.GOOGLE)) {
+					and = and.apply(springSocialConfigurer).and();
+					break;
+				}
+			}
+		}
+	}
+	
+	private static class AuthRequestMatcher implements RequestMatcher {
+		
+		ClosureRequestMappingHandlerMapping closureRequestMappingHandlerMapping;
+
+		public AuthRequestMatcher(ClosureRequestMappingHandlerMapping closureRequestMappingHandlerMapping) {
+			this.closureRequestMappingHandlerMapping = closureRequestMappingHandlerMapping;
+		}
+
+		@Override
+		public boolean matches(HttpServletRequest request) {
+			try {
+				final ClosureRequestMapping closureRequestMapping = closureRequestMappingHandlerMapping.lookupRequestMapping(request);
+				if (closureRequestMapping != null) {
+					HotContext.setRequestMapping(closureRequestMapping);
+					if (!closureRequestMapping.isAnonymous() && !closureRequestMapping.isAuth()) {
+						return true;
+					}
+				}
+				return false;
+			} catch (Exception e) {
+				LOGGER.error("Failed to lookup the closure request",e);
+				return false;
 			}
 		}
 	}
@@ -510,15 +566,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 		};
 	}
-
+	
 	@Bean
 	public PasswordEncoder passwordEncoder () {
 		return new BCryptPasswordEncoder();
 	}
 	
-	public static void main(String[] args) {
-		System.out.println("/login".startsWith("/login"));
-	}
 	
 //	public UserDetailsService hotJdbcUserDetailsService(final DB<Map<String, Object>> db, final Auth auth) {
 //		

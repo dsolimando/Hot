@@ -150,6 +150,12 @@ public abstract class AbstractRest<CLOSURE>  implements Rest<CLOSURE>, RestConfi
 			super.requestMapping.setRoles(roles);
 			return new RestClosureImpl(requestMapping);
 		}
+
+		@Override
+		public be.icode.hot.shows.Rest.RestClosure<CLOSURE> anonymous() {
+			super.requestMapping.setAnonymous(true);
+			return new RestClosureImpl(requestMapping);
+		}
 	}
 	
 	private class RestHeadersClosureImpl extends RestClosureImpl implements RestHeaders<CLOSURE> {
@@ -183,7 +189,13 @@ public abstract class AbstractRest<CLOSURE>  implements Rest<CLOSURE>, RestConfi
 
 		@Override
 		public be.icode.hot.shows.Rest.RestHeaders<CLOSURE> auth(String...roles) {
-			restAuthClosure.auth();
+			restAuthClosure.auth(roles);
+			return new RestHeadersClosureImpl(requestMapping);
+		}
+		
+		@Override
+		public be.icode.hot.shows.Rest.RestHeaders<CLOSURE> anonymous() {
+			restAuthClosure.anonymous();
 			return new RestHeadersClosureImpl(requestMapping);
 		}
 

@@ -29,6 +29,8 @@ public class ClosureRequestMapping {
 	
 	String[] roles;
 	
+	boolean anonymous;
+	
 	ExecutorService eventLoop;
 	
 	public List<String> getPaths() {
@@ -110,6 +112,15 @@ public class ClosureRequestMapping {
 
 	public void setEventLoop(ExecutorService eventLoop) {
 		this.eventLoop = eventLoop;
+	}
+	
+
+	public boolean isAnonymous() {
+		return anonymous;
+	}
+
+	public void setAnonymous(boolean anonymous) {
+		this.anonymous = anonymous;
 	}
 
 	@Override
