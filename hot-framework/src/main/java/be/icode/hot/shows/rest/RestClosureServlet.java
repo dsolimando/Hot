@@ -122,7 +122,15 @@ public class RestClosureServlet extends HttpServlet {
 			
 			final List<MediaType> acceptMediaTypes = MediaType.parseMediaTypes(acceptMediaTypeAsString);
 
-			final ClosureRequestMapping closureRequestMapping = closureRequestMappingHandlerMapping.lookupRequestMapping(req);
+			
+			final ClosureRequestMapping closureRequestMapping;
+			
+			// Check if requestMapping is in thread local
+			if (HotContext.getRequestMapping() == null) {
+				closureRequestMapping = closureRequestMappingHandlerMapping.lookupRequestMapping(req);
+			} else {
+				closureRequestMapping = HotContext.getRequestMapping();
+			}
 			
 			final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			
