@@ -17,6 +17,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutorService;
 
+import com.lmax.disruptor.dsl.ProducerType;
+
 import reactor.core.Environment;
 import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
 import be.icode.hot.utils.FileLoader;
@@ -61,6 +63,7 @@ public class ThreadPoolsConfig {
 	public ExecutorService staticResourcesEventLoop() throws Exception {
 		RingBufferAsyncTaskExecutor rbate = new RingBufferAsyncTaskExecutor(reactorEnvironment())
 	        .setName("httpIOEventLoop")
+	        .setProducerType(ProducerType.MULTI)
 	        .setBacklog(2048);
 		rbate.afterPropertiesSet();
 		if (commonConfig != null && commonConfig.hotConfig().getAuthList().size() > 0) {
@@ -73,6 +76,7 @@ public class ThreadPoolsConfig {
 	public ExecutorService httpIOEventLoop() throws Exception {
 		RingBufferAsyncTaskExecutor rbate = new RingBufferAsyncTaskExecutor(reactorEnvironment())
 	        .setName("httpIOEventLoop")
+	        .setProducerType(ProducerType.MULTI)
 	        .setBacklog(2048);
 		rbate.afterPropertiesSet();
 		if (commonConfig != null && commonConfig.hotConfig().getAuthList().size() > 0) {
@@ -96,6 +100,7 @@ public class ThreadPoolsConfig {
 			for (int i = 0; i < AVAILABLE_PROCESSORS; i++) {
 				RingBufferAsyncTaskExecutor rbate = new RingBufferAsyncTaskExecutor(environment)
 			        .setName("ringBufferExecutor")
+			        .setProducerType(ProducerType.MULTI)
 			        .setBacklog(2048);
 //			        .setWaitStrategy(new YieldingWaitStrategy());
 				rbate.afterPropertiesSet();
