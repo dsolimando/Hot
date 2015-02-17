@@ -114,7 +114,10 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug(wr.toString());
 			}
-			return dbObjectTransformer.put(values, "_id", valuesDbObject.get("_id").toString());
+			if (valuesDbObject.get("_id") != null) {
+				dbObjectTransformer.put(values, "_id", valuesDbObject.get("_id").toString());
+			}
+			return values;
 		}
 		
 		@Override
@@ -125,7 +128,10 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug(wr.toString());
 			}
-			return dbObjectTransformer.put(values, "_id", valuesDbObject.get("_id").toString());
+			if (valuesDbObject.get("_id") != null) {
+				dbObjectTransformer.put(values, "_id", valuesDbObject.get("_id").toString());
+			}
+			return values;
 		}
 
 		@Override
