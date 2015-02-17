@@ -1,3 +1,5 @@
+
+
 package be.icode.hot.cli
 
 import javax.script.ScriptEngine
@@ -10,6 +12,7 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.SerializationConfig.Feature
 import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.FilterHolder
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
@@ -143,7 +146,14 @@ public class Hot {
 		def config = project.config
 		println("Starting Hot Web Server...")
 		
-		Server server = new Server(port?Integer.parseInt(port):8080)
+		Server server = new Server()
+		
+		ServerConnector connector = new ServerConnector(server)
+		connector.setPort(port?Integer.parseInt(port):8080)
+//		connector.setAcceptQueueSize(Runtime.getRuntime().availableProcessors()*2)
+		server.setConnectors(connector)
+		server.getThreadPool().setMaxThreads(Runtime.getRuntime().availableProcessors())
+		
 		ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS)
 		servletContextHandler.contextPath = "/"
 		server.setHandler(servletContextHandler)
