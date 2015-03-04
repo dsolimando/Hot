@@ -64,11 +64,7 @@
 		</testResources>
 	</build>
 	<dependencies>
-		<dependency>
-			<groupId>be.icode.hot</groupId>
-			<artifactId>hot-gae</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+		
 		<dependency>
 			<groupId>be.icode.hot</groupId>
 			<artifactId>hot-jquery</artifactId>
@@ -353,33 +349,38 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.2.4.v20141103</version>
+			<version>9.2.7.v20150116</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>9.2.1.v20140609</version>
+			<version>9.2.7.v20150116</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.2.4.v20141103</version>
+			<version>9.2.7.v20150116</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
-			<version>9.2.4.v20141103</version>
+			<version>9.2.7.v20150116</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-server</artifactId>
-			<version>9.2.4.v20141103</version>
+			<version>9.2.7.v20150116</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<artifactId>commons-collections</artifactId>
+			<groupId>commons-collections</groupId>
+			<version>3.2</version>
 		</dependency>
 		<!-- <dependency> <groupId>org.apache.tomcat</groupId> <artifactId>jasper</artifactId> <version>6.0.35</version> <exclusions> <exclusion> <groupId>org.apache.tomcat</groupId> 
 			<artifactId>catalina</artifactId> </exclusion> <exclusion> <groupId>org.eclipse.jdt.core.compiler</groupId> <artifactId>ecj</artifactId> </exclusion> </exclusions> </dependency> -->

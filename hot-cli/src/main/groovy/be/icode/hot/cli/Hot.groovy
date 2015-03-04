@@ -152,7 +152,7 @@ public class Hot {
 		connector.setPort(port?Integer.parseInt(port):8080)
 //		connector.setAcceptQueueSize(Runtime.getRuntime().availableProcessors()*2)
 		server.setConnectors(connector)
-		server.getThreadPool().setMaxThreads(Runtime.getRuntime().availableProcessors())
+		server.getThreadPool().setMaxThreads(Math.max(3, Runtime.getRuntime().availableProcessors()))
 		
 		ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS)
 		servletContextHandler.contextPath = "/"
