@@ -13,7 +13,6 @@
 		<module>hot-backbone</module>
 		<module>hot-bootstrap</module>
 		<module>hot-requirejs</module>
-		<module>hot-gae</module>
 		<module>hot-transpilers</module>
 		<module>hot-framework</module>
 		<module>hot-jython-modules</module>
