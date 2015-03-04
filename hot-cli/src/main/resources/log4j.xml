@@ -22,7 +22,7 @@
 
 	<!-- Loggers -->
 	<logger name="org.springframework" additivity="false">
-		<level value="debug" />
+		<level value="info" />
 		<appender-ref ref="File" />
 	</logger>
 	
