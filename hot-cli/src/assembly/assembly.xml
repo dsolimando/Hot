@@ -14,11 +14,11 @@
 			<scope>runtime</scope>
 			<outputDirectory>lib</outputDirectory>
 			<excludes>
-				<exclude>be.icode.hot:hot-backbone</exclude>
-				<exclude>be.icode.hot:hot-bootstrap</exclude>
-				<exclude>be.icode.hot:hot-jquery</exclude>
-				<exclude>be.icode.hot:hot-requirejs</exclude>
-				<exclude>be.icode.hot:hot-transpilers</exclude>
+				<exclude>be.solidx.hot:hot-backbone</exclude>
+				<exclude>be.solidx.hot:hot-bootstrap</exclude>
+				<exclude>be.solidx.hot:hot-jquery</exclude>
+				<exclude>be.solidx.hot:hot-requirejs</exclude>
+				<exclude>be.solidx.hot:hot-transpilers</exclude>
 			</excludes>
 		</dependencySet>
 		<dependencySet>
@@ -26,11 +26,11 @@
 			<scope>runtime</scope>
 			<outputDirectory>lib</outputDirectory>
 			<includes>
-				<include>be.icode.hot:hot-backbone</include>
-				<include>be.icode.hot:hot-bootstrap</include>
-				<include>be.icode.hot:hot-jquery</include>
-				<include>be.icode.hot:hot-requirejs</include>
-				<include>be.icode.hot:hot-transpilers</include>
+				<include>be.solidx.hot:hot-backbone</include>
+				<include>be.solidx.hot:hot-bootstrap</include>
+				<include>be.solidx.hot:hot-jquery</include>
+				<include>be.solidx.hot:hot-requirejs</include>
+				<include>be.solidx.hot:hot-transpilers</include>
 			</includes>
 		</dependencySet>
 	</dependencySets>

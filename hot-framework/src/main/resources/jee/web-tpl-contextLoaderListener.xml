@@ -5,7 +5,7 @@
 	</context-param>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>be.icode.hot.spring.config.ShowConfig</param-value>
+		<param-value>be.solidx.hot.spring.config.ShowConfig</param-value>
 	</context-param>
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

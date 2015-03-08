@@ -11,11 +11,11 @@
 		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
 
 	<context:annotation-config />
-	<bean class="be.icode.hot.shows.ShowsContext" autowire="byType" p:devMode="false" p:defaultShowSearchPath="/shows" />
-	<bean class="be.icode.hot.shows.spring.ClosureRequestMappingHandlerMapping" autowire="byType" init-method="afterPropertiesSet" p:devMode="false"/>
-	<bean class="be.icode.hot.spring.config.ThreadPoolsConfig$EventLoopFactory" />
+	<bean class="be.solidx.hot.shows.ShowsContext" autowire="byType" p:devMode="false" p:defaultShowSearchPath="/shows" />
+	<bean class="be.solidx.hot.shows.spring.ClosureRequestMappingHandlerMapping" autowire="byType" init-method="afterPropertiesSet" p:devMode="false"/>
+	<bean class="be.solidx.hot.spring.config.ThreadPoolsConfig$EventLoopFactory" />
 	
-	<bean class="be.icode.hot.groovy.GroovyScriptExecutor" />
-	<bean class="be.icode.hot.python.PythonScriptExecutor" />
-	<bean class="be.icode.hot.js.JSScriptExecutor" />
+	<bean class="be.solidx.hot.groovy.GroovyScriptExecutor" />
+	<bean class="be.solidx.hot.python.PythonScriptExecutor" />
+	<bean class="be.solidx.hot.js.JSScriptExecutor" />
 </beans>

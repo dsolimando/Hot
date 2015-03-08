@@ -10,7 +10,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig.Feature
 import org.junit.Test
 
-import be.icode.hot.cli.Hot.Project
+import be.solidx.hot.cli.Hot.Project
 
 
 class TestScript {

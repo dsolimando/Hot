@@ -17,7 +17,7 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
 
 	<tx:annotation-driven />
-	<context:component-scan base-package="be.icode.hot.db" />
+	<context:component-scan base-package="be.solidx.hot.db" />
 	
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close"
 		p:driverClassName="${driver}" p:username="${username}" p:password="${password}" p:url="${url}"/>

@@ -7,7 +7,7 @@
 		</init-param>
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
-			<param-value>be.icode.hot.spring.config.DataStoreConfig</param-value>
+			<param-value>be.solidx.hot.spring.config.DataStoreConfig</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>

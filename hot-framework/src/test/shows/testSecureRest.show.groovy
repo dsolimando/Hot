@@ -1,5 +1,5 @@
 import hot.Response
-import be.icode.hot.promises.groovy.GroovyDeferred
+import be.solidx.hot.promises.groovy.GroovyDeferred
 
 
 

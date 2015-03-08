@@ -1,5 +1,5 @@
 from com.mongodb import *
-from be.icode.hot.data.mongo import *
+from be.solidx.hot.data.mongo import *
 
 class DB:
 	def __init__ (self,db):

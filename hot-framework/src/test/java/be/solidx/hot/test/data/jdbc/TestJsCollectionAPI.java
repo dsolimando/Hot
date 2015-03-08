@@ -1,0 +1,45 @@
+package be.solidx.hot.test.data.jdbc;
+
+import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import be.solidx.hot.Script;
+import be.solidx.hot.data.jdbc.js.DB;
+import be.solidx.hot.data.jdbc.js.JSAsyncDB;
+import be.solidx.hot.js.JSScriptExecutor;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration
+public class TestJsCollectionAPI {
+
+	@Autowired
+	DB db;
+	
+	JSAsyncDB asyncDB;
+	
+	@Test
+	public void testSync() throws Exception {
+		JSScriptExecutor executor = new JSScriptExecutor();
+		Map<String, Object> context = new HashMap<>();
+		context.put("db", db);
+		context.put("adb",  new JSAsyncDB(db, Executors.newCachedThreadPool(), Executors.newSingleThreadExecutor(), executor.getGlobalScope()));
+		
+		executor.setGlobalScopeScripts(Arrays.asList("/js/qunit-1.14.js"));
+		Script<org.mozilla.javascript.Script> script = new Script<>(IOUtils.toByteArray(getClass().getResourceAsStream("/be/solidx/hot/test/data/jdbc/scripts/db.js")), "db.js");
+		StringWriter out = new StringWriter();
+		executor.execute(script, context, out);
+		
+		Assert.assertFalse(out.toString().contains("FAIL"));
+	}
+}

@@ -5,7 +5,7 @@
 	</context-param>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>be.icode.hot.spring.config.ShowConfig,be.icode.hot.spring.config.SocialConfig,be.icode.hot.spring.config.SecurityConfig</param-value>
+		<param-value>be.solidx.hot.spring.config.ShowConfig,be.solidx.hot.spring.config.SocialConfig,be.solidx.hot.spring.config.SecurityConfig</param-value>
 	</context-param>
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
@@ -28,7 +28,7 @@
 	
 	<servlet>
 		<servlet-name>client-auth</servlet-name>
-		<servlet-class>be.icode.hot.rest.ClientAuthServlet</servlet-class>
+		<servlet-class>be.solidx.hot.rest.ClientAuthServlet</servlet-class>
 		<async-supported>true</async-supported>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
