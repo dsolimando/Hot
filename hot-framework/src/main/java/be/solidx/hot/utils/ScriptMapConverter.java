@@ -11,10 +11,8 @@ public interface ScriptMapConverter<MAP> {
 
 	MAP toScriptMap(Map<?, ?> map);
 	
-//	MAP multiMapToScriptMap(Map<?, ? extends Object[]> map);
-
 	Map<?, ?> toMap(MAP map);
-
+	
 	MAP multiValueMapToMapList(Map<String, MultiValueMap<String, String>> matrixVariables);
 
 	MAP httpHeadersToMap(WebRequest webRequest);
