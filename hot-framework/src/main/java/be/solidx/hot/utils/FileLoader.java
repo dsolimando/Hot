@@ -29,7 +29,7 @@ public class FileLoader {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileLoader.class);
 
-	ConcurrentHashMap<Path, byte[]> filecache = new ConcurrentHashMap<>();
+//	ConcurrentHashMap<Path, byte[]> filecache = new ConcurrentHashMap<>();
 	
 	ExecutorService eventLoop;
 	
@@ -37,33 +37,33 @@ public class FileLoader {
 		this.eventLoop = eventLoop;
 	}
 	
-	public Promise<Void, Exception, Buffer> loadResourceAsync(final Path path) throws IOException {
-		return loadResourceAsync(path, true);
-	}
+//	public Promise<Void, Exception, Buffer> loadResourceAsync(final Path path) throws IOException {
+//		return loadResourceAsync(path, true);
+//	}
 
-	public Promise<Void, Exception, Buffer> loadResourceAsync(final Path path, final boolean touchCache) throws IOException {
+	public Promise<Void, Exception, Buffer> loadResourceAsync(final Path path) throws IOException {
 		final Deferred<Void, Exception, Buffer> deferred = new DeferredObject<>();
 		
-		if (touchCache && filecache.keySet().contains(path)) {
-			final byte[] file = filecache.get(path);
-			eventLoop.execute(new Runnable() {
-				@Override
-				public void run() {
-					deferred.notify(new Buffer(file, file.length));
-					deferred.resolve(null);
-				}
-			});
-			return deferred.promise();
-		}
+//		if (touchCache && filecache.keySet().contains(path)) {
+//			final byte[] file = filecache.get(path);
+//			eventLoop.execute(new Runnable() {
+//				@Override
+//				public void run() {
+//					deferred.notify(new Buffer(file, file.length));
+//					deferred.resolve(null);
+//				}
+//			});
+//			return deferred.promise();
+//		}
 		
 		final ByteBuffer byteBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-		final ByteArrayOutputStream byteArrayOutputStream;
+//		final ByteArrayOutputStream byteArrayOutputStream;
 		
-		if (touchCache) {
-			byteArrayOutputStream = new ByteArrayOutputStream();
-		} else {
-			byteArrayOutputStream = null;
-		}
+//		if (touchCache) {
+//			byteArrayOutputStream = new ByteArrayOutputStream();
+//		} else {
+//			byteArrayOutputStream = null;
+//		}
 		
 		Set<OpenOption> options = new HashSet<>();
 		options.add(StandardOpenOption.READ);
@@ -79,19 +79,19 @@ public class FileLoader {
 				if (result == -1) {
 					deferred.resolve(null);
 					try {
-						if (touchCache) {
-							byteArrayOutputStream.flush();
-							filecache.put(path, byteArrayOutputStream.toByteArray());
-						}
+//						if (touchCache) {
+//							byteArrayOutputStream.flush();
+//							filecache.put(path, byteArrayOutputStream.toByteArray());
+//						}
 						asyncChannel.close();
 					} catch (IOException e) {
 						LOGGER.error("",e);
 					}
 				} else {
 					deferred.notify(new Buffer(byteBuffer.array(), result));
-					if (touchCache) {
-						byteArrayOutputStream.write(byteBuffer.array(),0,result);
-					}
+//					if (touchCache) {
+//						byteArrayOutputStream.write(byteBuffer.array(),0,result);
+//					}
 					byteBuffer.clear();
 					pos += result;
 					asyncChannel.read(byteBuffer, pos, null, this);
