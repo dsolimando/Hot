@@ -7,6 +7,10 @@
 			<source>src/bin/hot</source>
 			<fileMode>0744</fileMode>
 		</file>
+		<file>
+			<source>src/log/log4j.xml</source>
+			<outputDirectory>lib</outputDirectory>
+		</file>
 	</files>
 	<dependencySets>
 		<dependencySet>
