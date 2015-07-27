@@ -21,7 +21,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
+import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeJavaObject;
+import org.mozilla.javascript.NativeObject;
+import org.python.core.PyDictionary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -258,11 +261,22 @@ public class RestClosureServlet extends HttpServlet {
 	
 	private void handleResponse (Object objectResponse, MediaType acceptContentType, HttpServletResponse resp, AsyncContext async, ExecutorService showEventLoop) {
 		
+		Object convertedResponse = objectResponse;
+		
+		// JS script responses
+		if (objectResponse instanceof NativeObject) {
+			convertedResponse = jsDataConverter.toMap((NativeObject) objectResponse);
+		} else if (objectResponse instanceof NativeArray) {
+			convertedResponse = jsDataConverter.toListMap((NativeArray) objectResponse);
+		} else if (objectResponse instanceof PyDictionary) {
+			convertedResponse = pyDictionaryConverter.toMap((PyDictionary) objectResponse);
+		}
+		
 		try {
-			if (objectResponse == null)
+			if (convertedResponse == null)
 				writeBytesToResponseAsync(resp, "".getBytes(), async, showEventLoop);
-			else if (objectResponse instanceof Response) {
-				Response response = (Response) objectResponse;
+			else if (convertedResponse instanceof Response) {
+				Response response = (Response) convertedResponse;
 				Map<?,?> headers = response.getHeaders();
 				Object content = response.getBody();
 				MediaType extractedResponseContentType = extractContentType(headers);
@@ -277,7 +291,7 @@ public class RestClosureServlet extends HttpServlet {
 				
 				writeBytesToResponseAsync(resp, body, async, showEventLoop);
 			} else {
-				byte[] body = httpDataSerializer.serialize(objectResponse, acceptContentType);
+				byte[] body = httpDataSerializer.serialize(convertedResponse, acceptContentType);
 				resp.setContentType(acceptContentType.toString());
 				writeBytesToResponseAsync(resp, body, async, showEventLoop);
 			}
