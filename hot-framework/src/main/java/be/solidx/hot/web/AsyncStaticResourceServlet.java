@@ -13,8 +13,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -52,6 +50,7 @@ import be.solidx.hot.spring.config.HotConfig;
 import be.solidx.hot.utils.FileLoader;
 import be.solidx.hot.utils.FileLoader.Buffer;
 
+import com.google.common.net.HttpHeaders;
 import com.gs.collections.impl.map.mutable.ConcurrentHashMap;
 import com.sun.nio.zipfs.ZipFileSystem;
 
@@ -136,6 +135,37 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 			async.complete();
 		}
 	}
+
+	private URL getResourceURL(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+		URL resourceUrl;
+		String acceptEncoding = servletRequest.getHeader("Accept-Encoding");
+		// no resource input => index.html
+		if (servletRequest.getPathInfo().equals("/")) {
+			if (!hotConfig.isDevMode() && acceptEncoding.contains("gzip")) {
+				resourceUrl = getClass().getResource("/index.html.gz");
+				if (resourceUrl != null) {
+					servletResponse.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+					return resourceUrl;
+				}
+			}
+			resourceUrl = getClass().getResource("/index.html");
+		} else {
+			if (!hotConfig.isDevMode() && acceptEncoding.contains("gzip")) {
+				try {
+					String gzPathInfo = servletRequest.getPathInfo() + ".gz";
+					resourceUrl = getClass().getResource(gzPathInfo);
+					if (resourceUrl != null) {
+						servletResponse.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+						return resourceUrl;
+					}
+				} catch (Exception e) {
+					LOGGER.error("Failed to build gz path info",e);
+				}
+			}
+			resourceUrl = getClass().getResource(servletRequest.getPathInfo());
+		}
+		return resourceUrl;
+	}
 	
 	protected void asyncLoadResource (
 			final HttpServletRequest servletRequest,
@@ -143,12 +173,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 			final String contentType,
 			final AsyncContext async) throws IOException, URISyntaxException {
 		
-		URL resourceUrl;
-		if (servletRequest.getPathInfo().equals("/")) {
-			resourceUrl = getClass().getResource("/index.html");
-		} else {
-			resourceUrl = getClass().getResource(servletRequest.getPathInfo());
-		}
+		URL resourceUrl = getResourceURL(servletRequest,servletResponse);
 		
 		if (resourceUrl == null) {
 			servletResponse.setStatus(HttpStatus.NOT_FOUND.value());
@@ -178,7 +203,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 						servletResponse.setStatus(HttpStatus.OK.value());
 						writeBytesToResponseAsync(outputStream, bytes, async);
 					} else {
-						Promise<Void, Exception, Buffer> promise = fileLoader.loadResourceAsync(path,!hotConfig.isDevMode())
+						Promise<Void, Exception, Buffer> promise = fileLoader.loadResourceAsync(path)
 							.fail(new FailCallback<Exception>() {
 								@Override public void onFail(Exception result) {
 									if (!servletResponse.isCommitted()) {
@@ -235,7 +260,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 				try {
 					Path path = Paths.get(getClass().getResource(servletRequest.getPathInfo()).toURI());
 					final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-					Promise<Void, Exception, Buffer> promise = fileLoader.loadResourceAsync(path,false);
+					Promise<Void, Exception, Buffer> promise = fileLoader.loadResourceAsync(path);
 					
 					promise.progress(new ProgressCallback<FileLoader.Buffer>() {
 						public void onProgress(final Buffer progress) {
@@ -245,7 +270,6 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 						public void onFail(Exception e) {
 							servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 							writeBytesToResponseAsync(servletOutputStream, extractStackTrace(e).getBytes(), async);
-//							async.complete();
 						}
 					}).then(new DonePipe<Void, byte[], Exception, Void>() {
 	
@@ -402,21 +426,5 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 			return fs.getPath(tokens[1]);
 		}
 		return Paths.get(uri);
-	}
-	
-	public static void main(String[] args) {
-		LinkedBlockingQueue<String> bq = new LinkedBlockingQueue<>();
-		bq.add("h");
-		bq.add("e");
-		bq.add("l");
-		bq.add("l");
-		bq.add("o");
-		
-		System.out.println(bq.poll());
-		System.out.println(bq.poll());
-		System.out.println(bq.poll());
-		System.out.println(bq.poll());
-		System.out.println(bq.poll());
-		System.out.println(bq.isEmpty());
 	}
 }
