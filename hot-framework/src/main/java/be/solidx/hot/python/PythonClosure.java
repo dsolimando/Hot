@@ -6,10 +6,15 @@ import java.util.List;
 import org.python.core.Py;
 import org.python.core.PyFunction;
 import org.python.core.PyObject;
+import org.python.core.PyString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import be.solidx.hot.Closure;
 
 public class PythonClosure implements Closure {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(PythonClosure.class);
 
 	PyFunction pyFunction;
 	
@@ -23,7 +28,16 @@ public class PythonClosure implements Closure {
 		for (Object object : objects) {
 			inputs.add(Py.java2py(object));
 		}
-		return pyFunction.__call__(inputs.toArray(new PyObject[]{}));
+		PyObject response = pyFunction.__call__(inputs.toArray(new PyObject[]{}));
+		if (response instanceof PyString) {
+			// We try to decode PyString in UTF-8
+			try {
+				return ((PyString) response).decode("UTF-8");
+			} catch (Exception e) {
+				LOGGER.error("",e);
+			}
+		}
+		return response;
 	}
 	
 	@Override
