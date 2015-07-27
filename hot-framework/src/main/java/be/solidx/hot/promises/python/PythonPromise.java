@@ -29,11 +29,15 @@ public class PythonPromise extends AbstractPromise<PyFunction> implements Promis
 		DonePipe p = new DonePipe() {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object value) {
-				Object result = Py.tojava(callClosure(value, donePipeClosure),Object.class);
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().resolve(result);
+				try {
+					Object result = Py.tojava(callClosure(value, donePipeClosure),Object.class);
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().resolve(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		};
@@ -46,21 +50,29 @@ public class PythonPromise extends AbstractPromise<PyFunction> implements Promis
 		return new PythonPromise(promise.then(new DonePipe() {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object value) {
-				Object result = Py.tojava(callClosure(value, donePipeClosure), Object.class);
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().resolve(result);
+				try {
+					Object result = Py.tojava(callClosure(value, donePipeClosure), Object.class);
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().resolve(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		}, new FailPipe() {
 			@Override
 			public org.jdeferred.Promise pipeFail(Object value) {
-				Object result = Py.tojava(callClosure(value, failPipeClosure),Object.class);
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().reject(result);
+				try {
+					Object result = Py.tojava(callClosure(value, failPipeClosure),Object.class);
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().reject(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		}));
@@ -72,31 +84,43 @@ public class PythonPromise extends AbstractPromise<PyFunction> implements Promis
 		return new PythonPromise(promise.then(new DonePipe() {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object value) {
-				Object result = Py.tojava(callClosure(value, donePipeClosure),Object.class);
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().resolve(result);
+				try {
+					Object result = Py.tojava(callClosure(value, donePipeClosure),Object.class);
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().resolve(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		}, new FailPipe() {
 			@Override
 			public org.jdeferred.Promise pipeFail(Object value) {
-				Object result = Py.tojava(callClosure(value, failPipeClosure),Object.class);
-				if (result instanceof AbstractPromise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().reject(result);
+				try {
+					Object result = Py.tojava(callClosure(value, failPipeClosure),Object.class);
+					if (result instanceof AbstractPromise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().reject(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		}, new ProgressPipe () {
 			@Override
 			public org.jdeferred.Promise pipeProgress(Object value) {
-				Object result = Py.tojava(callClosure(value, progressPipeClosure),Object.class);
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().notify(result);
+				try {
+					Object result = Py.tojava(callClosure(value, progressPipeClosure),Object.class);
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().notify(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		}));

@@ -31,15 +31,19 @@ public class GroovyPromise extends AbstractPromise<Closure<?>> {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object value) {
 				Object result;
-				if (value instanceof Object[]) {
-					result = donePipeClosure.call(new Tuple((Object[]) value));
-				} else {
-					result = donePipeClosure.call(value);
-				}
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().resolve(result);
+				try {
+					if (value instanceof Object[]) {
+						result = donePipeClosure.call(new Tuple((Object[]) value));
+					} else {
+						result = donePipeClosure.call(value);
+					}
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().resolve(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		}));
@@ -51,32 +55,40 @@ public class GroovyPromise extends AbstractPromise<Closure<?>> {
 		return new GroovyPromise(promise.then(new DonePipe() {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object value) {
-				Object result;
-				if (value instanceof Object[]) {
-					result = donePipeClosure.call(new Tuple((Object[]) value));
-				} else {
-					result = donePipeClosure.call(value);
-				}
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().resolve(result);
+				try {
+					Object result;
+					if (value instanceof Object[]) {
+						result = donePipeClosure.call(new Tuple((Object[]) value));
+					} else {
+						result = donePipeClosure.call(value);
+					}
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().resolve(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		},
 		new FailPipe() {
 			@Override
 			public org.jdeferred.Promise pipeFail(Object value) {
-				Object result;
-				if (value instanceof Object[]) {
-					result = failPipeClosure.call(new Tuple((Object[]) value));
-				} else {
-					result = failPipeClosure.call(value);
-				}
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().reject(result);
+				try {
+					Object result;
+					if (value instanceof Object[]) {
+						result = failPipeClosure.call(new Tuple((Object[]) value));
+					} else {
+						result = failPipeClosure.call(value);
+					}
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().reject(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		}));
@@ -104,32 +116,40 @@ public class GroovyPromise extends AbstractPromise<Closure<?>> {
 		new FailPipe() {
 			@Override
 			public org.jdeferred.Promise pipeFail(Object value) {
-				Object result;
-				if (value instanceof Object[]) {
-					result = failPipeClosure.call(new Tuple((Object[]) value));
-				} else {
-					result = failPipeClosure.call(value);
-				}
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().reject(result);
+				try {
+					Object result;
+					if (value instanceof Object[]) {
+						result = failPipeClosure.call(new Tuple((Object[]) value));
+					} else {
+						result = failPipeClosure.call(value);
+					}
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().reject(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		},
 		new ProgressPipe() {
 			@Override
 			public org.jdeferred.Promise pipeProgress(Object value) {
-				Object result;
-				if (value instanceof Object[]) {
-					result = progressPipeClosure.call(new Tuple((Object[]) value));
-				} else {
-					result = progressPipeClosure.call(value);
-				}
-				if (result instanceof Promise) {
-					return ((Promise) result).getPromise();
-				} else {
-					return new DeferredObject<>().notify(result);
+				try {
+					Object result;
+					if (value instanceof Object[]) {
+						result = progressPipeClosure.call(new Tuple((Object[]) value));
+					} else {
+						result = progressPipeClosure.call(value);
+					}
+					if (result instanceof Promise) {
+						return ((Promise) result).getPromise();
+					} else {
+						return new DeferredObject<>().notify(result);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
 				}
 			}
 		}));

@@ -33,21 +33,26 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 		return new JSPromise(promise.then(new DonePipe() {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object result) {
-				Context context = Context.enter();
-				Object value;
-				if (result instanceof Object[]) {
-					value = donePipe.call(context, globalScope, donePipe, (Object[]) result);
-				} else {
-					value = donePipe.call(context, globalScope, donePipe, new Object[]{result});
-				}
-				if (value instanceof NativeJavaObject)
-					value = ((NativeJavaObject) value).unwrap();
-				Context.exit();
-				
-				if (value instanceof Promise) {
-					return ((Promise) value).getPromise();
-				} else {
-					return new DeferredObject<>().resolve(value);
+				try {
+					Context context = Context.enter();
+					Object value;
+					if (result instanceof Object[]) {
+						value = donePipe.call(context, globalScope, donePipe, (Object[]) result);
+					} else {
+						value = donePipe.call(context, globalScope, donePipe, new Object[]{result});
+					}
+					if (value instanceof NativeJavaObject)
+						value = ((NativeJavaObject) value).unwrap();
+					
+					if (value instanceof Promise) {
+						return ((Promise) value).getPromise();
+					} else {
+						return new DeferredObject<>().resolve(value);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
+				} finally {
+					Context.exit();
 				}
 			}
 		}),globalScope);
@@ -59,39 +64,51 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 		return new JSPromise(promise.then(new DonePipe() {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object result) {
-				Context context = Context.enter();
-				Object value;
-				if (result instanceof Object[]) {
-					value = donePipe.call(context, globalScope, donePipe, (Object[]) result);
-				} else {
-					value = donePipe.call(context, globalScope, donePipe, new Object[]{result});
-				}
-				if (value instanceof NativeJavaObject)
-					value = ((NativeJavaObject) value).unwrap();
-				Context.exit();
-				if (value instanceof Promise) {
-					return ((Promise) value).getPromise();
-				} else {
-					return new DeferredObject<>().resolve(value);
+				try {
+					Context context = Context.enter();
+					Object value;
+					if (result instanceof Object[]) {
+						value = donePipe.call(context, globalScope, donePipe, (Object[]) result);
+					} else {
+						value = donePipe.call(context, globalScope, donePipe, new Object[]{result});
+					}
+					if (value instanceof NativeJavaObject)
+						value = ((NativeJavaObject) value).unwrap();
+					
+					if (value instanceof Promise) {
+						return ((Promise) value).getPromise();
+					} else {
+						return new DeferredObject<>().resolve(value);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
+				} finally {
+					Context.exit();
 				}
 			}
 		},new FailPipe() {
 			@Override
 			public org.jdeferred.Promise pipeFail(Object result) {
-				Context context = Context.enter();
-				Object value;
-				if (result instanceof Object[]) {
-					value = failPipe.call(context, globalScope, donePipe, (Object[]) result);
-				} else {
-					value = failPipe.call(context, globalScope, donePipe, new Object[]{result});
-				}
-				if (value instanceof NativeJavaObject)
-					value = ((NativeJavaObject) value).unwrap();
-				Context.exit();
-				if (value instanceof Promise) {
-					return ((Promise) value).getPromise();
-				} else {
-					return new DeferredObject<>().reject(value);
+				try {
+					Context context = Context.enter();
+					Object value;
+					if (result instanceof Object[]) {
+						value = failPipe.call(context, globalScope, donePipe, (Object[]) result);
+					} else {
+						value = failPipe.call(context, globalScope, donePipe, new Object[]{result});
+					}
+					if (value instanceof NativeJavaObject)
+						value = ((NativeJavaObject) value).unwrap();
+					
+					if (value instanceof Promise) {
+						return ((Promise) value).getPromise();
+					} else {
+						return new DeferredObject<>().reject(value);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
+				} finally {
+					Context.exit();
 				}
 			}
 		}
@@ -104,58 +121,76 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 		return new JSPromise(promise.then(new DonePipe() {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object result) {
-				Context context = Context.enter();
-				Object value;
-				if (result instanceof Object[]) {
-					value = donePipe.call(context, globalScope, donePipe, (Object[]) result);
-				} else {
-					value = donePipe.call(context, globalScope, donePipe, new Object[]{result});
-				}
-				if (value instanceof NativeJavaObject)
-					value = ((NativeJavaObject) value).unwrap();
-				Context.exit();
-				if (value instanceof Promise) {
-					return ((Promise) value).getPromise();
-				} else {
-					return new DeferredObject<>().resolve(value);
+				try {
+					Context context = Context.enter();
+					Object value;
+					if (result instanceof Object[]) {
+						value = donePipe.call(context, globalScope, donePipe, (Object[]) result);
+					} else {
+						value = donePipe.call(context, globalScope, donePipe, new Object[]{result});
+					}
+					if (value instanceof NativeJavaObject)
+						value = ((NativeJavaObject) value).unwrap();
+					
+					if (value instanceof Promise) {
+						return ((Promise) value).getPromise();
+					} else {
+						return new DeferredObject<>().resolve(value);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
+				} finally {
+					Context.exit();
 				}
 			}
 		}, new FailPipe() {
 			@Override
 			public org.jdeferred.Promise pipeFail(Object result) {
-				Context context = Context.enter();
-				Object value;
-				if (result instanceof Object[]) {
-					value = failPipe.call(context, globalScope, donePipe, (Object[]) result);
-				} else {
-					value = failPipe.call(context, globalScope, donePipe, new Object[]{result});
-				}
-				if (value instanceof NativeJavaObject)
-					value = ((NativeJavaObject) value).unwrap();
-				Context.exit();
-				if (value instanceof Promise) {
-					return ((Promise) value).getPromise();
-				} else {
-					return new DeferredObject<>().reject(value);
+				try {
+					Context context = Context.enter();
+					Object value;
+					if (result instanceof Object[]) {
+						value = failPipe.call(context, globalScope, donePipe, (Object[]) result);
+					} else {
+						value = failPipe.call(context, globalScope, donePipe, new Object[]{result});
+					}
+					if (value instanceof NativeJavaObject)
+						value = ((NativeJavaObject) value).unwrap();
+					
+					if (value instanceof Promise) {
+						return ((Promise) value).getPromise();
+					} else {
+						return new DeferredObject<>().reject(value);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
+				} finally {
+					Context.exit();
 				}
 			}
 		},new ProgressPipe() {
 			@Override
 			public org.jdeferred.Promise pipeProgress(Object result) {
-				Context context = Context.enter();
-				Object value;
-				if (result instanceof Object[]) {
-					value = progressPipe.call(context, globalScope, donePipe, (Object[]) result);
-				} else {
-					value = progressPipe.call(context, globalScope, donePipe, new Object[]{result});
-				}
-				if (value instanceof NativeJavaObject)
-					value = ((NativeJavaObject) value).unwrap();
-				Context.exit();
-				if (value instanceof Promise) {
-					return ((Promise) value).getPromise();
-				} else {
-					return new DeferredObject<>().notify(value);
+				try {
+					Context context = Context.enter();
+					Object value;
+					if (result instanceof Object[]) {
+						value = progressPipe.call(context, globalScope, donePipe, (Object[]) result);
+					} else {
+						value = progressPipe.call(context, globalScope, donePipe, new Object[]{result});
+					}
+					if (value instanceof NativeJavaObject)
+						value = ((NativeJavaObject) value).unwrap();
+					
+					if (value instanceof Promise) {
+						return ((Promise) value).getPromise();
+					} else {
+						return new DeferredObject<>().notify(value);
+					}
+				} catch (Exception e) {
+					return new DeferredObject<>().reject(e);
+				} finally {
+					Context.exit();
 				}
 			}
 		}),globalScope);
