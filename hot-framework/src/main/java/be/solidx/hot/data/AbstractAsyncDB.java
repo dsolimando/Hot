@@ -170,23 +170,23 @@ public abstract class AbstractAsyncDB<CLOSURE,T extends Map<?, ?>> implements As
 		}
 		
 		@Override
-		public Promise<CLOSURE> update(final T values, final T where, final CLOSURE successCallback, final CLOSURE failCallback) {
+		public Promise<CLOSURE> update(final T where, final T values, final CLOSURE successCallback, final CLOSURE failCallback) {
 			return deferredBlockingCall(new Callable<Object>() {
 				@Override
 				public Object call() throws Exception {
-					return collection.update(values, where);
+					return collection.update(where, values);
 				}
 			}, successCallback, failCallback);
 		}
 
 		@Override
-		public Promise<CLOSURE> update(final T values, final T where, final CLOSURE successCallback) {
-			return update(values, where, successCallback, null);
+		public Promise<CLOSURE> update(final T where, final T values, final CLOSURE successCallback) {
+			return update(where, values, successCallback, null);
 		}
 		
 		@Override
-		public Promise<CLOSURE> update(final T values, final T where) {
-			return update(values, where, null);
+		public Promise<CLOSURE> update(final T where, final T values) {
+			return update(where, values, null);
 		}
 
 		@Override
