@@ -474,12 +474,12 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 				if (httpResponse.isChunked()) {
 					chunked = true;
 				} else {
-					byte[] data = httpResponse.getContent().array();
-					final Object processedResponseData = ((Boolean)options.get(PROCESS_RESPONSE))?processResponseData(data):processChunkData(data);
+					final byte[] data = httpResponse.getContent().array();
 					
 					eventLoop.execute(new Runnable() {
 						@Override
 						public void run() {
+							final Object processedResponseData = ((Boolean)options.get(PROCESS_RESPONSE))?processResponseData(data):processChunkData(data);
 							if (successClosure != null) {
 								executeSuccessClosure(processedResponseData, response.statusText, response);
 							}
@@ -493,14 +493,13 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 //						}
 //					});
 				}
-				Document document;
 			} else {
 				HttpChunk chunk = (HttpChunk)event.getMessage();
 				if (chunk.isLast()) {
-					final Object processedResponseData = processResponseData(chunkedBytes.toByteArray());
 					eventLoop.execute(new Runnable() {
 						@Override
 						public void run() {
+							final Object processedResponseData = processResponseData(chunkedBytes.toByteArray());
 							if (successClosure != null) {
 								executeSuccessClosure(processedResponseData, response.statusText, response);
 							}
