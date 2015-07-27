@@ -46,6 +46,17 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 		return javascriptMap;
 	}
 	
+	public List<Map<?, ?>> toListMap(NativeArray array) {
+		List<Map<?, ?>> list  = new ArrayList<>();
+		for (Object object : array) {
+			if (object instanceof NativeObject)
+				list.add(toMap((NativeObject) object));
+			else if (object instanceof NativeArray)
+				list.add((Map<?, ?>) toListMap(array));
+		}
+		return list;
+	}
+	
 	
 	public Map<?,?> toMap(NativeObject nativeObject) {
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
