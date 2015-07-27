@@ -24,7 +24,11 @@ public class JsHttpDataDeserializer extends AbstractHttpDataDeserializer {
 	
 	@Override
 	protected Object toXML(byte[] data, Charset charset) {
-		return jsScriptExecutor.execute(new Script<org.mozilla.javascript.Script>(("var a = "+new String(data, charset)+";\n a;").getBytes(charset), "xmlParsing"));
+		String xml = new String(data, charset);
+		// We strip <?XML header
+		if (xml.indexOf("<?xml") > -1 || xml.indexOf("<?XML") > -1)
+			xml = xml.split("\\?>")[1];
+		return jsScriptExecutor.execute(new Script<org.mozilla.javascript.Script>(("var a = " + xml + ";\n a;").getBytes(charset), "xmlParsing"));
 	}
 	
 	@Override
