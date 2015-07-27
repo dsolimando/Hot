@@ -12,7 +12,7 @@ public interface Collection<T extends Map<?,?>> {
 	
 	long count (T where);
 	
-	T update (T values, T where);
+	T update ( T where, T values);
 	
 	Collection<T> remove (T t);
 	

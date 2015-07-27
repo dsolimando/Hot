@@ -6,7 +6,7 @@ public interface Collection<T extends Map<?,?>> extends be.solidx.hot.data.Colle
 	
 	T findOne ();
 	
-	T update (T values, T where, boolean upsert, boolean multi);
+	T update (T where, T values , boolean upsert, boolean multi);
 	
 	T save (T t);
 	

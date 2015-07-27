@@ -93,7 +93,7 @@ protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public T update(T values, T whereClauses) {
+	public T update(T whereClauses, T values) {
 		QueryWithCriteria query = queryBuilder.buildUpdateQuery(tableMetadata, values);
 		Multimap<String, Object> parameterValues = query.addWhereClauses(whereClauses);
 		namedParameterJdbcTemplate.update(query.build(), CollectionUtils.flat(parameterValues));

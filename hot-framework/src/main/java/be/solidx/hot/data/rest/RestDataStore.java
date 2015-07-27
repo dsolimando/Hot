@@ -521,7 +521,7 @@ public class RestDataStore extends RestController {
 				if (response == null) {
 					entityCollection.insert(entityMap);
 				} else {
-					entityCollection.update(entityMap, new LinkedHashMap<String, Object>(criteria));
+					entityCollection.update(new LinkedHashMap<String, Object>(criteria), entityMap);
 				}
 				// Add links
 				if (collectionMetadata != null) {

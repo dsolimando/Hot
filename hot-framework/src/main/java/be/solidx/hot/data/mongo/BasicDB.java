@@ -107,7 +107,7 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 		}
 
 		@Override
-		public T update(T values, T where) {
+		public T update(T where, T values) {
 			BasicDBObject valuesDbObject = new BasicDBObject(values);
 			BasicDBObject whereDbObject = new BasicDBObject(where);
 			WriteResult wr = db.getCollection(name).update(whereDbObject, valuesDbObject);
@@ -121,7 +121,7 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 		}
 		
 		@Override
-		public T update(T values, T where, boolean upsert, boolean update) {
+		public T update(T where, T values , boolean upsert, boolean update) {
 			BasicDBObject valuesDbObject = new BasicDBObject(values);
 			BasicDBObject whereDbObject = new BasicDBObject(where);
 			WriteResult wr = db.getCollection(name).update(whereDbObject, valuesDbObject, upsert, update);
