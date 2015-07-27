@@ -260,7 +260,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 			
 			if (getClass().getResource("/login.html") != null || getClass().getResource("/www/login.html") != null) {
-				and = and.formLogin().loginPage("/login.html").loginProcessingUrl("/login").and();
+				and = and.formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll().and();
 			} else {
 				and = and.formLogin().and();
 			}
