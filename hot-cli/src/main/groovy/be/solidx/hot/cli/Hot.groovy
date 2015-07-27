@@ -417,12 +417,12 @@ usage: hot <command> <options>
 			break
 
 		case "mysql":
-			def cli = new CliBuilder(usage: "hot mysql -n <datasource_name>  [-h host] [-port port] [-db database] [-s schema] [-u username] [-p password]", posix:false)
+			def cli = new CliBuilder(usage: "hot mysql -n <datasource_name> -db database -u username [-h host] [-port port] [-p password]", posix:false)
 			cli.n(args:1,longOpt:"name","Name of the datasource",required:true)
-			cli.h(args:1,longOpt:"host","Hostname or IP address of DB server (default: localhost)",required:false)
-			cli.port(args:1,longOpt:"port","connection port of DB server (default: 3306)",required:false)
 			cli.db(args:1,longOpt:"database","DB to connect to",required:true)
 			cli.u(args:1,longOpt:"username","username used for DB connection",required:true)
+			cli.h(args:1,longOpt:"host","Hostname or IP address of DB server (default: localhost)",required:false)
+			cli.port(args:1,longOpt:"port","connection port of DB server (default: 3306)",required:false)
 			cli.p(args:1,longOpt:"password","password used for DB connection (default: empty)",required:false)
 			
 			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
@@ -446,11 +446,11 @@ usage: hot <command> <options>
 		
 			
 		case "hsqldb":
-			def cli = new CliBuilder(usage: "hot hsqldb -n <datasource_name> [-db database] [-s schema] [-u username] [-p password]", posix:false)
+			def cli = new CliBuilder(usage: "hot hsqldb -n <datasource_name> -db database [-s schema] [-u username] [-p password]", posix:false)
 			cli.n(args:1,longOpt:"name","Name of the datasource",required:true)
 			cli.db(args:1,longOpt:"database","DB to connect to",required:true)
 			cli.s(args:1,longOpt:"schema","DB schema to connect to",required:false)
-			cli.u(args:1,longOpt:"username","username used for DB connection",required:false)
+			cli.u(args:1,longOpt:"username","username used for DB connection (default: sa)",required:false)
 			cli.p(args:1,longOpt:"password","password used for DB connection (default: empty)",required:false)
 			
 			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
@@ -472,7 +472,7 @@ usage: hot <command> <options>
 			break
 		
 		case "oracle":
-			def cli = new CliBuilder(usage: "hot oracle -n <datasource_name> [-h host] [-port port] [-sid service] [-s schema] [-u username] [-p password]", posix:false)
+			def cli = new CliBuilder(usage: "hot oracle -n <datasource_name> -u username -sid service -p password [-h host] [-port port] [-s schema]", posix:false)
 			cli.n(args:1,longOpt:"name","Name of the datasource",required:true)
 			cli.h(args:1,longOpt:"host","Hostname or IP address of DB server (default: localhost)",required:false)
 			cli.port(args:1,longOpt:"port","connection port of DB server (default: 1521)",required:false)
@@ -503,12 +503,12 @@ usage: hot <command> <options>
 			break
 			
 		case "pgsql":
-			def cli = new CliBuilder(usage: "hot pgsql -n <datasource_name> [-h host] [-port port] [-db database] [-s schema] [-u username] [-p password]", posix:false)
+			def cli = new CliBuilder(usage: "hot pgsql -n <datasource_name> -db database -u username [-h host] [-port port] [-s schema] [-p password]", posix:false)
 			cli.n(args:1,longOpt:"name","Name of the datasource",required:true)
 			cli.h(args:1,longOpt:"host","Hostname or IP address of DB server (default: localhost)",required:false)
 			cli.port(args:1,longOpt:"port","connection port of DB server (default: 5432)",required:false)
 			cli.db(args:1,longOpt:"database","DB to connect to",required:true)
-			cli.s(args:1,longOpt:"schema","DB schema to connect to",required:false)
+			cli.s(args:1,longOpt:"schema","Schema to be set in the search-path",required:false)
 			cli.u(args:1,longOpt:"username","username used for DB connection",required:true)
 			cli.p(args:1,longOpt:"password","password used for DB connection (default: empty)",required:false)
 			
@@ -533,7 +533,7 @@ usage: hot <command> <options>
 			break
 		
 		case "db2":
-			def cli = new CliBuilder(usage: "hot db2 -n <datasource_name> [-h host] [-port port] [-db database] [-s schema] [-u username] [-p password]", posix:false)
+			def cli = new CliBuilder(usage: "hot db2 -n <datasource_name> -db database -u username [-h host] [-port port] [-s schema] [-p password]", posix:false)
 			cli.n(args:1,longOpt:"name","Name of the datasource",required:true)
 			cli.h(args:1,longOpt:"host","Hostname or IP address of DB server (default: localhost)",required:false)
 			cli.port(args:1,longOpt:"port","connection port of DB server (default: 50000)",required:false)
@@ -564,7 +564,7 @@ usage: hot <command> <options>
 			break
 			
 		case "mongo":
-			def cli = new CliBuilder(usage: "hot mongo -n <datasource_name> [–db database] [-h host] [-port port] [-u username] [-p password]", posix:false)
+			def cli = new CliBuilder(usage: "hot mongo -n <datasource_name> –db database [-h host] [-port port] [-u username] [-p password]", posix:false)
 			cli.n(args:1,longOpt:"name","Name of the datasource",required:true)
 			cli.h(args:1,longOpt:"host","Hostname or IP address of MongoDB server (default: localhost)",required:false)
 			cli.port(args:1,longOpt:"port","connection port of MongoDB server (default: 27017)",required:false)
