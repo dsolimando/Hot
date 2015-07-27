@@ -16,6 +16,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.python.core.Py;
+import org.python.core.PyInstance;
+import org.python.core.PyString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
@@ -49,6 +52,7 @@ public class HttpDataSerializer {
 	
 	public static List<String> byteMediaTypes = Arrays.asList(
 			MediaType.APPLICATION_OCTET_STREAM.toString(),
+			"application/pdf",
 			MediaType.IMAGE_JPEG.toString(),
 			MediaType.IMAGE_GIF.toString(),
 			MediaType.IMAGE_PNG.toString());
@@ -78,7 +82,7 @@ public class HttpDataSerializer {
 		try {
 			if (data instanceof Map) {
 				return serializeMap((Map) data, mediaType);
-			} else {
+			}  else {
 				return serializeObject(data, mediaType);
 			}
 		} catch (Exception e) {
@@ -104,7 +108,14 @@ public class HttpDataSerializer {
 				return byteArrayOutputStream.toByteArray();
 			} else if (data instanceof Document) {
 					return serializeDOM((Document) data, charset);
-			} else {
+			} else if (data instanceof List<?>) {
+				HashMap<String,Object> wrapper = new HashMap<>();
+				wrapper.put("item", data);
+				return handleXML(wrapper, mediaType);
+			} else if (data instanceof PyInstance && ((PyInstance)data).instclass.__name__.equals("Document")) {
+				return ((PyString)((PyInstance)data).invoke("toxml", Py.java2py(charset.toString()))).decode(charset.toString()).toString().getBytes(charset.toString());
+			}
+			else {
 				return data.toString().getBytes(charset);
 			}
 		} else if (mediaType.getSubtype().equals(MediaType.APPLICATION_JSON.getSubtype())) {
@@ -147,14 +158,32 @@ public class HttpDataSerializer {
 		Charset charset = mediaType.getCharSet() != null?mediaType.getCharSet():defaultCharset;
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		OutputStreamWriter outputStreamWriter = new  OutputStreamWriter(byteArrayOutputStream, charset);
-		Object firstChildKey = data.keySet().iterator().next();
-		if (data.keySet().size() > 1) {
-			xStream.alias("root", LinkedHashMap.class);
-			xStream.marshal(data, new CompactWriter(outputStreamWriter));
+		String rootName = "root";
+		if (data.keySet().size() == 1) {
+			Object value = data.values().iterator().next();
+			if (value instanceof Map<?,?>) {
+				rootName = ((String) data.keySet().iterator().next());
+				xStream.alias(rootName, LinkedHashMap.class);
+				xStream.alias(rootName, Map.class);
+				xStream.marshal(data.get(rootName), new CompactWriter(outputStreamWriter));
+			} else {
+				rootName = ((String) data.keySet().iterator().next())+"s";
+				xStream.alias(rootName, LinkedHashMap.class);
+				xStream.alias(rootName, Map.class);
+				xStream.marshal(data, new CompactWriter(outputStreamWriter));
+			}
 		} else {
-			xStream.alias(firstChildKey.toString(), LinkedHashMap.class);
-			xStream.marshal(data.get(firstChildKey), new CompactWriter(outputStreamWriter));
+			xStream.alias(rootName, LinkedHashMap.class);
+			xStream.alias(rootName, Map.class);
+			xStream.marshal(data, new CompactWriter(outputStreamWriter));
 		}
+		
+			
+//		} else {
+//			xStream.alias(firstChildKey.toString(), LinkedHashMap.class);
+//			xStream.alias(firstChildKey.toString(), Map.class);
+//			xStream.marshal(data, new CompactWriter(outputStreamWriter));
+//		}
 		outputStreamWriter.flush();
 		return byteArrayOutputStream.toByteArray();
 	}
