@@ -95,7 +95,7 @@ class TestWriteCollectionApi  {
 	
 	@Test
 	void testUpdate () {
-		db.visits.update ([visit_date:"2012-09-04"],[id:2,pet_id:8,visit_date:"1996-03-04",description:"rabies shot"])
+		db.visits.update ([id:2,pet_id:8,visit_date:"1996-03-04",description:"rabies shot"],[visit_date:"2012-09-04"])
 		assert db.visits.find([visit_date:"2012-09-04"]).toList().size() == 1
 	}
 	
