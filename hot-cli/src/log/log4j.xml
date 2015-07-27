@@ -26,8 +26,8 @@
 		<appender-ref ref="File" />
 	</logger>
 	
-	<logger name="be.icode.hot" additivity="false">
-		<level value="debug" />
+	<logger name="be.solidx.hot" additivity="false">
+		<level value="info" />
 		<appender-ref ref="File" />
 	</logger>
 	
