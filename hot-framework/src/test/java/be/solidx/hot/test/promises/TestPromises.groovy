@@ -2,7 +2,7 @@ package be.solidx.hot.test.promises
 
 import static org.junit.Assert.*
 
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executors
 
 import javax.script.CompiledScript
 
@@ -11,6 +11,7 @@ import org.junit.Test
 
 import be.solidx.hot.Script
 import be.solidx.hot.js.JSScriptExecutor
+import be.solidx.hot.promises.Promise;
 import be.solidx.hot.promises.groovy.GroovyDeferred
 import be.solidx.hot.promises.js.JSDeferred
 import be.solidx.hot.promises.python.PythonDeferred
@@ -98,6 +99,55 @@ class TestPromises {
 		}
 		
 		deferred.reject "Ooops"
+	}
+	
+	@Test
+	void testGroovyPromisesThrowExceptionInHandler() {
+		def deferred = new GroovyDeferred()
+		def promise = deferred.promise()
+		
+		promise.done { result ->
+			println result
+		}
+		
+		promise.always {
+			println "always"
+		}
+		
+		Promise p2 = promise.then { result ->
+			throw new Exception("Error Man!")
+		}.done { result ->
+			println "P2 done " + result
+		}
+		
+		p2.then(
+			{ println "p2 then"; return 3}, 
+			{ e -> println e; return 10})
+		.fail({e ->
+			 println e 
+		})
+		
+		deferred.resolve "Yeah"
+		print p2.state()
+		
+		// Yeah
+		// java.lang.Exception: Error Man!
+		// 10
+		// always
+	}
+	
+	@Test
+	void testPrgressafterEnds() {
+		def deferred = new GroovyDeferred()
+		def promise = deferred.promise()
+		deferred.notify("toto")
+		deferred.resolve("done")
+		promise.progress({
+			println "progress"
+		})
+		promise.done { data ->
+			println data
+		}
 	}
 	
 	@Test
