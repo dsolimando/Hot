@@ -9,11 +9,6 @@
 	<name>hot</name>
 	<url>http://maven.apache.org</url>
 	<modules>
-		<module>hot-jquery</module>
-		<module>hot-backbone</module>
-		<module>hot-bootstrap</module>
-		<module>hot-requirejs</module>
-		<module>hot-transpilers</module>
 		<module>hot-framework</module>
 		<module>hot-jython-modules</module>
 		<module>hot-cli</module>
