@@ -1,10 +1,10 @@
 package be.solidx.hot.web;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
@@ -27,13 +26,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jdeferred.Deferred;
-import org.jdeferred.DoneCallback;
-import org.jdeferred.DonePipe;
 import org.jdeferred.FailCallback;
 import org.jdeferred.ProgressCallback;
 import org.jdeferred.Promise;
-import org.jdeferred.impl.DeferredObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -42,10 +37,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import be.solidx.hot.Script;
-import be.solidx.hot.js.transpilers.CoffeeScriptCompiler;
-import be.solidx.hot.js.transpilers.JsTranspiler;
-import be.solidx.hot.js.transpilers.LessCompiler;
+import be.solidx.hot.spring.config.CommonConfig;
 import be.solidx.hot.spring.config.HotConfig;
 import be.solidx.hot.utils.FileLoader;
 import be.solidx.hot.utils.FileLoader.Buffer;
@@ -59,22 +51,22 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 	private static final long serialVersionUID = 3391406628540589609L;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStaticResourceServlet.class);
+	
+	ApplicationContext applicationContext;
 
 	private ExecutorService eventLoop;
 	
-	private ExecutorService blockingThreadPool;
-	
 	private FileLoader fileLoader;
 	
-	LessCompiler lessCompiler;
-	
-	CoffeeScriptCompiler coffeeScriptCompiler;
-	
 	private HotConfig hotConfig;
+	
+	private CommonConfig commonConfig;
 	
 	Map<URI, FileSystem> jarFileSystemCache = new HashMap<>();
 	
 	Map<String, byte[]> transpiledScriptCache = new ConcurrentHashMap<>();
+	
+	ConcurrentHashMap<URL, URL> jbossHackMap = new ConcurrentHashMap<>();
 	
 	@Override
 	protected synchronized void doGet(HttpServletRequest servletRequest, HttpServletResponse resp) throws ServletException, IOException {
@@ -83,13 +75,11 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 		
 		if (eventLoop == null) {
 			try {
-				ApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(this.getServletContext());
+				applicationContext = WebApplicationContextUtils.getWebApplicationContext(this.getServletContext());
 				eventLoop = (ExecutorService) applicationContext.getBean("staticResourcesEventLoop");
 				fileLoader = applicationContext.getBean(FileLoader.class);
+				commonConfig = applicationContext.getBean(CommonConfig.class);
 				hotConfig = applicationContext.getBean(HotConfig.class);
-				lessCompiler = applicationContext.getBean(LessCompiler.class);
-				coffeeScriptCompiler = applicationContext.getBean(CoffeeScriptCompiler.class);
-				blockingThreadPool = (ExecutorService) applicationContext.getBean("blockingTasksThreadPool");
 			} catch (BeansException e) {
 				LOGGER.error("",e);
 			}
@@ -121,10 +111,6 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 				asyncLoadResource(servletRequest, resp, "application/x-shockwave-flash", async);
 			} else if (requestPath.endsWith(".appcache")) {
 				asyncLoadResource(servletRequest, resp, "application/x-shockwave-flash", async);
-			} else if (requestPath.endsWith(".less")) {
-				asyncLoadTranspiledScriptResource(servletRequest, resp, "text/css; charset=utf-8", lessCompiler, async);
-			} else if (requestPath.endsWith(".coffee")) {
-				asyncLoadTranspiledScriptResource(servletRequest, resp, "text/javascript", coffeeScriptCompiler, async);
 			} else {
 				resp.setStatus(HttpStatus.NOT_FOUND.value());
 				writeBytesToResponse(resp,(requestPath+ " not found").getBytes());
@@ -135,14 +121,30 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 			async.complete();
 		}
 	}
+	
+	private URL getResource (String path) throws MalformedURLException, IOException, URISyntaxException {
+		if (commonConfig.jboss()) {
+			URL vfsURL = getClass().getResource(path);
+			URL jbosshackURL = jbossHackMap.get(vfsURL);
+			if (jbosshackURL == null) {
+				// JBOSS VFS Bug (retrieving physical path via getFile().toURI() is buggy) Hack
+				String vfsRootUrl = vfsURL.getPath().split("/WEB-INF")[0];
+				String realUrl = applicationContext.getResource(vfsURL.toString()).getFile().toURI().getPath().replaceFirst(vfsRootUrl, "");
+				jbosshackURL = new URL("file:"+realUrl);
+				jbossHackMap.put(vfsURL, jbosshackURL);
+				return jbosshackURL;
+			} else return jbosshackURL;
+		}
+		return getClass().getResource(path);
+	}
 
-	private URL getResourceURL(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+	private URL getResourceURL(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception {
 		URL resourceUrl;
 		String acceptEncoding = servletRequest.getHeader("Accept-Encoding");
 		// no resource input => index.html
 		if (servletRequest.getPathInfo().equals("/")) {
-			if (!hotConfig.isDevMode() && acceptEncoding.contains("gzip")) {
-				resourceUrl = getClass().getResource("/index.html.gz");
+			if (!hotConfig.isDevMode() && acceptEncoding != null && acceptEncoding.contains("gzip")) {
+				resourceUrl = getResource("/index.html.gz");
 				if (resourceUrl != null) {
 					servletResponse.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
 					return resourceUrl;
@@ -150,10 +152,10 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 			}
 			resourceUrl = getClass().getResource("/index.html");
 		} else {
-			if (!hotConfig.isDevMode() && acceptEncoding.contains("gzip")) {
+			if (!hotConfig.isDevMode() && acceptEncoding != null && acceptEncoding.contains("gzip")) {
 				try {
 					String gzPathInfo = servletRequest.getPathInfo() + ".gz";
-					resourceUrl = getClass().getResource(gzPathInfo);
+					resourceUrl = getResource(gzPathInfo);
 					if (resourceUrl != null) {
 						servletResponse.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
 						return resourceUrl;
@@ -162,7 +164,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 					LOGGER.error("Failed to build gz path info",e);
 				}
 			}
-			resourceUrl = getClass().getResource(servletRequest.getPathInfo());
+			resourceUrl = getResource(servletRequest.getPathInfo());
 		}
 		return resourceUrl;
 	}
@@ -171,7 +173,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 			final HttpServletRequest servletRequest,
 			final HttpServletResponse servletResponse,
 			final String contentType,
-			final AsyncContext async) throws IOException, URISyntaxException {
+			final AsyncContext async) throws Exception {
 		
 		URL resourceUrl = getResourceURL(servletRequest,servletResponse);
 		
@@ -185,7 +187,6 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 		// Extract Servlet response of spring response wrapper if needed
 		final ServletOutputStream outputStream;
 		if (servletResponse instanceof SaveContextOnUpdateOrErrorResponseWrapper) {
-			((SaveContextOnUpdateOrErrorResponseWrapper) servletResponse).getResponse();
 			outputStream = ((SaveContextOnUpdateOrErrorResponseWrapper) servletResponse).getResponse().getOutputStream();
 		} else {
 			outputStream = servletResponse.getOutputStream();
@@ -198,7 +199,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 					servletResponse.setHeader(com.google.common.net.HttpHeaders.CONTENT_TYPE, contentType);
 					Path path = getPath(uri);
 					// If file in ZIP, we load fully load it in memory and write it directly 
-					if (path.getFileSystem() instanceof ZipFileSystem) {
+					if (!commonConfig.jboss() && path.getFileSystem() instanceof ZipFileSystem) {
 						byte[] bytes = Files.readAllBytes(path);
 						servletResponse.setStatus(HttpStatus.OK.value());
 						writeBytesToResponseAsync(outputStream, bytes, async);
@@ -221,6 +222,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 						writeBytesToResponseAsync(outputStream, promise, async);
 					}
 				} catch (Exception e) {
+					LOGGER.error("Error",e);
 					servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 					writeBytesToResponseAsync(outputStream, extractStackTrace(e).getBytes(), async);
 				}
@@ -228,101 +230,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 		});
 	}
 	
-	private void asyncLoadTranspiledScriptResource (
-			final HttpServletRequest servletRequest,
-			final HttpServletResponse servletResponse,
-			final String contentType,
-			final JsTranspiler jsTranspiler,
-			final AsyncContext async) throws IOException {
-		
-		
-		final String scriptName = servletRequest.getPathInfo();
-		
-		final ServletOutputStream servletOutputStream;
-		
-		if (servletResponse instanceof SaveContextOnUpdateOrErrorResponseWrapper) {
-			((SaveContextOnUpdateOrErrorResponseWrapper) servletResponse).getResponse();
-			servletOutputStream = ((SaveContextOnUpdateOrErrorResponseWrapper) servletResponse).getResponse().getOutputStream();
-		} else {
-			servletOutputStream = servletResponse.getOutputStream();
-		}
-		
-		if (!hotConfig.isDevMode() && transpiledScriptCache.keySet().contains(scriptName)) {
-			servletResponse.setStatus(HttpStatus.OK.value());
-			servletResponse.setHeader(com.google.common.net.HttpHeaders.CONTENT_TYPE, contentType);
-			writeBytesToResponseAsync(servletOutputStream, transpiledScriptCache.get(scriptName), async);
-		}
-		
-		eventLoop.execute(new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					Path path = Paths.get(getClass().getResource(servletRequest.getPathInfo()).toURI());
-					final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-					Promise<Void, Exception, Buffer> promise = fileLoader.loadResourceAsync(path);
-					
-					promise.progress(new ProgressCallback<FileLoader.Buffer>() {
-						public void onProgress(final Buffer progress) {
-							outputStream.write(progress.getContent(), 0, progress.getLength());
-						}
-					}).fail(new FailCallback<Exception>() {
-						public void onFail(Exception e) {
-							servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-							writeBytesToResponseAsync(servletOutputStream, extractStackTrace(e).getBytes(), async);
-						}
-					}).then(new DonePipe<Void, byte[], Exception, Void>() {
 	
-						@Override
-						public Promise<byte[], Exception, Void> pipeDone(Void voidd) {
-							final Deferred<byte[], Exception, Void> deferred = new DeferredObject<>();
-							final byte[] fileBytes = outputStream.toByteArray();
-							
-							blockingThreadPool.execute(new Runnable() {
-								@Override
-								public void run() {
-									try {
-										Thread.currentThread().setContextClassLoader(blockingThreadPool.getClass().getClassLoader());
-										Script<String> script = new Script<>(fileBytes, scriptName);
-										final String css = jsTranspiler.compile(script);
-										eventLoop.execute(new Runnable() {
-											@Override
-											public void run() {
-												System.out.println(css);
-												deferred.resolve(css.getBytes());
-											}
-										});
-									} catch (Exception e) {
-										deferred.reject(e);
-									}
-								}
-							});
-							return deferred.promise();
-						}
-					}).done(new DoneCallback<byte[]>() {
-						@Override
-						public void onDone(byte[] result) {
-							transpiledScriptCache.put(scriptName, result);
-							servletResponse.setStatus(HttpStatus.OK.value());
-							servletResponse.setHeader(com.google.common.net.HttpHeaders.CONTENT_TYPE, contentType);
-							writeBytesToResponseAsync(servletOutputStream, result, async);
-						}
-					}).fail(new FailCallback<Exception>() {
-						@Override
-						public void onFail(Exception e) {
-							servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-							writeBytesToResponseAsync(servletOutputStream, extractStackTrace(e).getBytes(), async);
-						}
-					});
-					
-				} catch (Exception e) {
-					servletResponse.setStatus(HttpStatus.NOT_FOUND.value());
-					writeBytesToResponseAsync(servletOutputStream, extractStackTrace(e).getBytes(), async);
-					async.complete();
-				}
-			}
-		});
-	}
 	
 	private void writeBytesToResponse(HttpServletResponse httpServletResponse, byte[] bytes) {
 		try {
@@ -417,7 +325,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 		return stringWriter.toString();
 	}
 	
-	private Path getPath(URI uri) throws IOException {
+	private Path getPath(URI uri) throws IOException, URISyntaxException {
 		if (uri.toString().startsWith("jar:") && !jarFileSystemCache.keySet().contains(uri)) {
 			LOGGER.warn("accessing content of jar file => blocking IO needed");
 			final String[] tokens = uri.toString().split("!");
