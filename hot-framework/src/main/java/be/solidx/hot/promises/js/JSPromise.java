@@ -10,6 +10,7 @@ import org.jdeferred.ProgressPipe;
 import org.jdeferred.Promise.State;
 import org.jdeferred.impl.DeferredObject;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeFunction;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
@@ -36,7 +37,7 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 				try {
 					Context context = Context.enter();
 					Object value;
-					if (result instanceof Object[]) {
+					if (result instanceof Object[] && !(result instanceof NativeArray)) {
 						value = donePipe.call(context, globalScope, donePipe, (Object[]) result);
 					} else {
 						value = donePipe.call(context, globalScope, donePipe, new Object[]{result});
@@ -67,7 +68,7 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 				try {
 					Context context = Context.enter();
 					Object value;
-					if (result instanceof Object[]) {
+					if (result instanceof Object[] && !(result instanceof NativeArray)) {
 						value = donePipe.call(context, globalScope, donePipe, (Object[]) result);
 					} else {
 						value = donePipe.call(context, globalScope, donePipe, new Object[]{result});
@@ -92,7 +93,7 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 				try {
 					Context context = Context.enter();
 					Object value;
-					if (result instanceof Object[]) {
+					if (result instanceof Object[] && !(result instanceof NativeArray)) {
 						value = failPipe.call(context, globalScope, donePipe, (Object[]) result);
 					} else {
 						value = failPipe.call(context, globalScope, donePipe, new Object[]{result});
@@ -124,7 +125,7 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 				try {
 					Context context = Context.enter();
 					Object value;
-					if (result instanceof Object[]) {
+					if (result instanceof Object[] && !(result instanceof NativeArray)) {
 						value = donePipe.call(context, globalScope, donePipe, (Object[]) result);
 					} else {
 						value = donePipe.call(context, globalScope, donePipe, new Object[]{result});
@@ -149,7 +150,7 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 				try {
 					Context context = Context.enter();
 					Object value;
-					if (result instanceof Object[]) {
+					if (result instanceof Object[] && !(result instanceof NativeArray)) {
 						value = failPipe.call(context, globalScope, donePipe, (Object[]) result);
 					} else {
 						value = failPipe.call(context, globalScope, donePipe, new Object[]{result});
@@ -174,7 +175,7 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 				try {
 					Context context = Context.enter();
 					Object value;
-					if (result instanceof Object[]) {
+					if (result instanceof Object[] && !(result instanceof NativeArray)) {
 						value = progressPipe.call(context, globalScope, donePipe, (Object[]) result);
 					} else {
 						value = progressPipe.call(context, globalScope, donePipe, new Object[]{result});
@@ -203,7 +204,7 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 			@Override
 			public void onDone(Object result) {
 				Context context = Context.enter();
-				if (result instanceof Object[]) {
+				if (result instanceof Object[] && !(result instanceof NativeArray)) {
 					doneClosure.call(context, globalScope, doneClosure, (Object[]) result);
 				} else {
 					doneClosure.call(context, globalScope, doneClosure, new Object[]{result});
@@ -221,7 +222,7 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 			@Override
 			public void onFail(Object result) {
 				Context context = Context.enter();
-				if (result instanceof Object[]) {
+				if (result instanceof Object[] && !(result instanceof NativeArray)) {
 					failClosure.call(context, globalScope, failClosure, (Object[]) result);
 				} else {
 					failClosure.call(context, globalScope, failClosure, new Object[]{result});
