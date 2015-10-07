@@ -255,12 +255,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				}
 			}).csrf().disable();
 			
+			if (commonConfig.secureDirs().size() == 0)
+				return;
+			
 			for (String path : commonConfig.secureDirs()) {
 				and = and.authorizeRequests().antMatchers(path+"/*").authenticated().and();
 			}
 			
 			if (getClass().getResource("/login.html") != null || getClass().getResource("/www/login.html") != null) {
-				and = and.formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll().and();
+				and = and.formLogin().loginPage("/login.html").permitAll().loginProcessingUrl("/login").and();
 			} else {
 				and = and.formLogin().and();
 			}
@@ -389,9 +392,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 			
 			if (hasauth && dynamicLoginPage != null) {
-				and.formLogin().loginPage(dynamicLoginPage).loginProcessingUrl("/login").permitAll();
+				and.formLogin().loginPage(dynamicLoginPage).permitAll().loginProcessingUrl("/login").and();
 			} else if (hasauth && staticLoginPage) {
-				and.formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll().and();
+				and.formLogin().loginPage("/login.html").permitAll().loginProcessingUrl("/login").and();
 			}
 			
 			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
