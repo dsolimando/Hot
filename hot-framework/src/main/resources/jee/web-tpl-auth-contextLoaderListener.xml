@@ -9,14 +9,12 @@
 	</context-param>
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-		<load-on-startup>1</load-on-startup>
 	</listener>
 	
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
 		<async-supported>true</async-supported>
-		<load-on-startup>1</load-on-startup>
 	</filter>
 	
 	<filter-mapping>
