@@ -1,6 +1,7 @@
 package be.solidx.hot.spring.config;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,7 @@ public class CommonConfig {
 		
 		// Application server
 		if (configFileURL().getPath().contains("WEB-INF/classes")) {
-			secureMarkers = applicationContext.getResources("classpath:**/.secure");
+			secureMarkers = applicationContext.getResources("/WEB-INF/classes/**/.secure");
 			appServer = true;
 		} else {
 			secureMarkers = applicationContext.getResources("classpath*:/www/**/.secure");
@@ -172,6 +173,20 @@ public class CommonConfig {
 			configFile = "/"+configFile;
 		
 		return getClass().getResource(configFile);
+	}
+	
+	@Bean
+	public Boolean jboss() {
+		try {
+			boolean isJboss = configFileURL().toURI().getScheme().equalsIgnoreCase("vfs");
+			if (isJboss) {
+				LOGGER.info("We are running on e JBOSS application server");
+			}
+			return isJboss;
+		} catch (URISyntaxException e) {
+			LOGGER.error("",e);
+			return false;
+		}
 	}
 	
 	@Bean
