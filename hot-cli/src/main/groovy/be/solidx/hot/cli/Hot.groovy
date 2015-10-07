@@ -199,7 +199,7 @@ public class Hot {
 		servletContextHandler.addServlet(staticHolder, "/*")
 
 		server.start()
-		println("Hot Server started successfully. To have fun, go to http://localhost:${port?:8080}")
+		println("Hot Server started successfully, Please go to http://localhost:${port?:8080}/welcome.hotg")
 		println("To kill me, just CTRL-C")
 		server.join()
 	}
@@ -254,7 +254,6 @@ public class Hot {
 		warClassesFolder.mkdir()
 		FileUtils.copyDirectory new File (project.absolutePaths.www), warClassesFolder,[accept:{file-> !(file ==~ /.*?\.jsp/) }] as FileFilter
 		FileUtils.copyDirectory new File (project.absolutePaths.resources), warClassesFolder
-		FileUtils.copyDirectory new File (project.absolutePaths.shows), warClassesFolder
 		
 		def sqlFolder = new File (project.absolutePaths.sql)
 		if (sqlFolder.exists()) {
@@ -266,6 +265,29 @@ public class Hot {
 		
 		// if gae project, create gae config file and use real gae datasource-factory
 		def wardir = false
+		if (config.nature == "gae") {
+			wardir = true
+			if (System.getenv().get("GAE_HOME") == null) {
+				logger.error "please define GAE_HOME env var in order to build war folder for gae deployment"
+				return
+			}
+			def version = config.version?.replaceAll ("\\.", "-")
+			def gaeConfig = new File (webinf,"appengine-web.xml")
+			def content = """
+				<appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
+				  <application>${config["name"]}</application>
+				  <version>${version?:"0-1"}</version>
+				  <sessions-enabled>true</sessions-enabled>
+				  <threadsafe>true</threadsafe>
+				  <system-properties>
+					<property name="file.encoding" value="UTF-8" />
+					<property name="groovy.source.encoding" value="UTF-8" />
+					<property name="python.cachedir.skip" value="true" />
+				  </system-properties>
+				</appengine-web-app>
+			"""
+			gaeConfig.setText content.trim()
+		}
 		
 		// change devMode
 		config.devMode = false
@@ -874,21 +896,9 @@ usage: hot <command> <options>
 			}
 			
 			// create welcome page
-			def wpage = getClass().getClassLoader().getResourceAsStream("pages/index.html").text
-			def wpageFile = new File ("${absolutePaths.www}/index.html")
+			def wpage = getClass().getClassLoader().getResourceAsStream("pages/welcome.hotg").text
+			def wpageFile = new File ("${absolutePaths.www}/welcome.hotg")
 			wpageFile.setText wpage
-			
-			def groovyShow = getClass().getClassLoader().getResourceAsStream("examples/example.show.groovy").text
-			def groovyShowFile = new File ("${absolutePaths.shows}/example.show.groovy")
-			groovyShowFile.setText groovyShow
-			
-			def jsShow = getClass().getClassLoader().getResourceAsStream("examples/example.show.js").text
-			def jsShowFile = new File ("${absolutePaths.shows}/example.show.js")
-			jsShowFile.setText jsShow
-			
-			def pyShow = getClass().getClassLoader().getResourceAsStream("examples/example.show.py").text
-			def pyShowFile = new File ("${absolutePaths.shows}/example.show.py")
-			pyShowFile.setText pyShow
 			
 			// create config file
 			def config = ["name":projectName,"nature": projectNature, "version": projectVersion, devMode: true]
