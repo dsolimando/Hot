@@ -67,14 +67,6 @@ public class TestScriptExecutors {
 	JSScriptExecutor jsScriptExecutorWithGlobalInit;
 	
 	@Autowired
-	@Qualifier("CoffeeScriptCompiler")
-	CoffeeScriptCompiler coffeeScriptCompiler;
-	
-	@Autowired
-	@Qualifier("LessCompiler")
-	LessCompiler lessCompiler;
-	
-	@Autowired
 	SixCompiler sixCompiler;
 	
 	@Test
@@ -437,22 +429,6 @@ public class TestScriptExecutors {
 		contextMap.put("dbmap", nativeObject);
 		Object o = jsScriptExecutorWithGlobalInit.execute(script, contextMap);
 		Assert.assertEquals("titi", o);
-	}
-	
-	@Test
-	public void testCoffeeScriptCompiler() throws Exception {
-		Script<String> script = new Script<String>("square = (x) -> x * x".getBytes("utf8"), "square");
-		long now = System.currentTimeMillis();
-		Assert.assertEquals(IOUtils.toString(getClass().getResourceAsStream("/be/solidx/hot/test/square.js")).trim(), coffeeScriptCompiler.compile(script).trim());
-		System.out.println(System.currentTimeMillis()-now);
-	}
-	
-	@Test
-	public void testLessScriptCompiler() throws Exception {
-		Script<String> script = new Script<String>("@color: #4D926F;\n#header {\ncolor: @color;\n}\nh2 {\ncolor: @color;}".getBytes("utf8"), "color");
-		long now = System.currentTimeMillis();
-		Assert.assertEquals(IOUtils.toString(getClass().getResourceAsStream("/be/solidx/hot/test/test.css")).trim(), lessCompiler.compile(script).trim());
-		System.out.println(System.currentTimeMillis()-now);
 	}
 	
 	@Test

@@ -19,6 +19,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -41,8 +43,12 @@ public class ClosureRequestMappingHandlerMappingTest {
 	@Autowired
 	ClosureRequestMappingHandlerMapping closureRequestMappingHandlerMapping;
 	
+	@Autowired
+	ResourceLoader resourceLoader;
+	
 	@Test
 	public void testResolver() throws Exception {
+		
 		Map<String, Enumeration<String>> headers = new HashMap<String, Enumeration<String>>();
 		headers.put("Host", new Vector<>(Arrays.asList("agile.dzone.com")).elements());
 		headers.put("Accept",new Vector<>(Arrays.asList("text/html","application/xhtml+xml","application/xml;q=0.9,*/*;q=0.8")).elements());
