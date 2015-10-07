@@ -20,8 +20,6 @@ import be.solidx.hot.groovy.GroovyWebScriptExecutor;
 import be.solidx.hot.js.JSScriptExecutor;
 import be.solidx.hot.js.JSWebScriptExecutor;
 import be.solidx.hot.js.JsMapConverter;
-import be.solidx.hot.js.transpilers.CoffeeScriptCompiler;
-import be.solidx.hot.js.transpilers.LessCompiler;
 import be.solidx.hot.python.PyDictionaryConverter;
 import be.solidx.hot.python.PythonWebScriptExecutor;
 import be.solidx.hot.utils.GroovyHttpDataDeserializer;
@@ -75,22 +73,6 @@ public class ScriptExecutorsConfig {
 		jsScriptExecutor.setInterpretive(true);
 		jsScriptExecutor.setGlobalScopeScripts(Arrays.asList("/js/coffee-script.js","/js/less.js"));
 		return jsScriptExecutor;
-	}
-	
-	@Bean
-	public CoffeeScriptCompiler coffeeScriptCompiler () {
-		CoffeeScriptCompiler coffeeScriptCompiler = new CoffeeScriptCompiler();
-		coffeeScriptCompiler.setDevMode(hotConfig.isDevMode());
-		coffeeScriptCompiler.setJsScriptExecutor(coffeescriptCompilerScriptExecutor());
-		return coffeeScriptCompiler;
-	}
-	
-	@Bean
-	public LessCompiler lessCompiler () {
-		LessCompiler lessCompiler = new LessCompiler();
-		lessCompiler.setDevMode(hotConfig.isDevMode());
-		lessCompiler.setJsScriptExecutor(coffeescriptCompilerScriptExecutor());
-		return lessCompiler;
 	}
 	
 	@Bean
