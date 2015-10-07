@@ -1,6 +1,5 @@
 package be.solidx.hot.utils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -9,10 +8,8 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileAttribute;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import org.jdeferred.Deferred;
@@ -44,26 +41,7 @@ public class FileLoader {
 	public Promise<Void, Exception, Buffer> loadResourceAsync(final Path path) throws IOException {
 		final Deferred<Void, Exception, Buffer> deferred = new DeferredObject<>();
 		
-//		if (touchCache && filecache.keySet().contains(path)) {
-//			final byte[] file = filecache.get(path);
-//			eventLoop.execute(new Runnable() {
-//				@Override
-//				public void run() {
-//					deferred.notify(new Buffer(file, file.length));
-//					deferred.resolve(null);
-//				}
-//			});
-//			return deferred.promise();
-//		}
-		
 		final ByteBuffer byteBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-//		final ByteArrayOutputStream byteArrayOutputStream;
-		
-//		if (touchCache) {
-//			byteArrayOutputStream = new ByteArrayOutputStream();
-//		} else {
-//			byteArrayOutputStream = null;
-//		}
 		
 		Set<OpenOption> options = new HashSet<>();
 		options.add(StandardOpenOption.READ);
@@ -79,19 +57,12 @@ public class FileLoader {
 				if (result == -1) {
 					deferred.resolve(null);
 					try {
-//						if (touchCache) {
-//							byteArrayOutputStream.flush();
-//							filecache.put(path, byteArrayOutputStream.toByteArray());
-//						}
 						asyncChannel.close();
 					} catch (IOException e) {
 						LOGGER.error("",e);
 					}
 				} else {
 					deferred.notify(new Buffer(byteBuffer.array(), result));
-//					if (touchCache) {
-//						byteArrayOutputStream.write(byteBuffer.array(),0,result);
-//					}
 					byteBuffer.clear();
 					pos += result;
 					asyncChannel.read(byteBuffer, pos, null, this);
@@ -100,6 +71,7 @@ public class FileLoader {
 
 			@Override
 			public void failed(Throwable exc, Void attachment) {
+				LOGGER.error("",exc);
 				deferred.reject(new Exception(exc));
 			}
 		};
@@ -114,7 +86,6 @@ public class FileLoader {
 		
 		public Buffer(byte[] content, int length) {
 			this.content = new byte[length];
-//			this.content = Arrays.copyOf(content, length);
 			System.arraycopy(content, 0, this.content, 0, length);
 			this.length = length;
 		}
