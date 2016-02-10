@@ -70,7 +70,7 @@ public class JSScriptExecutor implements ScriptExecutor<org.mozilla.javascript.S
 	
 	private void commonsjs (Scriptable scope, Context context) {
 		try {
-			URI moduleRootUri = commonsjsModuleRoot.startsWith("classpath:")?
+			URI moduleRootUri = commonsjsModuleRoot.startsWith("classpath:") && getClass().getResource(commonsjsModuleRoot.split(":")[1]) != null ?
 					getClass().getResource(commonsjsModuleRoot.split(":")[1]).toURI():
 						new URI(commonsjsModuleRoot);
 			ModuleScriptProvider moduleScriptProvider = new SoftCachingModuleScriptProvider(new UrlModuleSourceProvider(Arrays.asList(moduleRootUri), null));
