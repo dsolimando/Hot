@@ -2,6 +2,7 @@ package be.solidx.hot.utils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.mozilla.javascript.NativeObject;
@@ -32,7 +33,12 @@ public class JsHttpDataDeserializer extends AbstractHttpDataDeserializer {
 	}
 	
 	@Override
-	protected NativeObject toJSON(byte[] data) throws IOException {
-		return jsDataConverter.toScriptMap(super.toJSON(data));
+	protected Map<?, ?> fromFormUrlEncoded(String data) {
+		return jsDataConverter.toScriptMap(super.fromFormUrlEncoded(data));
+	}
+	
+	@Override
+	protected NativeObject fromJSON(byte[] data) throws IOException {
+		return jsDataConverter.toScriptMap(super.fromJSON(data));
 	}
 }

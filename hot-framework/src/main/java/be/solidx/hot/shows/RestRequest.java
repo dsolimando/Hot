@@ -1,22 +1,37 @@
 package be.solidx.hot.shows;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.fileupload.ParameterParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
+import org.springframework.social.connect.ConnectionData;
+import org.springframework.social.security.SocialAuthenticationToken;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.servlet.HandlerMapping;
 
 import be.solidx.hot.shows.ClosureRequestMapping.Options;
+import be.solidx.hot.shows.groovy.GroovyRestRequest;
 import be.solidx.hot.utils.HttpDataDeserializer;
 import be.solidx.hot.utils.ScriptMapConverter;
 
 import com.google.common.net.HttpHeaders;
 
 public abstract class RestRequest<T extends Map<?, ?>> {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(GroovyRestRequest.class);
 	
 	T pathParams;
 	
@@ -34,6 +49,10 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	
 	protected Authentication authentication;
 	
+	protected ScriptMapConverter<T> scriptMapConverter;
+	
+	protected Map<String, Object> userAsMap = new HashMap<>();
+
 	@SuppressWarnings("unchecked")
 	public RestRequest(
 			Options options,
@@ -48,9 +67,68 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 		
 		pathParams = scriptMapConverter.toScriptMap(matrixVariables);
 		requestParams = scriptMapConverter.toScriptMap(httpServletRequest.getParameterMap());
+		
 		headers = scriptMapConverter.httpHeadersToMap(httpServletRequest);
 		principal = buildPrincipal(httpServletRequest);
 		requestBody = deserializeBody(body, options);
+		this.scriptMapConverter = scriptMapConverter;
+	}
+	
+	protected void initUser(Authentication authentication) {
+		
+		if (authentication == null) {
+			userAsMap = null;
+			return;
+		}
+		
+		LOGGER.debug("Authentication Type: "+authentication.getClass());
+		
+		if (authentication instanceof UsernamePasswordAuthenticationToken) {
+			UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = (UsernamePasswordAuthenticationToken) authentication;
+			List<String> roles = new ArrayList<>();
+			
+			if (usernamePasswordAuthenticationToken.getPrincipal() instanceof LdapUserDetailsImpl) {
+				LdapUserDetailsImpl detailsImpl = (LdapUserDetailsImpl) usernamePasswordAuthenticationToken.getPrincipal();
+				userAsMap.put("name", detailsImpl.getUsername());
+				userAsMap.put("username", detailsImpl.getUsername());
+				userAsMap.put("password", detailsImpl.getPassword());
+				userAsMap.put("dn", detailsImpl.getDn());
+				for (GrantedAuthority authority : detailsImpl.getAuthorities()) {
+					roles.add(authority.getAuthority());
+				}
+			} else {
+				
+				Object principal = usernamePasswordAuthenticationToken.getPrincipal();
+				if (principal instanceof String) {
+					userAsMap.put("name", usernamePasswordAuthenticationToken.getPrincipal());
+					userAsMap.put("username", usernamePasswordAuthenticationToken.getPrincipal());
+					userAsMap.put("password", usernamePasswordAuthenticationToken.getCredentials());
+					for (GrantedAuthority authority : usernamePasswordAuthenticationToken.getAuthorities()) {
+						roles.add(authority.getAuthority());
+					}
+				} else if (principal instanceof User) {
+					User userDetails = (User) principal;
+					userAsMap.put("name", userDetails.getUsername());
+					userAsMap.put("username", userDetails.getUsername());
+					userAsMap.put("password", userDetails.getPassword());
+					for (GrantedAuthority authority : userDetails.getAuthorities()) {
+						roles.add(authority.getAuthority());
+					}
+				}
+			}
+			userAsMap.put("roles", roles);
+		} else if (authentication instanceof SocialAuthenticationToken) {
+			SocialAuthenticationToken socialAuthenticationToken = (SocialAuthenticationToken) authentication;
+			ConnectionData connectionData = socialAuthenticationToken.getConnection().createData();
+			userAsMap.put("name", socialAuthenticationToken.getName());
+			userAsMap.put("username", socialAuthenticationToken.getName());
+			userAsMap.put("accessToken", connectionData.getAccessToken());
+			userAsMap.put("picture", connectionData.getImageUrl());
+			userAsMap.put("link", connectionData.getProfileUrl());
+			userAsMap.put("id", connectionData.getProviderUserId());
+			userAsMap.put("provider", connectionData.getProviderId());
+			userAsMap.put("expiresIn", connectionData.getExpireTime());
+		}
 	}
 	
 	public T getPathParams() {

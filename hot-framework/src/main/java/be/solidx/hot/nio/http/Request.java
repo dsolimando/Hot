@@ -404,6 +404,7 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 			try {
 				return httpDataSerializer.serialize(options.get(DATA), contentType);
 			} catch (HttpDataSerializationException e) {
+				LOGGER.error("Failed to serialize provied HTTP data",e);
 				return null;
 			}
 		}
@@ -447,7 +448,7 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 			eventLoop.execute(new Runnable() {
 				@Override
 				public void run() {
-					deferred.reject(e.getCause(), e.getCause().getMessage(), null);
+					deferred.reject(e.getCause(), e.getCause().getMessage());
 					if (errorClosure != null) {
 						executeErrorClosure(null, e.getCause().getMessage(), e.getCause());
 					}

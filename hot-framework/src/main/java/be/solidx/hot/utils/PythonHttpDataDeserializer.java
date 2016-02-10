@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,8 +42,12 @@ public class PythonHttpDataDeserializer extends AbstractHttpDataDeserializer {
 	}
 	
 	@Override
-	protected PyDictionary toJSON(byte[] data) throws IOException {
-		return pyDataConverter.toScriptMap(super.toJSON(data));
+	protected PyDictionary fromJSON(byte[] data) throws IOException {
+		return pyDataConverter.toScriptMap(super.fromJSON(data));
 	}
 
+	@Override
+	protected Map<?, ?> fromFormUrlEncoded(String data) {
+		return pyDataConverter.toScriptMap(super.fromFormUrlEncoded(data));
+	}
 }
