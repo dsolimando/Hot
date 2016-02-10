@@ -84,12 +84,17 @@ public class SSLContextBuilder {
 		if (options.get(JKS) != null) {
 			parsedOptions.put(JKS, options.get(JKS));
 		}
-		if (options.get(JKS_CERTIFICATE_PASSWORD) != null) {
-			parsedOptions.put(JKS_CERTIFICATE_PASSWORD, options.get(JKS_CERTIFICATE_PASSWORD));
-		}
 		if (options.get(JKSPASSWORD) != null) {
 			parsedOptions.put(JKSPASSWORD, options.get(JKSPASSWORD));
+		} else {
+			parsedOptions.put(JKSPASSWORD, "");
 		}
+		if (options.get(JKS_CERTIFICATE_PASSWORD) != null) {
+			parsedOptions.put(JKS_CERTIFICATE_PASSWORD, options.get(JKS_CERTIFICATE_PASSWORD));
+		} else {
+			parsedOptions.put(JKS_CERTIFICATE_PASSWORD,options.get(JKSPASSWORD));
+		}
+		
 		if (options.get(KEY) != null) {
 			parsedOptions.put(KEY, options.get(KEY));
 		}
