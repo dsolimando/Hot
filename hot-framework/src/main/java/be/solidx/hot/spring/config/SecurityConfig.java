@@ -47,6 +47,8 @@ import org.springframework.social.security.SocialAuthenticationServiceLocator;
 import org.springframework.social.security.SocialUserDetailsService;
 import org.springframework.social.security.SpringSocialConfigurer;
 
+import com.google.common.net.HttpHeaders;
+
 import be.solidx.hot.data.jdbc.AbstractDB;
 import be.solidx.hot.data.jdbc.DB;
 import be.solidx.hot.data.mongo.BasicDB;
@@ -59,8 +61,6 @@ import be.solidx.hot.spring.config.HotConfig.AuthType;
 import be.solidx.hot.spring.config.HotConfig.DBEngine;
 import be.solidx.hot.spring.config.HotConfig.DataSource;
 import be.solidx.hot.spring.security.OAuth2ClientAuthenticationFilter;
-
-import com.google.common.net.HttpHeaders;
 
 @Configuration
 @EnableWebSecurity
@@ -523,7 +523,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					final Map<String, Object> res = db.getCollection("users").findOne(query);
 					Set<GrantedAuthority> grantedAuthorities = getUserAuthoritiesFromGroup(username);
 					
-					return new User(res.get("username").toString(), res.get("password").toString(), true, true, true, true, grantedAuthorities);
+					return new User(res.get("username").toString(), res.get("password").toString(), grantedAuthorities);
 				} else {
 					return getUserWithAuthorities(username);
 				}
@@ -538,10 +538,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				
 				final Map<String, Object> res = db.getCollection("users").findOne(query);
 				
-				for (Object authority : (List<?>)res.get("authorities")) {
-					grantedAuthorities.add(new SimpleGrantedAuthority(authority.toString()));
+				Object authorities = res.get("authorities");
+				if (authorities != null && authorities instanceof List<?>) {
+					for (Object authority : (List<?>)res.get("authorities")) {
+						grantedAuthorities.add(new SimpleGrantedAuthority(authority.toString()));
+					}
 				}
-				return new User(res.get("username").toString(), res.get("password").toString(), true, true, true, true, grantedAuthorities);
+				return new User(res.get("username").toString(), res.get("password").toString(), grantedAuthorities);
 			}
 			
 			private Set<GrantedAuthority> getUserAuthoritiesFromGroup(String username) {
