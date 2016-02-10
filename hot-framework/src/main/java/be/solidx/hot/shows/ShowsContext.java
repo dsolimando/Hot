@@ -178,6 +178,11 @@ public class ShowsContext implements  ApplicationEventPublisherAware, Applicatio
 		}
 		
 		Show<?, ?> show = lookupShow(event.getShowUrl());
+		
+		if (show == null) {
+			if (LOGGER.isDebugEnabled()) LOGGER.debug("Show file not found");
+		}
+		
 		switch (event.getReloadReason()) {
 		case ADDED:
 			if (show == null) {
