@@ -8,7 +8,7 @@
 			<fileMode>0744</fileMode>
 		</file>
 		<file>
-			<source>src/log/log4j.xml</source>
+			<source>src/log/logback.xml</source>
 			<outputDirectory>lib</outputDirectory>
 		</file>
 	</files>
@@ -17,25 +17,8 @@
 			<unpack>false</unpack>
 			<scope>runtime</scope>
 			<outputDirectory>lib</outputDirectory>
-			<excludes>
-				<exclude>be.solidx.hot:hot-backbone</exclude>
-				<exclude>be.solidx.hot:hot-bootstrap</exclude>
-				<exclude>be.solidx.hot:hot-jquery</exclude>
-				<exclude>be.solidx.hot:hot-requirejs</exclude>
-				<exclude>be.solidx.hot:hot-transpilers</exclude>
-			</excludes>
+			
 		</dependencySet>
-		<dependencySet>
-			<unpack>true</unpack>
-			<scope>runtime</scope>
-			<outputDirectory>lib</outputDirectory>
-			<includes>
-				<include>be.solidx.hot:hot-backbone</include>
-				<include>be.solidx.hot:hot-bootstrap</include>
-				<include>be.solidx.hot:hot-jquery</include>
-				<include>be.solidx.hot:hot-requirejs</include>
-				<include>be.solidx.hot:hot-transpilers</include>
-			</includes>
-		</dependencySet>
+		
 	</dependencySets>
 </assembly>

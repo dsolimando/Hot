@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 abstract public class HotPageCompiler {
 
-	private static final Log logger = LogFactory.getLog(HotPageCompiler.class);
+	private static final Logger logger = LoggerFactory.getLogger(HotPageCompiler.class);
 
 	private boolean devMode = false;
 
