@@ -1,5 +1,3 @@
-
-
 package be.solidx.hot.cli
 
 import javax.script.ScriptEngine
@@ -12,7 +10,7 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.SerializationConfig.Feature
 import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.FilterHolder
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
@@ -22,13 +20,11 @@ import org.springframework.web.filter.DelegatingFilterProxy
 import org.springframework.web.servlet.DispatcherServlet
 
 import be.solidx.hot.rest.ClientAuthServlet
-import be.solidx.hot.shows.rest.RestClosureServlet;
+import be.solidx.hot.shows.rest.RestClosureServlet
 import be.solidx.hot.spring.config.SecurityConfig
 import be.solidx.hot.spring.config.ShowConfig
 import be.solidx.hot.spring.config.SocialConfig
-import be.solidx.hot.web.AsyncStaticResourceServlet;
-
-
+import be.solidx.hot.web.AsyncStaticResourceServlet
 
 public class Hot {
 
@@ -44,11 +40,6 @@ public class Hot {
 		this.projectsFolder = projectsFolder
 		this.projectName = projectName
 	}
-
-	def authenticationSQLScripts = [
-		h2:		"auth/sql/h2-auth-init.sql",
-		mysql:	"auth/sql/mysql-auth-init.sql"
-	]
 
 	def eclipse = { Project project ->
 		// Checks project exists
@@ -359,13 +350,15 @@ usage: hot <command> <options>
 			return
 		}
 		
+		def filteredArgs = args.length > 1?args[1..args.length-1]:[]
+		
 		switch (args[0]) {
 		case "create":
 			def cli = new CliBuilder(usage: "hot create -n <project_name> [-t project_type] [-v version]", posix:false)
 			cli.n(args:1,longOpt:"name","Name of the project", required:true)
 			cli.t(args:1,longOpt:"type","Nature of the project. Possible values: jee, gae", required:false)
 			cli.v(args:1,longOpt:"version","Version number of the project", required:false)
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def options = cli.parse (filteredArgs)
 			if (!options) {
 				Log.info commandUsage
 				return
@@ -381,7 +374,7 @@ usage: hot <command> <options>
 			def cli = new CliBuilder(usage: "hot update -n <project_name> -v <version>", posix:false)
 			cli.n(args:1,longOpt:"name","Name of the project", required:true)
 			cli.v(args:1,longOpt:"version","Version number of the project", required:true)
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def options = cli.parse (filteredArgs)
 			if (!options) {
 				Log.info commandUsage
 				return
@@ -403,7 +396,7 @@ usage: hot <command> <options>
 			cli.port(args:1,longOpt:"port","connection port of DB server (default: 3306)",required:false)
 			cli.p(args:1,longOpt:"password","password used for DB connection (default: empty)",required:false)
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def options = cli.parse (filteredArgs)
 			if (!options) return
 			
 			println "Adding a mysql database to your project..."
@@ -431,7 +424,7 @@ usage: hot <command> <options>
 			cli.u(args:1,longOpt:"username","username used for DB connection (default: sa)",required:false)
 			cli.p(args:1,longOpt:"password","password used for DB connection (default: empty)",required:false)
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def options = cli.parse (filteredArgs)
 			if (!options) return
 			
 			println "Adding an embedded HSQLDB database to your project..."
@@ -459,7 +452,7 @@ usage: hot <command> <options>
 			cli.u(args:1,longOpt:"username","username used for DB connection",required:true)
 			cli.p(args:1,longOpt:"password","password used for DB connection (default: empty)",required:false)
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def options = cli.parse (filteredArgs)
 			if (!options) return
 			
 			println "Adding an oracle database to your project..."
@@ -490,7 +483,7 @@ usage: hot <command> <options>
 			cli.u(args:1,longOpt:"username","username used for DB connection",required:true)
 			cli.p(args:1,longOpt:"password","password used for DB connection (default: empty)",required:false)
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def options = cli.parse (filteredArgs)
 			if (!options) return
 			
 			println "Adding an PostgreSQL database to your project..."
@@ -520,7 +513,7 @@ usage: hot <command> <options>
 			cli.u(args:1,longOpt:"username","username used for DB connection",required:true)
 			cli.p(args:1,longOpt:"password","password used for DB connection (default: empty)",required:false)
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def options = cli.parse (filteredArgs)
 			if (!options) return
 			
 			println "Adding a DB2 database to your project..."
@@ -550,7 +543,7 @@ usage: hot <command> <options>
 			cli.u(args:1,longOpt:"username","username used for DB connection",required:false)
 			cli.p(args:1,longOpt:"password","password used for DB connection (default: empty)",required:false)
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def options = cli.parse (filteredArgs)
 			if (!options) return
 			
 			println "Adding MongoDB data your project..."
@@ -596,192 +589,279 @@ usage: hot <command> <options>
 			break
 			
 		case "auth-db":
-			def cli = new CliBuilder(usage: "hot auth-db -n <datasource_name>", posix:false)
-			cli.n args:1, longOpt:"name","Name of the datasource", required:false
-			cli.u args:1, longOpt:"username","Default username to insert in the DB", required:false
-			cli.p args:1, longOpt:"password","Default password (associated to username) to insert in the DB", required:false
-			cli.roles args:1, "List of roles associatted to username", required:false
-			cli.r "remove database based authentication", required: false
+			def cli = new HotCLIBuilder(usage: "hot auth-db -n <datasource_name> [-u <username>] [-p <password>] [-roles <coma seperated list of roles>]", posix:false)
+			def cliRemove = new HotCLIBuilder(usage: "hot auth-db -r", posix:false)
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
-			if (!options) return
-			println "Adding database based authentication capabilities to the app"
+			cli.n args:1, longOpt:"name","Name of the datasource", required:true
+			cli.u args:1, longOpt:"username","Default username to insert in the DB (optional)", required:false
+			cli.p args:1, longOpt:"password","Default password (associated to username) to insert in the DB (optional)", required:false
+			cli.roles args:1, "List of roles associated to username (optional)", required:false
 			
-			if (!options.r && !options.n) {
-				println "error: Missing required option: n"
+			cliRemove.r "remove database based authentication", required: true
+			
+			if (filteredArgs.isEmpty()) {
+				cli.usage(); println 'or:'
+				cliRemove.usage()
+				return
 			}
 			
 			try {
-				Project project = new Project(projectName, projectsFolder)
-				project.authDb options.n, options.u, options.p, options.roles, options.r
-			} catch (e) {logger.error e.getMessage()}
+				def options = cli.parse (filteredArgs)
+				println "Adding database based authentication capabilities to the app ..."
+				try {
+					Project project = new Project(projectName, projectsFolder)
+					project.authDb options.n, options.u, options.p, options.roles, null
+				} catch (e) {println e.getMessage()}
+				break;
+			} catch (e1) {
+				if (!filteredArgs.contains('-r')) {
+					println 'error: '+e1.message
+					cli.usage()
+					return
+				}
+				try {
+					def optionsRemove = cliRemove.parse (filteredArgs)
+					println "Removing database based authentication capabilities"
+					try {
+						Project project = new Project(projectName, projectsFolder)
+						project.authDb null, null, null, null, optionsRemove.r
+					} catch (e) {println e.getMessage()}
+				} catch (e2) {
+					cli.usage(); println 'or:'
+					cliRemove.usage()
+				}
+			}
 			break
 			
 		case "auth-ldap":
-			def cli = new CliBuilder(usage: "hot auth-ldap -url <ldap url>", posix:false)
-			cli.url args:1, "ldap url in the form of 'ldap://example.com:389/dc=example,dc=com'", required:false
-			cli.udp args:1, longOpt:"user-dn-patterns","the LDAP patterns for finding the usernames", required:false
-			cli.usb args:1, longOpt:"user-search-base","search base for user searches", required:false
-			cli.usf args:1, longOpt:"user-search-filter","the LDAP filter used to search for users", required:false
-			cli.gsb args:1, longOpt:"group-search-base","search base for group searches", required:false
-			cli.gsf args:1, longOpt:"group-search-filter","the LDAP filter to search for groups", required:false
-			cli.r "remove LDAP based authentication", required: false
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
-			if (!options) return
+			def cli = new HotCLIBuilder(usage: "hot auth-ldap -url <ldap url> [ -udp <user-dn-patterns> |  -usb <user-search-base> -usf <user-search-filter> ] [ -gsb <group-search-base> -gsf <group-search-filter> ]", posix:false)
+			def cliRemove = new HotCLIBuilder(usage: "hot auth-ldap -r", posix:false)
 			
-			if (!options.url && !options.r) {
-				println "error: Missing required option: url"
+			cli.url args:1, "ldap url in the form of 'ldap://example.com:389/dc=example,dc=com'", required:true
+			cli.udp args:1, longOpt:"user-dn-patterns","the LDAP patterns for finding the usernames (optional)", required:false
+			cli.usb args:1, longOpt:"user-search-base","search base for user searches (optional)", required:false
+			cli.usf args:1, longOpt:"user-search-filter","the LDAP filter used to search for users (optional)", required:false
+			cli.gsb args:1, longOpt:"group-search-base","search base for group searches (optional)", required:false
+			cli.gsf args:1, longOpt:"group-search-filter","the LDAP filter to search for groups (optional)", required:false
+			
+			cliRemove.r "remove LDAP based authentication", required: true
+			
+			if (filteredArgs.isEmpty()) {
+				cli.usage(); println 'or:'
+				cliRemove.usage()
+				return
 			}
 			
-			println "Adding LDAP based authentication capabilities to the app"
 			try {
-				Project project = new Project(projectName, projectsFolder)
-				project.authLdap options.url, options.udp, options.usb, options.usf, options.gsb , options.gsf, options.r
-			} catch (e) {logger.error e.getMessage()}
+				def options = cli.parse (filteredArgs)
+				println "Adding LDAP based authentication capabilities to the app"
+				
+				try {
+					Project project = new Project(projectName, projectsFolder)
+					project.authLdap options.url, options.udp, options.usb, options.usf, options.gsb , options.gsf, options.r
+				} catch (e) {println e.getMessage()}
+				
+			} catch (e1) {
+				if (!filteredArgs.contains('-r')) {
+					println 'error: '+e1.message
+					cli.usage()
+					return
+				}
+				try {
+					def optionsRemove = cliRemove.parse (filteredArgs)
+					println "Removing LDAP based authentication capabilities"
+					try {
+						Project project = new Project(projectName, projectsFolder)
+						project.authLdap null, null, null, null,null,null, optionsRemove.r
+					} catch (e) {println e.getMessage()}
+				} catch (e2) {
+					cli.usage(); println 'or:'
+					cliRemove.usage()
+				}
+			}
 			break
 			
 		case "auth-facebook":
-			def cli = new CliBuilder(usage: "hot auth-facebook -id <App id> -sec <App secret>", posix:false)
-			cli.id args:1, longOpt:"app-id","Facebook provided application id", required:false
-			cli.sec args:1, longOpt:"app-secret","Facebook provided application secret", required:false
-			cli.r "remove facebook based authentication", required: false
+			def cli = new HotCLIBuilder(usage: "hot auth-facebook -id <App id> -sec <App secret>", posix:false)
+			cli.id args:1, longOpt:"app-id","Facebook provided application id", required:true
+			cli.sec args:1, longOpt:"app-secret","Facebook provided application secret", required:true
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def cliRemove = new HotCLIBuilder(usage: "hot auth-facebook -r", posix:false)
+			cliRemove.r "remove facebook based authentication", required: true
 			
-			if (!options || (!options.id && !options.sec && !options.r)) {
-				logger.error "hot auth-facebook -id <App id> -sec <App secret>"
+			if (filteredArgs.isEmpty()) {
+				cli.usage(); println 'or:'
+				cliRemove.usage()
 				return
 			}
 			
-			if (!options.r && (!options.id || !options.sec)) {
-				if (!options.id && options.sec)
-					logger.error "error: Missing required option: id"
-				else if (options.id && !options.sec)
-					logger.error "error: Missing required options: sec"
-				else
-					logger.error "error: Missing required options: id, sec"
-			}
-			
-			println "Adding facebook based authentication capabilities to the app"
 			try {
-				Project project = new Project(projectName, projectsFolder)
-				project.oauth "FACEBOOK", options.id, options.sec, options.r
-			} catch (e) {logger.error e.getMessage()}
+				def options = cli.parse (filteredArgs)
+				println "Adding facebook based authentication capabilities to the app"
+				try {
+					Project project = new Project(projectName, projectsFolder)
+					project.oauth "FACEBOOK", options.id, options.sec, null
+				} catch (e) {println e.getMessage()}
+			} catch (e1) {
+				if (!filteredArgs.contains('-r')) {
+					println 'error: '+e1.message
+					cli.usage()
+					return
+				}
+				try {
+					def optionsRemove = cliRemove.parse (filteredArgs)
+					println "Removing facebook based authentication capabilities"
+					try {
+						Project project = new Project(projectName, projectsFolder)
+						project.oauth 'FACEBOOK', null, null, optionsRemove.r
+					} catch (e) {println e.getMessage()}
+				} catch (e2) {
+					cli.usage(); println 'or:'
+					cliRemove.usage()
+				}
+			}
 			break
 		
 		case "auth-twitter":
-			def cli = new CliBuilder(usage: "hot auth-twitter -ck <consumer key> -cp <consumer password>", posix:false)
-			cli.ck args:1, longOpt:"consumer-key","Twitter provided OAuth consumer key", required:false
-			cli.cp args:1, longOpt:"consumer-password","Twitter provided OAuth consumer password", required:false
-			cli.r "remove twitter based authentication", required: false
+			def cli = new HotCLIBuilder(usage: "hot auth-twitter -ck <consumer key> -cp <consumer password>", posix:false)
+			cli.ck args:1, longOpt:"consumer-key","Twitter provided OAuth consumer key", required:true
+			cli.cp args:1, longOpt:"consumer-password","Twitter provided OAuth consumer password", required:true
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def cliRemove = new HotCLIBuilder(usage: "hot auth-twitter -r", posix:false)
+			cliRemove.r "remove twitter based authentication", required: true
 			
-			if (!options || (!options.id && !options.sec && !options.r)) {
-				logger.error "hot auth-twitter -ck <consumer key> -cp <consumer password>"
+			if (filteredArgs.isEmpty()) {
+				cli.usage(); println 'or:'
+				cliRemove.usage()
 				return
 			}
 			
-			if (!options.r && (!options.ck || !options.cp)) {
-				if (!options.ck && options.cp)
-					logger.error "error: Missing required option: ck"
-				else if (options.ck && !options.cp)
-					logger.error "error: Missing required options: cp"
-				else
-					logger.error "error: Missing required options: ck, cp"
-			}
-			
-			println "Adding twitter based authentication capabilities to the app"
 			try {
-				Project project = new Project(projectName, projectsFolder)
-				project.oauth "TWITTER", options.ck, options.cp, options.r
-			} catch (e) {logger.error e.getMessage()}
+				def options = cli.parse (filteredArgs)
+				println "Adding twitter based authentication capabilities to the app"
+				
+				try {
+					Project project = new Project(projectName, projectsFolder)
+					project.oauth "TWITTER", options.ck, options.cp, null
+				} catch (e) {println e.getMessage()}
+				
+			} catch (e1) {
+				if (!filteredArgs.contains('-r')) {
+					println 'error: '+e1.message
+					cli.usage()
+					return
+				}
+				try {
+					def optionsRemove = cliRemove.parse (filteredArgs)
+					println "Removing twitter based authentication capabilities"
+					try {
+						Project project = new Project(projectName, projectsFolder)
+						project.oauth 'TWITTER', null, null, optionsRemove.r
+					} catch (e) {logger.error e.getMessage()}
+				} catch (e2) {
+					cli.usage(); println 'or:'
+					cliRemove.usage()
+				}
+			}
 			break
 			
 		case "auth-google":
-			def cli = new CliBuilder(usage: "hot auth-google -id <client ID> -sec <client secret>", posix:false)
-			cli.id args:1, longOpt:"client-id","The client ID you obtained from the Google Developers Console", required:false
-			cli.sec args:1, longOpt:"client-secret","The client secret you obtained from the Developers Console", required:false
-			cli.r "remove Google based authentication", required: false
+			def cli = new HotCLIBuilder(usage: "hot auth-google -id <client ID> -sec <client secret>", posix:false)
+			cli.id args:1, longOpt:"client-id","The client ID you obtained from the Google Developers Console", required:true
+			cli.sec args:1, longOpt:"client-secret","The client secret you obtained from the Developers Console", required:true
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def cliRemove = new HotCLIBuilder(usage: "hot auth-google -r", posix:false)
+			cliRemove.r "remove Google based authentication", required: false
 			
-			if (!options || (!options.id && !options.sec && !options.r)) {
-				logger.error "hot auth-google -id <client ID> -sec <client secret>"
+			if (filteredArgs.isEmpty()) {
+				cli.usage(); println 'or:'
+				cliRemove.usage()
 				return
 			}
 			
-			if (!options.r && (!options.id || !options.sec)) {
-				if (!options.id && options.sec)
-					logger.error "error: Missing required option: id"
-				else if (options.id && !options.sec)
-					logger.error "error: Missing required options: sec"
-				else
-					logger.error "error: Missing required options: id, sec"
-			}
-			
-			println "Adding Google based authentication capabilities to the app"
 			try {
-				Project project = new Project(projectName, projectsFolder)
-				project.oauth "GOOGLE", options.id, options.sec, options.r
-			} catch (e) {logger.error e.getMessage()}
+				def options = cli.parse (filteredArgs)
+				println "Adding Google based authentication capabilities to the app"
+				
+				try {
+					Project project = new Project(projectName, projectsFolder)
+					project.oauth "GOOGLE", options.id, options.sec, null
+				} catch (e) {println e.getMessage()}
+				
+			} catch (e1) {
+				if (!filteredArgs.contains('-r')) {
+					println 'error: '+e1.message
+					cli.usage()
+					return
+				}
+				try {
+					def optionsRemove = cliRemove.parse (filteredArgs)
+					println "Removing google based authentication capabilities"
+					try {
+						Project project = new Project(projectName, projectsFolder)
+						project.oauth 'GOOGLE', null, null, optionsRemove.r
+					} catch (e) {println e.getMessage()}
+				} catch (e2) {
+					cli.usage(); println 'or:'
+					cliRemove.usage()
+				}
+			}
 			break
 			
 		case "auth-facebook-client":
-			def cli = new CliBuilder(usage: "hot auth-facebook-client -id <App id> -sec <App secret>", posix:false)
-			cli.id args:1, longOpt:"app-id","Facebook provided application id", required:false
-			cli.sec args:1, longOpt:"app-secret","Facebook provided application secret", required:false
-			cli.r "remove facebook based authentication", required: false
+			def cli = new HotCLIBuilder(usage: "hot auth-facebook-client", posix:false)
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def cliRemove = new HotCLIBuilder(usage: "hot auth-facebook-client -r", posix:false)
+			cliRemove.r "remove facebook login based authentication", required: true
 			
-			if (!options || (!options.id && !options.sec && !options.r)) {
-				println "hot auth-facebook-client -id <App id> -sec <App secret>"
-				return
-			}
-			
-			if (!options.r && (!options.id || !options.sec)) {
-				if (!options.id && options.sec)
-					println "error: Missing required option: id"
-				else if (options.id && !options.sec)
-					println "error: Missing required options: sec"
-				else
-					println "error: Missing required options: id, sec"
+			if (filteredArgs.isEmpty()) {
+				try {
+					println "Adding Facebook login based authentication capabilities to the app"
+					Project project = new Project(projectName, projectsFolder)
+					project.oauth "FACEBOOK_CLIENT", '', '', null
+				} catch (e) {println e.getMessage()}
+				break
 			}
 			
 			try {
-				Project project = new Project(projectName, projectsFolder)
-				project.oauth "FACEBOOK_CLIENT", options.id, options.sec, options.r
-			} catch (e) {logger.error e.getMessage()}
+				def optionsRemove = cliRemove.parse (filteredArgs)
+				println "Removing Facebook login based authentication capabilities"
+				try {
+					Project project = new Project(projectName, projectsFolder)
+					project.oauth "FACEBOOK_CLIENT", null, null, optionsRemove.r
+				} catch (e) {println e.getMessage()}
+			} catch (e2) {
+				cli.usage(); println 'or:'
+				cliRemove.usage()
+			}
 			break
 			
 		case "auth-google-client":
-			def cli = new CliBuilder(usage: "hot auth-google-google -id <client ID> -sec <client secret>", posix:false)
-			cli.id args:1, longOpt:"client-id","The client ID you obtained from the Google Developers Console", required:false
-			cli.sec args:1, longOpt:"client-secret","The client secret you obtained from the Developers Console", required:false
-			cli.r "remove Google based authentication", required: false
+			def cli = new HotCLIBuilder(usage: "hot auth-google-client", posix:false)
 			
-			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			def cliRemove = new HotCLIBuilder(usage: "hot auth-google-client -r", posix:false)
+			cliRemove.r "remove google client based authentication", required: true
 			
-			if (!options || (!options.id && !options.sec && !options.r)) {
-				println "hot auth-google-google -id <client ID> -sec <client secret>"
-				return
+			if (filteredArgs.isEmpty()) {
+				try {
+					println "Adding Google client based authentication capabilities to the app"
+					Project project = new Project(projectName, projectsFolder)
+					project.oauth "GOOGLE_CLIENT", '', '', null
+				} catch (e) {println e.getMessage()}
+				break
 			}
 			
-			if (!options.r && (!options.id || !options.sec)) {
-				if (!options.id && options.sec)
-					println "error: Missing required option: id"
-				else if (options.id && !options.sec)
-					println "error: Missing required options: sec"
-				else
-					println "error: Missing required options: id, sec"
-			}
-			
-			println "Adding Google based authentication capabilities to the app"
 			try {
-				Project project = new Project(projectName, projectsFolder)
-				project.oauth "GOOGLE_CLIENT", options.id, options.sec, options.r
-			} catch (e) {logger.error e.getMessage()}
+				def optionsRemove = cliRemove.parse (filteredArgs)
+				println "Removing Google client based authentication capabilities"
+				try {
+					Project project = new Project(projectName, projectsFolder)
+					project.oauth 'GOOGLE_CLIENT', null, null, optionsRemove.r
+				} catch (e) {println e.getMessage()}
+			} catch (e2) {
+				cli.usage(); println 'or:'
+				cliRemove.usage()
+			}
 			break
 			
 		case "war":
@@ -844,10 +924,17 @@ usage: hot <command> <options>
 			www:			"www",
 			shows:			"shows",
 			work:			".work",
+			sqlScripts:		"sql",
 			classes:		".work/classes",
 			resources:		".work/resources",
 			sql: 			".work/sql",
 			build:			".build"]
+		
+		def authenticationSQLScripts = [
+			h2:		"/auth/sql/h2-auth-init.sql",
+			mysql:	"/auth/sql/mysql-auth-init.sql",
+			oracle:	"/auth/sql/oracle-auth-init.sql"
+		]
 		
 		static {
 			objectMapper.getSerializationConfig().enable(Feature.INDENT_OUTPUT);
@@ -904,6 +991,7 @@ usage: hot <command> <options>
 				classes: 		"${projectFolderPath}${projectFolders.classes}",
 				resources:		"${projectFolderPath}${projectFolders.resources}",
 				sql:			"${projectFolderPath}${projectFolders.sql}",
+				sqlScripts:		"${projectFolderPath}${projectFolders.sqlScripts}",
 			]
 		}
 		
@@ -1012,6 +1100,31 @@ usage: hot <command> <options>
 			newAuth.dbDefaultPassword = password?password:null
 			newAuth.dbDefaultRoles = roles?roles.split(","):null
 			
+			def dbEngine = config.dataSources.find {
+				it.name == dbname
+			}.engine
+		
+			switch (dbEngine) {
+				case 'HSQLDB':
+				println "Generating HSQLDB/H2 SQL schema creation script in your project sql folder..."
+				FileUtils.copyFileToDirectory(new File(getClass().getResource(authenticationSQLScripts.h2).toURI()), new File(getAbsolutePaths().sql))
+				break
+				
+				case 'MYSQL':
+				println "Generating MySQL SQL schema creation script in your project sql folder..."
+				FileUtils.copyFileToDirectory(new File(getClass().getResource(authenticationSQLScripts.mysql).toURI()), new File(getAbsolutePaths().sql))
+				break
+				
+				case 'ORACLE':
+				case 'PGSQL':
+				println "Generating Oracle/PostgreSQL SQL schema creation script in your project sql folder..."
+				def sqlFile = new File(getAbsolutePaths().sqlScripts)
+				if (sqlFile.exists())
+					sqlFile.mkdir()
+				FileUtils.copyFileToDirectory(new File(getClass().getResource(authenticationSQLScripts.oracle).toURI()), sqlFile)
+				break
+			}	
+			
 			writeConfig config
 		}
 		
@@ -1059,7 +1172,6 @@ usage: hot <command> <options>
 			
 			if (remove) {
 				config.authList.removeAll {
-					println "Removing ${type} authentication"
 					it.type == type
 				}
 				if (config.authList.empty) config.authList = null;

@@ -1,16 +1,13 @@
 package be.icode.hot.cli
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.*
 
-import groovy.transform.CompileStatic;
-
-import java.lang.invoke.LambdaForm.Compiled;
-
-import org.codehaus.jackson.map.ObjectMapper;
+import org.apache.tools.ant.Project
+import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.SerializationConfig.Feature
 import org.junit.Test
 
-import be.solidx.hot.cli.Hot.Project
+import be.solidx.hot.cli.Hot
 
 
 class TestScript {
@@ -546,13 +543,15 @@ class TestScript {
 	void testAuthDB() {
 		Hot hot = new Hot("/tmp", "ptest")
 		hot.handleArgs (["create","-n","ptest","-v","0.1"].toArray())
-		hot.handleArgs (["db2",
-			"-n","db2ds",
-			"-db","db2database",
+		hot.handleArgs (["oracle",
+			"-n","oracleds",
+			"-service","pets",
 			"-s","petclinic",
 			"-u","db2u"].toArray())
 		
-		hot.handleArgs (["auth-db","-n","db2ds", "-u","hot", "-p", "hot", "-roles", "ADMIN,USER"].toArray())
+		hot.handleArgs (["auth-db","-n","oracleds", "-u","hot", "-p", "hot", "-roles", "ADMIN,USER"].toArray())
+		
+		println objectMapper.readValue(new File ("/tmp/ptest/config.json"), Map.class)
 		
 		assert [
 			"name" : "ptest",
@@ -560,45 +559,47 @@ class TestScript {
 			"version" : "0.1",
 			"devMode" : true,
 			"dataSources" : [[
-			  "name" : "db2ds",
-			  "engine" : "DB2",
+			  "name" : "oracleds",
+			  "engine" : "ORACLE",
 			  "hostname" : "localhost",
-			  "port" : 50000,
-			  "database" : "db2database",
+			  "port" : 1521,
+			  "service" : "pets",
 			  "schema" : "petclinic",
 			  "username" : "db2u",
 			  "password" : ""
 			]],
 			"authList": [[
 				"type": "DB",
-				"dbname":"db2ds",
+				"dbname":"oracleds",
 				"dbDefaultUsername" : "hot",
 				"dbDefaultPassword" : "hot",
 				"dbDefaultRoles" : [ "ADMIN", "USER" ]
 			]]
 		  ] == objectMapper.readValue(new File ("/tmp/ptest/config.json"), Map.class)
 		  
-		hot.handleArgs (["auth-db","-n","db2ds"].toArray())
+		hot.handleArgs (["auth-db","-n","oracleds"].toArray())
 		assert [
 			"name" : "ptest",
 			"nature" : "jee",
 			"version" : "0.1",
 			"devMode" : true,
 			"dataSources" : [[
-			  "name" : "db2ds",
-			  "engine" : "DB2",
+			  "name" : "oracleds",
+			  "engine" : "ORACLE",
 			  "hostname" : "localhost",
-			  "port" : 50000,
-			  "database" : "db2database",
+			  "port" : 1521,
+			  "service" : "pets",
 			  "schema" : "petclinic",
 			  "username" : "db2u",
 			  "password" : ""
 			]],
 			"authList": [[
 				"type": "DB",
-				"dbname":"db2ds"
+				"dbname":"oracleds"
 			]]
 		  ] == objectMapper.readValue(new File ("/tmp/ptest/config.json"), Map.class)
+		  
+		  assert new File ("/tmp/ptest/sql/oracle-auth-init.sql").exists()
 		  
 		  hot.handleArgs (["auth-db","-r"].toArray())
 		  assert [
@@ -607,11 +608,11 @@ class TestScript {
 			  "version" : "0.1",
 			  "devMode" : true,
 			  "dataSources" : [[
-				"name" : "db2ds",
-				"engine" : "DB2",
+				"name" : "oracleds",
+				"engine" : "ORACLE",
 				"hostname" : "localhost",
-				"port" : 50000,
-				"database" : "db2database",
+				"port" : 1521,
+				"service" : "pets",
 				"schema" : "petclinic",
 				"username" : "db2u",
 				"password" : ""
