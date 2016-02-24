@@ -31,4 +31,6 @@ public interface Show<CLOSURE,MAP extends Map<?,?>> {
 	Request<CLOSURE, MAP> http (MAP options);
 	
 	Promise<CLOSURE> blocking (CLOSURE closure);
+	
+	Promise<CLOSURE> Deferred ();
 }
