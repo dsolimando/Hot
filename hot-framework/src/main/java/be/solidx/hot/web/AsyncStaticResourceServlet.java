@@ -117,6 +117,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 				async.complete();
 			}
 		} catch (Exception e) {
+			
 			writeBytesToResponse(resp,extractStackTrace(e).getBytes());
 			async.complete();
 		}
@@ -222,6 +223,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 						writeBytesToResponseAsync(outputStream, promise, async);
 					}
 				} catch (Exception e) {
+					
 					LOGGER.error("Error",e);
 					servletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 					writeBytesToResponseAsync(outputStream, extractStackTrace(e).getBytes(), async);
@@ -256,7 +258,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 							while (outputStream.isReady() && (len = bais.read(buffer)) != -1) {
 								outputStream.write(buffer, 0, len);
 							}
-							if (len == -1) {
+							if (len <= 0) {
 								async.complete();
 							}
 						} catch (IOException e) {
@@ -326,11 +328,17 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 	}
 	
 	private Path getPath(URI uri) throws IOException, URISyntaxException {
-		if (uri.toString().startsWith("jar:") && !jarFileSystemCache.keySet().contains(uri)) {
-			LOGGER.warn("accessing content of jar file => blocking IO needed");
+		
+		if (uri.toString().startsWith("zip:") || uri.toString().startsWith("jar:")) {
+			FileSystem fs;
 			final String[] tokens = uri.toString().split("!");
-			final FileSystem fs = FileSystems.newFileSystem(URI.create(tokens[0]), new HashMap<String,Object>());
-			jarFileSystemCache.put(uri, fs);
+			URI jarURI = URI.create("file:" + tokens[0].split(":")[1]);
+			if (jarFileSystemCache.keySet().contains(jarURI)) 
+				fs = jarFileSystemCache.get(jarURI);
+			else {
+				fs = FileSystems.newFileSystem(Paths.get(jarURI), null);
+				jarFileSystemCache.put(jarURI, fs);
+			}
 			return fs.getPath(tokens[1]);
 		}
 		return Paths.get(uri);
