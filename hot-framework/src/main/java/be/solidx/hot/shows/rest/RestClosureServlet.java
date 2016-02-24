@@ -180,7 +180,8 @@ public class RestClosureServlet extends HttpServlet {
 											if (o instanceof Throwable) {
 												exception = new Exception((Throwable) o);
 											} else {
-												exception = new Exception(o.toString());
+												handleResponse(o, acceptMediaTypes.get(0), resp, async, showEventLoop);
+												return;
 											}
 										} catch (Exception e) {
 											exception = e;
