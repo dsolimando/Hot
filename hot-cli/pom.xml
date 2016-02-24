@@ -95,12 +95,10 @@
 	          <include>**/*.groovy</include>
 	        </includes>
 	      </resource>
+	      <resource>
+	      	<directory>src/main/resources</directory>
+	      </resource>
 	    </resources>
-	    <testResources>
-	    	<testResource>
-	        <directory>src/main/resources</directory>
-	      </testResource>
-	    </testResources>
 	</build>
 
 	<dependencies>
