@@ -132,4 +132,12 @@ public class JSShow extends AbstractShow<NativeFunction, NativeObject, Script> {
 		});
 		return jsDeferred.promise();
 	}
+
+	@Override
+	public Promise<NativeFunction> Deferred() {
+		JSScriptExecutor jsScriptExecutor = (JSScriptExecutor) scriptExecutor;
+		return new JSDeferred(jsScriptExecutor.getGlobalScope());
+	}
+	
+	
 }

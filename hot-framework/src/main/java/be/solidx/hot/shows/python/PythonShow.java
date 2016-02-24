@@ -128,4 +128,9 @@ public class PythonShow extends AbstractShow<PyFunction, PyDictionary, CompiledS
 		});
 		return jsDeferred.promise();
 	}
+
+	@Override
+	public Promise<PyFunction> Deferred() {
+		return new PythonDeferred();
+	}
 }

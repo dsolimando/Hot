@@ -126,4 +126,9 @@ public class GroovyShow extends AbstractShow<Closure<?>,Map<String, Object>,Comp
 		}
 		return adbs;
 	}
+	
+	@Override
+	public Promise<Closure<?>> Deferred() {
+		return new GroovyDeferred();
+	}
 }
