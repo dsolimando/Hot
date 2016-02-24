@@ -1,8 +1,8 @@
 	<servlet>
 		<servlet-name>hot-rest</servlet-name>
 		<servlet-class>be.solidx.hot.shows.rest.RestClosureServlet</servlet-class>
-		<async-supported>true</async-supported>
 		<load-on-startup>1</load-on-startup>
+		<async-supported>true</async-supported>
 	</servlet>
 	
 	<servlet-mapping>
@@ -13,8 +13,8 @@
 	<servlet>
 		<servlet-name>hot-static</servlet-name>
 		<servlet-class>be.solidx.hot.web.AsyncStaticResourceServlet</servlet-class>
-		<async-supported>true</async-supported>
 		<load-on-startup>1</load-on-startup>
+		<async-supported>true</async-supported>
 	</servlet>
 	
 	<servlet-mapping>

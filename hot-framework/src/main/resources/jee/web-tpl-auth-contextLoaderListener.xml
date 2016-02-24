@@ -27,8 +27,8 @@
 	<servlet>
 		<servlet-name>client-auth</servlet-name>
 		<servlet-class>be.solidx.hot.rest.ClientAuthServlet</servlet-class>
-		<async-supported>true</async-supported>
 		<load-on-startup>1</load-on-startup>
+		<async-supported>true</async-supported>
 	</servlet>
 	
 	<servlet-mapping>
