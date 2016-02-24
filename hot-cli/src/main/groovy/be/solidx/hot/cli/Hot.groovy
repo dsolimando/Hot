@@ -235,7 +235,8 @@ public class Hot {
 			webxmltpl += "\n\n"+getClass().getResourceAsStream("/jee/web-tpl-datastore.xml").text.trim()
 		webxml.text = """
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.1">
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" version="3.1">
 			${webxmltpl}
 </web-app>
 		""".trim()
@@ -262,7 +263,7 @@ public class Hot {
 		config.devMode = false
 		
 		// Create log4j.xml
-		def logFile = new File (warClassesFolder.path+"/log4j.xml")
+		def logFile = new File (warClassesFolder.path+"/logback.xml")
 		logFile.text = """
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 	<appender name="console" class="org.apache.log4j.ConsoleAppender">
