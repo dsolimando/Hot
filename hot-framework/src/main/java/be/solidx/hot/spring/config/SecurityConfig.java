@@ -478,6 +478,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					if (!closureRequestMapping.isAnonymous() && !closureRequestMapping.isAuth()) {
 						return true;
 					}
+				} else {
+					HotContext.setRequestMapping(null);
 				}
 				return false;
 			} catch (Exception e) {
@@ -523,10 +525,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					final Map<String, Object> res = db.getCollection("users").findOne(query);
 					Set<GrantedAuthority> grantedAuthorities = getUserAuthoritiesFromGroup(username);
 					
-					return new User(res.get("username").toString(), res.get("password").toString(), grantedAuthorities);
+					return createUser(res, grantedAuthorities);
 				} else {
 					return getUserWithAuthorities(username);
 				}
+			}
+			
+			private User createUser (Map<String, Object> res, Set<GrantedAuthority> grantedAuthorities) {
+				boolean enabled = true;
+				if (res.get("enabled") != null && res.get("enabled") instanceof Boolean) {
+					enabled = (Boolean)res.get("enabled");
+				}
+				return new User(res.get("username").toString(), res.get("password").toString(), enabled, true, true, true, grantedAuthorities);
+			
 			}
 			
 			private User getUserWithAuthorities (String username) {
@@ -544,7 +555,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 						grantedAuthorities.add(new SimpleGrantedAuthority(authority.toString()));
 					}
 				}
-				return new User(res.get("username").toString(), res.get("password").toString(), grantedAuthorities);
+				return createUser(res, grantedAuthorities);
 			}
 			
 			private Set<GrantedAuthority> getUserAuthoritiesFromGroup(String username) {
