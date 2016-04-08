@@ -5,3 +5,5 @@
 **/.project
 **/.settings/
 **/bin
+
+hot-cli/.hot.log
