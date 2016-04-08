@@ -9,11 +9,18 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.SerializationConfig.Feature
+import org.eclipse.jetty.security.ConstraintMapping
+import org.eclipse.jetty.security.ConstraintSecurityHandler
+import org.eclipse.jetty.server.HttpConfiguration
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.FilterHolder
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
+import org.eclipse.jetty.util.security.Constraint
+import org.eclipse.jetty.util.ssl.SslContextFactory
 import org.springframework.web.context.ContextLoaderListener
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
 import org.springframework.web.filter.DelegatingFilterProxy
@@ -133,21 +140,75 @@ public class Hot {
 		project.writeConfig config
 	}
 	
-	def startJetty = { project, port ->
+	def startJetty = { Project project, port, sslport ->
 		def config = project.config
 		println("Starting Hot Web Server...")
 		
 		Server server = new Server()
+		ServerConnector sslConnector
+		ServerConnector connector
 		
-		ServerConnector connector = new ServerConnector(server)
-		connector.setPort(port?Integer.parseInt(port):8080)
-//		connector.setAcceptQueueSize(Runtime.getRuntime().availableProcessors()*2)
-		server.setConnectors(connector)
-		server.getThreadPool().setMaxThreads(Math.max(3, Runtime.getRuntime().availableProcessors()))
+		port = port?Integer.parseInt(port):8080
+		connector = new ServerConnector(server)
+		connector.setPort(port)
 		
 		ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS)
 		servletContextHandler.contextPath = "/"
-		server.setHandler(servletContextHandler)
+		
+		def welcomeMessage = 'Hot Server started successfully. To have fun, go to http://localhost:'+port
+		
+		if (project.config.ssl != null && project.config.ssl) {
+			try {
+				sslport = sslport?Integer.parseInt(sslport):8443
+				
+				// REdirect http traffic to HTTPS
+				HttpConfiguration httpConfig = new HttpConfiguration()
+				httpConfig.addCustomizer(new SecureRequestCustomizer())
+				//these two settings allow !403 errors to be redirected to https
+				httpConfig.secureScheme = 'https'
+				httpConfig.securePort = sslport
+				connector.addConnectionFactory(new HttpConnectionFactory(httpConfig))
+				
+				print 'Initializing SSL...'
+				SslContextFactory sslContextFactory = new SslContextFactory(new File('.keystore').absolutePath);
+				sslContextFactory.needClientAuth = false
+				sslContextFactory.keyStorePassword = project.config.keystorePassword?:''
+				
+				sslConnector = new ServerConnector(server, sslContextFactory)
+				sslConnector.setPort(sslport)
+				println 'initialized'
+				
+				//setup the constraint that causes all http requests to return a !403 error
+				ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+				
+				Constraint constraint = new Constraint();
+				constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+				
+				//makes the constraint apply to all uri paths
+				ConstraintMapping mapping = new ConstraintMapping();
+				mapping.setPathSpec( "/*" );
+				mapping.setConstraint(constraint);
+				
+				security.addConstraintMapping(mapping);
+				security.setHandler(servletContextHandler) 
+				
+				server.setHandler(security);
+				server.setConnectors(connector, sslConnector)
+				
+				welcomeMessage = 'Hot Server started successfully. To have fun, go to https://localhost:'+sslport
+			} catch (Exception e) {
+				println 'Failed to initialize SSL context'
+				e.printStackTrace()
+				return
+			}
+		} else {
+			server.setConnectors(connector)
+			server.setHandler(servletContextHandler)
+		}
+		// Min num threads : acceptors=2 + selectors=4 + request=1
+		server.getThreadPool().setMaxThreads(Math.max(7, Runtime.getRuntime().availableProcessors()))
+		
+		
 		
 		AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext()
 		if (config.authList != null && !config.authList.isEmpty()) {
@@ -190,7 +251,7 @@ public class Hot {
 		servletContextHandler.addServlet(staticHolder, "/*")
 
 		server.start()
-		println("Hot Server started successfully. To have fun, go to http://localhost:${port?:8080}")
+		println(welcomeMessage)
 		println("To kill me, just CTRL-C")
 		server.join()
 	}
@@ -325,6 +386,7 @@ usage: hot <command> <options>
 	create:			Create a new project.
 	update:			Update an existing project.
 	eclipse:		Add eclipse project nature.
+	ssl:			Add SSL support to the project.
 	mysql:			Add mysql database to your web app.
 	pgsql:			Add PostgreSQL database to your web app.
 	oracle:			Add Oracle database to your web app.
@@ -586,6 +648,19 @@ usage: hot <command> <options>
 			try {
 				Project project = new Project(projectName, projectsFolder)
 				project.restds options.n
+			} catch (e) {logger.error e.getMessage()}
+			break
+			
+		case "ssl":
+			def cli = new CliBuilder(usage: "hot ssl -kp <keystore_password> ", posix:false)
+			cli.kp(args:1,longOpt:"keypass","The keystore password",required:true)
+			def options = cli.parse (args.length > 1?args[1..args.length-1]:[])
+			if (!options) return
+			
+			println 'Adding SSL support to the project. Make sure a .keystore file exists in your project'
+			try {
+				Project project = new Project(projectName, projectsFolder)
+				project.ssl options.kp
 			} catch (e) {logger.error e.getMessage()}
 			break
 			
@@ -878,13 +953,14 @@ usage: hot <command> <options>
 			try {
 				def project = new Project(projectName, projectsFolder)
 				if (args.length > 1) {
-					def cli = new CliBuilder(usage: "hot run [-p port]", posix:false)
+					def cli = new CliBuilder(usage: "hot run [-p port] [-sp sslPort]", posix:false)
 					cli.p(args:1,longOpt:"port","Port web server will listen to",required:false)
+					cli.sp(args:1,longOpt:"ssl-port","Port web server will listen to for SSL requests",required:false)
 					def options = cli.parse (args[1..args.length-1])
 					
-					startJetty project, options.p
-				} else startJetty(project,null)
-			} catch (e) { logger.error e.getMessage()}
+					startJetty project, options.p, options.sp
+				} else startJetty(project,null,null)
+			} catch (e) { e.printStackTrace()}
 			break
 			
 		case "help":
@@ -1040,6 +1116,15 @@ usage: hot <command> <options>
 			config.dataSources.find {
 				it.rest == true
 			}
+		}
+		
+		def ssl = { keystorePassword ->
+			
+			def config = getConfig()
+			config.ssl = true
+			config.keystorePassword = keystorePassword
+			
+			writeConfig config
 		}
 		
 		def restds = { dsname ->
