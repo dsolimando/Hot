@@ -1,1 +1,3 @@
 target/
+/db2jcc.jar
+/ojdbc6.jar
