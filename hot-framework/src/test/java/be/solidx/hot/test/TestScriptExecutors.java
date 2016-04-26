@@ -424,6 +424,7 @@ public class TestScriptExecutors {
 		writer.close();
 		fileOutputStream.write(outputStream.toByteArray());
 		fileOutputStream.close();
+		new File ("testiso.txt").delete();
 	}
 	
 	@Test
