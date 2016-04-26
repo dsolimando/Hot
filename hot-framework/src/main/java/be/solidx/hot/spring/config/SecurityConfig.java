@@ -273,7 +273,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			HttpSecurity and = http.requestMatcher(new RequestMatcher() {
 				@Override
 				public boolean matches(HttpServletRequest request) {
-					return !request.getRequestURI().startsWith("/rest") && !request.getRequestURI().startsWith("/client-auth");
+					return !request.getRequestURI().startsWith("/rest") && !request.getRequestURI().startsWith("/client-auth") && !request.getRequestURI().startsWith("/rest-login");
 				}
 			}).csrf().disable();
 			
@@ -369,12 +369,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.csrf().disable()
 			.headers().cacheControl().disable();
 			
-			boolean staticLoginPage = false;
 			boolean hasauth = false;
 			String dynamicLoginPage = null;
 			
-			if (getClass().getResource("/www/login.html") != null){
-				staticLoginPage = true;
+			String loginPage = null;
+			
+			if (getClass().getResource("/login.html") != null){
+				loginPage = "/login.html";
+			} else if (getClass().getResource("/www/login.html") != null) {
+				loginPage = "/www/login.html";
 			}
 			
 			for (Show<?,?> show : showConfig.showsContext().getShows()) {
@@ -414,9 +417,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 			
 			if (hasauth && dynamicLoginPage != null) {
-				and.formLogin().loginPage(dynamicLoginPage).permitAll().loginProcessingUrl("/login").and();
-			} else if (hasauth && staticLoginPage) {
-				and.formLogin().loginPage("/login.html").permitAll().loginProcessingUrl("/login").and();
+				and.formLogin().loginPage(dynamicLoginPage).permitAll().loginProcessingUrl("/rest-login").and();
+			} else if (hasauth && loginPage != null) {
+				and.formLogin().loginPage(loginPage).permitAll().loginProcessingUrl("/rest-login").and();
+			} else if (hasauth) {
+				and.formLogin().loginProcessingUrl("/rest-login").and();
 			}
 			
 			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
