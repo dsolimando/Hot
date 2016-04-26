@@ -47,6 +47,9 @@ class TestTaskManager {
 	
 	@Test
 	public void testTaskManager() {
+		new File(System.getProperty("java.io.tmpdir")+"/delay.txt").delete()
+		new File(System.getProperty("java.io.tmpdir")+"/cron.txt").delete()
+		
 		ExecutorService tmExecutorService = Executors.newSingleThreadExecutor()
 		ScheduledExecutorService sec = Executors.newScheduledThreadPool(1);
 		GroovyShow groovyShow = new GroovyShow(
