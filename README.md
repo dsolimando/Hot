@@ -8,7 +8,5 @@ Hot contains all the tools needed in every step of the development from bootsrap
 
 The framework is still in active development. Feel free to fork and help us improving it.
 
-To start, simply download the tar distribution and use the hot command provided with the framework.
-
 Enjoy!
 
