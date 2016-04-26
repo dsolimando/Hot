@@ -60,7 +60,7 @@ public class WebSocketConfig implements WebSocketConfigurer, ApplicationListener
 					for (Entry entry : show.getWebsocket().getSocketHandlerAdapterMap().entrySet()) {
 						AbstractWebSocketHandler<?> handler = (AbstractWebSocketHandler<?>) entry.getValue();
 						Options options = (Options) entry.getKey();
-						registry.addHandler(handler.getSocketHandlerAdapter(), options.getPath()).withSockJS();
+						registry.addHandler(handler.getSocketHandlerAdapter(), options.getPath());
 					}
 				}
 			}
@@ -78,4 +78,5 @@ public class WebSocketConfig implements WebSocketConfigurer, ApplicationListener
 			registry.addHandler(handler.getSocketHandlerAdapter(), options.getPath());
 		}
 	}
+	
 }
