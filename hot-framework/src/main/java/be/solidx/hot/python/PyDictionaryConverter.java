@@ -41,6 +41,9 @@ public class PyDictionaryConverter implements ScriptMapConverter<PyDictionary> {
 
 	@Override
 	public PyDictionary toScriptMap (Map<?, ?> map) {
+		
+		if (map == null) return null;
+		
 		PyDictionary pyDictionary = new PyDictionary();
 		for (Object key : map.keySet()) {
 			Object object = map.get(key);
@@ -56,6 +59,9 @@ public class PyDictionaryConverter implements ScriptMapConverter<PyDictionary> {
 	
 	@Override
 	public Map<String, Object> toMap(PyDictionary dictionary) {
+		
+		if (dictionary == null) return null;
+		
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
 		for (Object key: dictionary.keySet()) {
 			if (!(key instanceof String)) continue;
@@ -71,8 +77,11 @@ public class PyDictionaryConverter implements ScriptMapConverter<PyDictionary> {
 	
 	@Override
 	public PyDictionary multiValueMapToMapList (Map<String, MultiValueMap<String, String>> matrixVariables) {
+		
+		if (matrixVariables == null) return null;
+		
 		PyDictionary map = new PyDictionary();
-		if (matrixVariables == null) return map;
+		
 		for (MultiValueMap<String, String> vars : matrixVariables.values()) {
 			for (String name : vars.keySet()) {
 				if (vars.size() > 1) {
@@ -91,6 +100,9 @@ public class PyDictionaryConverter implements ScriptMapConverter<PyDictionary> {
 	
 	@Override
 	public PyDictionary httpHeadersToMap(WebRequest webRequest) {
+		
+		if (webRequest == null) return null;
+		
 		PyDictionary headers = new PyDictionary();
 		Iterator<String> headerNames = webRequest.getHeaderNames();
 		while (headerNames.hasNext()) {
@@ -106,6 +118,10 @@ public class PyDictionaryConverter implements ScriptMapConverter<PyDictionary> {
 	
 	@Override
 	public PyDictionary httpHeadersToMap(HttpServletRequest webRequest) {
+		
+		if (webRequest == null) return null;
+
+		
 		PyDictionary headers = new PyDictionary();
 		Enumeration<String> headerNames = webRequest.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
