@@ -43,7 +43,7 @@ import org.springframework.web.servlet.DispatcherServlet
 class TestWebsocket {
 
 	def createServer = {
-		Server server = new Server(8080)
+		Server server = new Server(18080)
 		ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS)
 		server.setHandler(servletContextHandler)
 		
@@ -70,7 +70,7 @@ class TestWebsocket {
 		def server = createServer()
 		server.start()
 		
-		def socket = createClient ("ws://localhost:8080/socket/chatroom")
+		def socket = createClient ("ws://localhost:18080/socket/chatroom")
 		
 		sleep(10000)
 		
