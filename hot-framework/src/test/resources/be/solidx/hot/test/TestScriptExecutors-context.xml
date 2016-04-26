@@ -19,24 +19,10 @@
 	<util:list id="initScriptsJs">
 		<value>/be/solidx/hot/test/init.js</value>
 	</util:list>
-	<util:list id="lessandcoffee">
-		<value>/js/coffee-script.js</value>
-		<value>/js/less.js</value>
-	</util:list>
-	<util:list id="six">
-		<value>/js/six.js</value>
-	</util:list>
 
 	<bean id="jSScriptExecutorWithGlobalInit" class="be.solidx.hot.js.JSScriptExecutor" 
 		p:preExecuteScripts-ref="initScriptsJs" p:devMode="true" >
 	</bean>
-	<bean id="coffeescriptCompilerScriptExecutor" class="be.solidx.hot.js.JSScriptExecutor" 
-		p:globalScopeScripts-ref="lessandcoffee" p:devMode="true" >
-	</bean>
-	<bean id="sixJsScriptExecutor" class="be.solidx.hot.js.JSScriptExecutor" p:preExecuteScripts-ref="six" p:devMode="true" />
-	<bean id="CoffeeScriptCompiler" class="be.solidx.hot.js.transpilers.CoffeeScriptCompiler" p:jsScriptExecutor-ref="coffeescriptCompilerScriptExecutor"/>
-	<bean id="LessCompiler" class="be.solidx.hot.js.transpilers.LessCompiler" p:jsScriptExecutor-ref="coffeescriptCompilerScriptExecutor" />
 	<bean id="jSScriptExecutor" class="be.solidx.hot.js.JSScriptExecutor" />
-	<bean id="sixCompiler" class="be.solidx.hot.js.transpilers.SixCompiler" p:jsScriptExecutor-ref="sixJsScriptExecutor" />
 	<bean id="jS223ScriptExecutor" class="be.solidx.hot.js.JS223ScriptExecutor" />
 </beans>

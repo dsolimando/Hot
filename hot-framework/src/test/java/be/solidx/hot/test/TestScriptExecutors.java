@@ -56,9 +56,6 @@ import be.solidx.hot.Script;
 import be.solidx.hot.ScriptExecutor;
 import be.solidx.hot.exceptions.ScriptException;
 import be.solidx.hot.js.JSScriptExecutor;
-import be.solidx.hot.js.transpilers.CoffeeScriptCompiler;
-import be.solidx.hot.js.transpilers.LessCompiler;
-import be.solidx.hot.js.transpilers.SixCompiler;
 
 @RunWith (SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -87,9 +84,6 @@ public class TestScriptExecutors {
 	@Autowired
 	@Qualifier ("jSScriptExecutorWithGlobalInit")
 	JSScriptExecutor jsScriptExecutorWithGlobalInit;
-	
-	@Autowired
-	SixCompiler sixCompiler;
 	
 	@Test
 	public void testJSScriptExecutor1() throws Exception {
@@ -126,8 +120,9 @@ public class TestScriptExecutors {
 						}
 						else if (object instanceof Double) {
 							res = Math.round((Double)object);
-						}
-						else res = new Long ((Integer)object);
+						} else if (object instanceof Long) {
+							res = (long) object;
+						} else res = new Long ((Integer)object);
 						long end = System.currentTimeMillis() - avgs.get(this.toString());
 						results.put(UUID.randomUUID().getLeastSignificantBits()+"", res);
 						avgs.put(this.toString(), end);
@@ -379,7 +374,7 @@ public class TestScriptExecutors {
 		PrintWriter printWriter = new PrintWriter(stringWriter);
 		Script<CompiledScript> script = new Script<CompiledScript>("print ('hello');".getBytes(), "testJSOutput");
 		js223ScriptExecutor.execute(script, printWriter);
-		Assert.assertEquals("hello", stringWriter.toString());
+		Assert.assertEquals("hello", stringWriter.toString().trim());
 	}
 	
 	@Test
@@ -451,11 +446,5 @@ public class TestScriptExecutors {
 		contextMap.put("dbmap", nativeObject);
 		Object o = jsScriptExecutorWithGlobalInit.execute(script, contextMap);
 		Assert.assertEquals("titi", o);
-	}
-	
-	@Test
-	public void testSixScriptCompiler() throws Exception {
-		Script<String> script = new Script<String>("[ 1, 2, 3 ].forEach( item => print(item) )".getBytes(), "test");
-		System.out.println(sixCompiler.compile(script));
 	}
 }

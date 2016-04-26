@@ -89,15 +89,6 @@ public class ScriptExecutorsConfig {
 	}
 	
 	@Bean
-	public JSScriptExecutor coffeescriptCompilerScriptExecutor () {
-		JSScriptExecutor jsScriptExecutor = new JSScriptExecutor();
-		jsScriptExecutor.setDevMode(hotConfig.isDevMode());
-		jsScriptExecutor.setInterpretive(true);
-		jsScriptExecutor.setGlobalScopeScripts(Arrays.asList("/js/coffee-script.js","/js/less.js"));
-		return jsScriptExecutor;
-	}
-	
-	@Bean
 	public GroovyHttpDataDeserializer groovyHttpDataDeserializer() throws JsonParseException, JsonMappingException, ParserConfigurationException, SAXException, IOException {
 		return new GroovyHttpDataDeserializer(objectMapper);
 	}
