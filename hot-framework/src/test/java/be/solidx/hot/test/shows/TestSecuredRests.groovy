@@ -83,8 +83,6 @@ class TestSecuredRests {
 		
 		ServletHolder restHolder = new ServletHolder(RestClosureServlet.class)
 		restHolder.name = "hot-rest"
-//		restHolder.initParameters["contextClass"] = "org.springframework.web.context.support.AnnotationConfigWebApplicationContext"
-//		restHolder.initParameters["contextConfigLocation"] = "be.solidx.hot.spring.config.RestShowConfig"
 		servletContextHandler.addServlet(restHolder, "/rest/*")
 		
 		ServletHolder clientAuthHolder = new ServletHolder(ClientAuthServlet.class)
@@ -93,8 +91,6 @@ class TestSecuredRests {
 		
 		ServletHolder staticHolder = new ServletHolder(AsyncStaticResourceServlet.class)
 		staticHolder.name = "hot-static"
-//		staticHolder.initParameters["contextClass"] = "org.springframework.web.context.support.AnnotationConfigWebApplicationContext"
-//		staticHolder.initParameters["contextConfigLocation"] = "be.solidx.hot.spring.config.ControllersConfig"
 		servletContextHandler.addServlet(staticHolder, "/*")
 		
 		server
@@ -157,18 +153,22 @@ class TestSecuredRests {
 		GroovyHttpClient client = new GroovyHttpClient(Executors.newCachedThreadPool(), cf, sSLContextBuilder, objectMapper, httpDataSerializer)
 		
 		def options = [
-			url: 'http://localhost:8080/rest/secure-scells'
+			url: 'http://localhost:8080/rest/secure-scells',
+			headers: [
+				'Accept':"text/html,application/xhtml"
+			]
 		]
 		
 		def options2 = [
-			url: 'http://localhost:8080/login',
+			url: 'http://localhost:8080/rest-login',
 			type: 'POST',
 			data:[
 				username:"hot",
 				password:"hot"
 			],
 			headers: [
-				'Content-type':"application/x-www-form-urlencoded"
+				'Content-type':"application/x-www-form-urlencoded",
+				'Accept':"text/html,application/xhtml"
 			]
 		]
 		
@@ -177,22 +177,25 @@ class TestSecuredRests {
 			type: 'POST'
 		]
 		
+		def cookie = null
+		
 		client.buildRequest (options).done { data, textStatus, response ->
-			println response.headers
-			assert textStatus == "Full authentication is required to access this resource"
-		}.done { data, textStatus, response ->
-			println response.headers
+			// Redirection to login page
+			assert response.statusCode == 302
+			assert response.headers['Location'] == "http://localhost/login.html"
 		}.then { data, textStatus, response ->
 			client.buildRequest (options2)
 		}.done { data, textStatus, response ->
-			println response.headers
+			assert response.headers['Location'] == "http://localhost/"
 		}.then { data, textStatus, response ->
-			options.headers = ["Cookie":response.headers["Set-Cookie"]]
+			cookie = response.headers["Set-Cookie"]
+			options.headers = ["Cookie":cookie]
 			client.buildRequest (options)
 		}.then { data, textStatus, response ->
+			// Logout
+			options3.headers = ["Cookie":cookie]
 			client.buildRequest (options3)
 		}.then { data, textStatus, response ->
-			options.headers = [:]
 			client.buildRequest (options)
 		}.done { data, textStatus, response ->
 			assert textStatus == "Full authentication is required to access this resource"
