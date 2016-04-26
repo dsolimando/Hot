@@ -22,7 +22,6 @@ package be.solidx.hot.shows;
  * #L%
  */
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +30,6 @@ import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.fileupload.ParameterParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -44,12 +42,12 @@ import org.springframework.social.security.SocialAuthenticationToken;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.servlet.HandlerMapping;
 
+import com.google.common.net.HttpHeaders;
+
 import be.solidx.hot.shows.ClosureRequestMapping.Options;
 import be.solidx.hot.shows.groovy.GroovyRestRequest;
 import be.solidx.hot.utils.HttpDataDeserializer;
 import be.solidx.hot.utils.ScriptMapConverter;
-
-import com.google.common.net.HttpHeaders;
 
 public abstract class RestRequest<T extends Map<?, ?>> {
 	
