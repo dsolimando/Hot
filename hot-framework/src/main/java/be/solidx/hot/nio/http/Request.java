@@ -233,6 +233,10 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 		boolean hostnameHeader = false;
 		if (Request.this.options.get(HEADERS) != null) {
 			for (Entry<String, String> entry : ((Map<String, String>)Request.this.options.get(HEADERS)).entrySet()) {
+				if (entry.getValue() == null) {
+					LOGGER.error("null value for header ["+entry.getKey()+"]");
+					continue;
+				}
 				httpRequest.headers().set(entry.getKey(),entry.getValue());
 				if (entry.getKey().equals("Host")) {
 					hostnameHeader = true;
