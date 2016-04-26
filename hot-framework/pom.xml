@@ -109,7 +109,7 @@
 		<dependency>
 			<groupId>be.solidx.hot</groupId>
 			<artifactId>hot-jython-modules</artifactId>
-			<version>2.5.2</version>
+			<version>2.5.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -250,7 +250,7 @@
 		<dependency>
 			<groupId>org.python</groupId>
 			<artifactId>jython</artifactId>
-			<version>2.5.2</version>
+			<version>2.5.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ivy</groupId>
