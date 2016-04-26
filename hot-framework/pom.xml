@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>be.solidx.hot</groupId>
@@ -12,9 +13,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<groovy.version>2.4.4</groovy.version>
+		<spring.version>4.1.7.RELEASE</spring.version>
 	</properties>
 
-	
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -68,35 +70,30 @@
 			</plugin>
 		</plugins>
 		<resources>
-	      <resource>
-	        <directory>src/test/java</directory>
-	        <includes>
-	          <include>**/*.java</include>
-	        </includes>
-	      </resource>
-	      <resource>
-	        <directory>src/main/java</directory>
-	        <includes>
-	          <include>**/*.java</include>
-	        </includes>
-	      </resource>
-	       <resource>
-	        <directory>src/test/groovy</directory>
-	        <includes>
-	          <include>**/*.groovy</include>
-	        </includes>
-	      </resource>
-	      <resource>
-	        <directory>src/main/groovy</directory>
-	        <includes>
-	          <include>**/*.groovy</include>
-	        </includes>
-	      </resource>
-	      <resource>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.java</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/groovy</directory>
+				<includes>
+					<include>**/*.groovy</include>
+				</includes>
+			</resource>
+			<resource>
 				<directory>src/main/resources</directory>
 			</resource>
-	    </resources>
+		</resources>
 		<testResources>
+			<testResource>
+				<directory>src/test/java</directory>
+				<includes>
+					<include>**/*.java</include>
+					<include>**/*.groovy</include>
+				</includes>
+			</testResource>
 			<testResource>
 				<directory>src/test/resources</directory>
 			</testResource>
@@ -117,53 +114,58 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-websocket</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-oxm</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jdbc</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>4.1.7.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectreactor</groupId>
@@ -304,7 +306,7 @@
 		<dependency>
 			<artifactId>junit</artifactId>
 			<groupId>junit</groupId>
-			<version>4.8.2</version>
+			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -401,7 +403,14 @@
 			<groupId>commons-collections</groupId>
 			<version>3.2</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.apache.tomcat</groupId> <artifactId>jasper</artifactId> <version>6.0.35</version> <exclusions> <exclusion> <groupId>org.apache.tomcat</groupId> 
-			<artifactId>catalina</artifactId> </exclusion> <exclusion> <groupId>org.eclipse.jdt.core.compiler</groupId> <artifactId>ecj</artifactId> </exclusion> </exclusions> </dependency> -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.7.7</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.apache.tomcat</groupId> <artifactId>jasper</artifactId> 
+			<version>6.0.35</version> <exclusions> <exclusion> <groupId>org.apache.tomcat</groupId> 
+			<artifactId>catalina</artifactId> </exclusion> <exclusion> <groupId>org.eclipse.jdt.core.compiler</groupId> 
+			<artifactId>ecj</artifactId> </exclusion> </exclusions> </dependency> -->
 	</dependencies>
 </project>
