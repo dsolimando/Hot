@@ -45,6 +45,9 @@ import be.solidx.hot.utils.ScriptMapConverter;
 public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 
 	public NativeObject toScriptMap (Map<?, ?> map) {
+		
+		if (map == null) return null;
+		
 		NativeObject javascriptMap = new NativeObject();
 		for (Object key: map.keySet()) {
 			Object o = map.get(key);
@@ -69,6 +72,9 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 	}
 	
 	public List<Map<?, ?>> toListMap(NativeArray array) {
+		
+		if (array == null) return null;
+		
 		List<Map<?, ?>> list  = new ArrayList<>();
 		for (Object object : array) {
 			if (object instanceof NativeObject)
@@ -81,6 +87,9 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 	
 	
 	public Map<?,?> toMap(NativeObject nativeObject) {
+		
+		if (nativeObject == null) return null;
+		
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
 		for (Object key: nativeObject.keySet()) {
 			if (!(key instanceof String)) continue;
@@ -95,8 +104,10 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 	}
 	
 	public NativeObject multiValueMapToMapList (Map<String, MultiValueMap<String, String>> matrixVariables) {
+		
+		if (matrixVariables == null) return null;
+		
 		NativeObject map = new NativeObject();
-		if (matrixVariables == null) return map;
 		for (MultiValueMap<String, String> vars : matrixVariables.values()) {
 			for (String name : vars.keySet()) {
 				if (vars.size() > 1) {
@@ -115,6 +126,9 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 
 	@Override
 	public NativeObject httpHeadersToMap(WebRequest webRequest) {
+		
+		if (webRequest == null) return null;
+		
 		NativeObject headers = new NativeObject();
 		Iterator<String> headerNames = webRequest.getHeaderNames();
 		while (headerNames.hasNext()) {
@@ -127,6 +141,9 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 	
 	@Override
 	public NativeObject httpHeadersToMap(HttpServletRequest webRequest) {
+		
+		if (webRequest == null) return null;
+		
 		NativeObject headers = new NativeObject();
 		Enumeration<String> headerNames = webRequest.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
@@ -139,12 +156,5 @@ public class JsMapConverter implements ScriptMapConverter<NativeObject> {
 			headers.put(headerName, headers, new NativeArray(values.toArray()));
 		}
 		return headers;
-	}
-	
-	public static void main(String[] args) throws JsonParseException, JsonMappingException, IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		JsMapConverter converter = new JsMapConverter();
-		NativeObject nativeObject = converter.toScriptMap(mapper.readValue("{\"extraInfos\":[{\"code\":\"ALLOC_ETP\",\"description\":\"Temps alloué à la gestion du DU employeur (100%=temps plein)\",\"valeurs\":[\"25\"]}]}".getBytes(), Map.class));
-		
 	}
 }
