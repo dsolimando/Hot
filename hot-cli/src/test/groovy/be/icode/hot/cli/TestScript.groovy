@@ -1,5 +1,27 @@
 package be.icode.hot.cli
 
+/*
+ * #%L
+ * Hot
+ * %%
+ * Copyright (C) 2010 - 2016 Solidx
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import static org.junit.Assert.*
 
 import org.apache.tools.ant.Project
@@ -16,28 +38,6 @@ class TestScript {
 	
 	static {
 		objectMapper.getSerializationConfig().enable(Feature.INDENT_OUTPUT);
-
-/*
- * #%L
- * Hot
- * %%
- * Copyright (C) 2010 - 2016 Solidx
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
- * #L%
- */
 		objectMapper.getSerializationConfig().enable(Feature.USE_ANNOTATIONS);
 		objectMapper.getSerializationConfig().disable(Feature.WRITE_NULL_MAP_VALUES);
 	}
@@ -52,7 +52,10 @@ class TestScript {
 		assert new File("/tmp/ptest/config.json").exists()
 		assert new File("/tmp/ptest/www").exists()
 		assert new File("/tmp/ptest/shows").exists()
-		assert new File("/tmp/ptest/www/welcome.hotg").exists()
+		assert new File("/tmp/ptest/shows/example.show.groovy").exists()
+		assert new File("/tmp/ptest/shows/example.show.js").exists()
+		assert new File("/tmp/ptest/shows/example.show.py").exists()
+		assert new File("/tmp/ptest/www/index.html").exists()
 		assert new File("/tmp/ptest/.work").exists()
 		assert new File("/tmp/ptest/.work/resources").exists()
 		assert new File("/tmp/ptest/.work/sql").exists()
@@ -75,7 +78,10 @@ class TestScript {
 		assert new File("ptest/config.json").exists()
 		assert new File("ptest/www").exists()
 		assert new File("ptest/shows").exists()
-		assert new File("ptest/www/welcome.hotg").exists()
+		assert new File("ptest/shows/example.show.groovy").exists()
+		assert new File("ptest/shows/example.show.js").exists()
+		assert new File("ptest/shows/example.show.py").exists()
+		assert new File("ptest/www/index.html").exists()
 		assert new File("ptest/.work").exists()
 		assert new File("ptest/.work/resources").exists()
 		assert new File("ptest/.work/sql").exists()
@@ -901,6 +907,8 @@ class TestScript {
 			"devMode" : true,
 			"authList": [[
 				"type" : "FACEBOOK_CLIENT",
+				"consumerKey" : "",
+				"consumerSecret" : ""
 			]]
 		  ] == objectMapper.readValue(new File ("/tmp/ptest/config.json"), Map.class)
 		  
@@ -929,6 +937,8 @@ class TestScript {
 			"devMode" : true,
 			"authList": [[
 				"type" : "GOOGLE_CLIENT",
+				"consumerKey" : "",
+				"consumerSecret" : ""
 			]]
 		  ] == objectMapper.readValue(new File ("/tmp/ptest/config.json"), Map.class)
 		  
