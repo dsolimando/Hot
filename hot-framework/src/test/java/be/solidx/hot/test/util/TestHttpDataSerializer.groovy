@@ -184,7 +184,7 @@ class TestHttpDataSerializer {
 		String python = "o = { 'name':'damien','age':8, 'values':['toto','titi'], 'objects':{'sub1':'toto', 'sub2':'titi'}}";
 		def res = pythonScriptExecutor.execute(new be.solidx.hot.Script<CompiledScript>(python.bytes,"script"),input)
 		def url = new String(dataSerializer.serialize(res.o, "application/x-www-form-urlencoded"))
-		assert 'values=toto&values=titi&objects%5Bsub2%5D=titi&objects%5Bsub1%5D=toto&age=8&name=damien' == url
+		assert 'values=toto&values=titi&objects%5Bsub2%5D=titi&objects%5Bsub1%5D=toto&name=damien&age=8' == url
 	}
 	
 	@Test
@@ -194,7 +194,7 @@ class TestHttpDataSerializer {
 		def res = pythonScriptExecutor.execute(new be.solidx.hot.Script<CompiledScript>(python.bytes,"script"),input)
 		def url = new String(dataSerializer.serialize(res.o, "application/json"))
 		print url
-		assert '{"values":["toto","titi"],"objects":{"sub2":"titi","sub1":"toto"},"age":8,"name":"damien"}' == url
+		assert '{"values":["toto","titi"],"objects":{"sub2":"titi","sub1":"toto"},"name":"damien","age":8}' == url
 	}
 	
 	@Test
@@ -204,7 +204,7 @@ class TestHttpDataSerializer {
 		def res = pythonScriptExecutor.execute(new be.solidx.hot.Script<CompiledScript>(python.bytes,"script"),input)
 		def url = new String(dataSerializer.serialize(pyDataConverter.toMap(res.o), "application/xml"))
 		print url
-		assert '<root><values>toto</values><values>titi</values><objects><sub2>titi</sub2><sub1>toto</sub1></objects><age>8</age><name>damien</name></root>' == url
+		assert '<root><values>toto</values><values>titi</values><objects><sub2>titi</sub2><sub1>toto</sub1></objects><name>damien</name><age>8</age></root>' == url
 	}
 	
 	@Test
@@ -214,7 +214,7 @@ class TestHttpDataSerializer {
 		def res = pythonScriptExecutor.execute(new be.solidx.hot.Script<CompiledScript>(python.bytes,"script"),input)
 		def url = new String(dataSerializer.serialize(pyDataConverter.toMap(res.o), "application/xml"))
 		print url
-		assert '<values><values>toto</values><values>titi</values><objects><sub2>titi</sub2><sub1>toto</sub1></objects><age>8</age><name>damien</name></values>' == url
+		assert '<values><values>toto</values><values>titi</values><objects><sub2>titi</sub2><sub1>toto</sub1></objects><name>damien</name><age>8</age></values>' == url
 	}
 	
 	@Test
