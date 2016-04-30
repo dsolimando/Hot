@@ -24,7 +24,6 @@ package be.icode.hot.cli
 
 import static org.junit.Assert.*
 
-import org.apache.tools.ant.Project
 import org.codehaus.jackson.map.ObjectMapper
 import org.codehaus.jackson.map.SerializationConfig.Feature
 import org.junit.Test
@@ -955,6 +954,7 @@ class TestScript {
 	
 	@Test
 	void testPrepareWar() {
+		new File("/tmp/ptest").deleteDir()
 		Hot hot = new Hot("/tmp", "ptest")
 		hot.handleArgs (["create","-n","ptest","-v","0.2"].toArray())
 		hot.handleArgs (["db2",
@@ -969,7 +969,7 @@ class TestScript {
 			"-u","pgu"].toArray())
 		hot.handleArgs (["restds","-n","pgds"].toArray())
 		def jsp = new File ("/tmp/ptest/www/toto.jsp").createNewFile()
-		hot.prepareWar new Project("ptest", "/tmp")
+		hot.prepareWar new Hot.Project("ptest", "/tmp")
 		
 		assert new File("/tmp/ptest").exists()
 		assert new File("/tmp/ptest/.build").exists()
@@ -977,7 +977,7 @@ class TestScript {
 		assert new File("/tmp/ptest/.build/classes").exists()
 		assert !new File("/tmp/ptest/.build/classes/toto.jsp").exists()
 		assert new File("/tmp/ptest/.build/classes/config.json").exists()
-		assert new File("/tmp/ptest/.build/classes/log4j.xml").exists()
+		assert new File("/tmp/ptest/.build/classes/logback.xml").exists()
 		assert new File("/tmp/ptest/.build/classes/sql").exists()
 		assert new File("/tmp/ptest/.build/classes/sql")
 		new File("/tmp/ptest").deleteDir()

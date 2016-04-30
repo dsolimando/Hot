@@ -1007,7 +1007,7 @@ usage: hot <command> <options>
 		}
 	}
 	
-	private static class Project {
+	static class Project {
 		
 		public static final String CONFIG_FILENAME = "config.json"
 		
@@ -1215,12 +1215,12 @@ usage: hot <command> <options>
 			switch (dbEngine) {
 				case 'HSQLDB':
 				println "Generating HSQLDB/H2 SQL schema creation script in your project sql folder..."
-				FileUtils.copyFileToDirectory(new File(getClass().getResource(authenticationSQLScripts.h2).toURI()), new File(getAbsolutePaths().sql))
+				new File(sqlFile.path + '/oracle-auth-init.sql').text = getClass().getResourceAsStream(authenticationSQLScripts.h2).text
 				break
 				
 				case 'MYSQL':
 				println "Generating MySQL SQL schema creation script in your project sql folder..."
-				FileUtils.copyFileToDirectory(new File(getClass().getResource(authenticationSQLScripts.mysql).toURI()), new File(getAbsolutePaths().sql))
+				new File(sqlFile.path + '/mysql-auth-init.sql').text = getClass().getResourceAsStream(authenticationSQLScripts.mysql).text
 				break
 				
 				case 'ORACLE':
@@ -1229,7 +1229,7 @@ usage: hot <command> <options>
 				def sqlFile = new File(getAbsolutePaths().sqlScripts)
 				if (sqlFile.exists())
 					sqlFile.mkdir()
-				FileUtils.copyFileToDirectory(new File(getClass().getResource(authenticationSQLScripts.oracle).toURI()), sqlFile)
+				new File(sqlFile.path + '/oracle-auth-init.sql').text = getClass().getResourceAsStream(authenticationSQLScripts.oracle).text
 				break
 			}	
 			

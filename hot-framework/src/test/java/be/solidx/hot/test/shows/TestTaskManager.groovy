@@ -64,7 +64,7 @@ class TestTaskManager {
 		sleep 10000
 		
 		assert new File(System.getProperty("java.io.tmpdir")+"/delay.txt").text == "delayed task"
-		//assert new File(System.getProperty("java.io.tmpdir")+"/cron.txt").text == "3"
+		assert new File(System.getProperty("java.io.tmpdir")+"/cron.txt").text == "3"
 		
 		new File(System.getProperty("java.io.tmpdir")+"/delay.txt").delete()
 		new File(System.getProperty("java.io.tmpdir")+"/cron.txt").delete()

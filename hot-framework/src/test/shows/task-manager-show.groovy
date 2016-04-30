@@ -11,7 +11,7 @@ def t = show.setInterval({
 	d.write("${i++}")
 } , 1000)
 
-sleep(3000)
+sleep(3500)
 
 println "clearing"
 show.clearInterval t
