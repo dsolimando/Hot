@@ -43,7 +43,7 @@ import be.solidx.hot.js.JSScriptExecutor;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class TestJsCollectionAPI {
+public class TestJsCollectionApi {
 
 	@Autowired
 	DB db;
