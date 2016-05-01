@@ -177,7 +177,6 @@ public class TestScriptExecutors {
 		results = multiThreadedTest(script,1000, groovyScriptExecutor);
 		for (Object result : results) {
 			Long r = (Long) result;
-			//System.out.println(result);
 			Assert.assertEquals(1000, r.longValue());
 		}
 	}
@@ -250,7 +249,6 @@ public class TestScriptExecutors {
 		results = multiThreadedTest(script,100000, pythonScriptExecutor);
 		for (Object result : results) {
 			Long r = (Long) result;
-			System.out.println(result);
 			Assert.assertEquals(100000, r.longValue());
 		}
 	}
@@ -271,7 +269,6 @@ public class TestScriptExecutors {
 				long res = (Integer) ((Bindings) scriptExecutor.execute(script, parameters)).get("result");
 				long end = System.currentTimeMillis() - starting;
 				Assert.assertEquals(1000, res);
-				System.out.println(end);
 				sum += end;
 			} catch (ScriptException e) {
 				e.printStackTrace();
@@ -300,7 +297,6 @@ public class TestScriptExecutors {
 				Long res = Math.round(resDouble);
 				long end = System.currentTimeMillis() - starting;
 				Assert.assertEquals(1000, res.longValue());
-				System.out.println(end);
 				sum += end;
 			} catch (ScriptException e) {
 				e.printStackTrace();
