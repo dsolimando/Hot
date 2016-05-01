@@ -8,7 +8,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.springframework" level="DEBUG" />
+	<logger name="org.springframework" level="INFO" />
 	<logger name="be.solidx.hot" level="INFO" />
 	<logger name="org.eclipse.jetty" level="INFO" />
 
