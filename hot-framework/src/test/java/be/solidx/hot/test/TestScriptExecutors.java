@@ -256,62 +256,6 @@ public class TestScriptExecutors {
 	}
 	
 	@Test
-	public void testGroovyExecutorSequential() throws Exception {
-		final ScriptExecutor<CompiledScript> scriptExecutor = groovyScriptExecutor;
-		double sum = 0;
-		for (int i = 0; i < 100; i++) {
-			Integer j = 0;
-			Map<String, Object> parameters = new HashMap<String, Object>();
-			parameters.put("i", j);
-			parameters.put("tname", Thread.currentThread().getName());
-			
-			try {
-				Script<CompiledScript> script = new Script<CompiledScript>(IOUtils.toByteArray(getClass().getResourceAsStream("/groovy-script.groovy")), "test_"+Thread.currentThread().getName());
-				long starting = System.currentTimeMillis();
-				Integer res = (Integer) scriptExecutor.execute(script, parameters);
-				long end = System.currentTimeMillis() - starting;
-				Assert.assertEquals(1000000, res.longValue());
-				System.out.println(end);
-				sum += end;
-			} catch (ScriptException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		System.out.println(sum/100.);
-	}
-	
-	@Test
-	public void testPythonExecutorSequential() throws Exception {
-		final ScriptExecutor<CompiledScript> scriptExecutor = pythonScriptExecutor;
-		double sum = 0;
-		for (int i = 0; i < 100; i++) {
-			Integer j = 0;
-			Map<String, Object> parameters = new HashMap<String, Object>();
-			parameters.put("i", j);
-			parameters.put("tname", Thread.currentThread().getName());
-			parameters.put("result", new Integer(0));
-			try {
-				Script<CompiledScript> script = new Script<CompiledScript>(IOUtils.toByteArray(getClass().getResourceAsStream("/python-script.py")), "test_"+Thread.currentThread().getName());
-				long starting = System.currentTimeMillis();
-				Integer res = (Integer) ((Bindings) scriptExecutor.execute(script, parameters)).get("result");
-				long end = System.currentTimeMillis() - starting;
-				Assert.assertEquals(1000000, res.longValue());
-				System.out.println(end);
-				sum += end;
-			} catch (ScriptException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		System.out.println(sum/100.);
-	}
-	
-	@Test
 	public void testPythonExecutorSequential2() throws Exception {
 		final ScriptExecutor<CompiledScript> scriptExecutor = pythonScriptExecutor;
 		double sum = 0;
