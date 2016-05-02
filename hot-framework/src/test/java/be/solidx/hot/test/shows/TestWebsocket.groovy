@@ -72,7 +72,7 @@ class TestWebsocket {
 		
 		def socket = createClient ("ws://localhost:18080/socket/chatroom")
 		
-		sleep(60000)
+		sleep(10000)
 		
 		assert socket.response == "Hello"
 		
