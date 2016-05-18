@@ -8,5 +8,9 @@ Hot contains all the tools needed in every step of the development from bootsrap
 
 The framework is still in active development. Feel free to fork and help us improving it.
 
+[Documentation](https://github.com/dsolimando/Hot/wiki)
+
+[Download me](https://github.com/dsolimando/Hot/releases/download/v0.9.0/hot-0.9.0-SNAPSHOT.tar.gz)
+
 Enjoy!
 
