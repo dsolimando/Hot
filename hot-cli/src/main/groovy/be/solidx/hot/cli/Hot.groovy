@@ -34,8 +34,8 @@ import org.codehaus.jackson.map.SerializationConfig.Feature
 import org.eclipse.jetty.security.ConstraintMapping
 import org.eclipse.jetty.security.ConstraintSecurityHandler
 import org.eclipse.jetty.server.HttpConfiguration
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.HttpConnectionFactory
+import org.eclipse.jetty.server.SecureRequestCustomizer
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.FilterHolder
@@ -201,7 +201,7 @@ public class Hot {
 				println 'initialized'
 				
 				//setup the constraint that causes all http requests to return a !403 error
-				ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+				ConstraintSecurityHandler security = new HotConstrainSecurityHandler();
 				
 				Constraint constraint = new Constraint();
 				constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
