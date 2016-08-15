@@ -39,6 +39,8 @@ public class HotConfig {
 	
 	private boolean ssl;
 	
+	private String redirectHostname;
+	
 	private String keystorePassword;
 	
 	private List<DataSource> dataSources = new ArrayList<HotConfig.DataSource>();
@@ -107,6 +109,14 @@ public class HotConfig {
 
 	public void setKeystorePassword(String keystorePassword) {
 		this.keystorePassword = keystorePassword;
+	}
+	
+	public String getRedirectHostname() {
+		return redirectHostname;
+	}
+
+	public void setRedirectHostname(String redirectHostname) {
+		this.redirectHostname = redirectHostname;
 	}
 
 	public static class DataSource {

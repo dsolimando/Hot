@@ -17,6 +17,17 @@ import org.eclipse.jetty.util.URIUtil;
  *
  */
 public class HotConstrainSecurityHandler extends ConstraintSecurityHandler {
+	
+	private String redirectHostname;
+	
+	public HotConstrainSecurityHandler() {
+		super();
+	}
+
+	public HotConstrainSecurityHandler(String redirectHostname) {
+		super();
+		this.redirectHostname = redirectHostname;
+	}
 
 	@Override
 	protected boolean checkUserDataPermissions(String pathInContext, Request request, Response response,
@@ -31,7 +42,9 @@ public class HotConstrainSecurityHandler extends ConstraintSecurityHandler {
         String scheme = httpConfig.getSecureScheme();
         int port = httpConfig.getSecurePort();
         
-        String url = URIUtil.newURI(scheme, request.getServerName(), port,request.getRequestURI(),request.getQueryString());
+        String redirectHostname = this.redirectHostname != null ?this.redirectHostname: request.getServerName();
+        
+        String url = URIUtil.newURI(scheme, redirectHostname, port,request.getRequestURI(),request.getQueryString());
         
         response.setContentLength(0);
         response.sendRedirect(307, url);
