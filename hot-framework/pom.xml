@@ -4,7 +4,7 @@
 
 	<groupId>be.solidx.hot</groupId>
 	<artifactId>hot-framework</artifactId>
-	<version>0.9.0-SNAPSHOT</version>
+	<version>0.10.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>hot-framework</name>
@@ -381,32 +381,26 @@
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
 			<version>9.3.11.v20160721</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
 			<version>9.3.11.v20160721</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
 			<version>9.3.11.v20160721</version>
-			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
 			<version>9.3.11.v20160721</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-server</artifactId>
 			<version>9.3.11.v20160721</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<artifactId>commons-collections</artifactId>

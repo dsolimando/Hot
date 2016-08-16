@@ -26,7 +26,7 @@ public class HotConstrainSecurityHandler extends ConstraintSecurityHandler {
             return true;
 
 		
-        HttpConfiguration httpConfig = HttpChannel.getCurrentHttpChannel().getHttpConfiguration();
+        HttpConfiguration httpConfig = request.getHttpChannel().getHttpConfiguration();
         
         String scheme = httpConfig.getSecureScheme();
         int port = httpConfig.getSecurePort();

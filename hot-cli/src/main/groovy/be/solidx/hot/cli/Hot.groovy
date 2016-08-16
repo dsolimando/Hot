@@ -29,8 +29,6 @@ import javax.servlet.DispatcherType
 import org.apache.commons.io.FileUtils
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.jackson.map.ObjectMapper
-import org.codehaus.jackson.map.SerializationConfig.Feature
 import org.eclipse.jetty.security.ConstraintMapping
 import org.eclipse.jetty.security.ConstraintSecurityHandler
 import org.eclipse.jetty.server.HttpConfiguration
@@ -54,6 +52,9 @@ import be.solidx.hot.spring.config.SecurityConfig
 import be.solidx.hot.spring.config.ShowConfig
 import be.solidx.hot.spring.config.SocialConfig
 import be.solidx.hot.web.AsyncStaticResourceServlet
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 
 public class Hot {
 
@@ -1036,9 +1037,8 @@ usage: hot <command> <options>
 		]
 		
 		static {
-			objectMapper.getSerializationConfig().enable(Feature.INDENT_OUTPUT);
-			objectMapper.getSerializationConfig().enable(Feature.USE_ANNOTATIONS);
-			objectMapper.getSerializationConfig().disable(Feature.WRITE_NULL_MAP_VALUES);
+			objectMapper.configure(SerializationFeature.INDENT_OUTPUT,true);
+			objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES,false);
 		}
 		
 		public Project (projectName="", projectsFolderPath = "") {

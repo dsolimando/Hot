@@ -24,11 +24,12 @@ package be.icode.hot.cli
 
 import static org.junit.Assert.*
 
-import org.codehaus.jackson.map.ObjectMapper
-import org.codehaus.jackson.map.SerializationConfig.Feature
 import org.junit.Test
 
 import be.solidx.hot.cli.Hot
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 
 
 class TestScript {
@@ -36,9 +37,8 @@ class TestScript {
 	static ObjectMapper objectMapper = new ObjectMapper()
 	
 	static {
-		objectMapper.getSerializationConfig().enable(Feature.INDENT_OUTPUT);
-		objectMapper.getSerializationConfig().enable(Feature.USE_ANNOTATIONS);
-		objectMapper.getSerializationConfig().disable(Feature.WRITE_NULL_MAP_VALUES);
+		objectMapper.configure(SerializationFeature.INDENT_OUTPUT,true);
+		objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES,false);
 	}
 
 	@Test
