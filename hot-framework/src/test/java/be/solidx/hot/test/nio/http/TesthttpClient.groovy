@@ -31,7 +31,6 @@ import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 
 import org.apache.commons.io.IOUtils
-import org.codehaus.jackson.map.ObjectMapper
 import org.eclipse.jetty.server.HttpConnectionFactory
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
@@ -57,8 +56,9 @@ import be.solidx.hot.nio.http.SSLContextBuilder
 import be.solidx.hot.python.PyDictionaryConverter
 import be.solidx.hot.python.PythonScriptExecutor
 import be.solidx.hot.spring.config.ThreadPoolsConfig
-import be.solidx.hot.test.promises.TestPromises;
+import be.solidx.hot.test.promises.TestPromises
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.thoughtworks.xstream.XStream
 
 class TesthttpClient {

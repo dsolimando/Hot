@@ -23,16 +23,16 @@ package be.solidx.hot.utils;
  */
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.apache.commons.fileupload.ParameterParser;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class AbstractHttpDataDeserializer implements HttpDataDeserializer {
 	

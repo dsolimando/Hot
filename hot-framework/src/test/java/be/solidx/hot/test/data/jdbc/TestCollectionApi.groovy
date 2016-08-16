@@ -22,22 +22,13 @@ package be.solidx.hot.test.data.jdbc
  * #L%
  */
  
-import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 
 import be.solidx.hot.data.jdbc.groovy.DB
-import be.solidx.hot.data.jdbc.sql.QueryBuilder;
-import be.solidx.hot.data.jdbc.sql.QueryBuilderFactory;
-import be.solidx.hot.data.jdbc.sql.QueryBuilderFactory.DBEngine;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration

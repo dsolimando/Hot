@@ -39,9 +39,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.xml.parsers.DocumentBuilder;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFactory;
@@ -68,13 +65,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.codec.Base64;
-import org.w3c.dom.Document;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.net.HttpHeaders;
 
 import be.solidx.hot.nio.http.HttpDataSerializer.HttpDataSerializationException;
 import be.solidx.hot.promises.Deferred;
 import be.solidx.hot.promises.Promise;
-
-import com.google.common.net.HttpHeaders;
 
 public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 	

@@ -24,9 +24,10 @@ package be.solidx.hot.nio.http;
 
 import java.util.concurrent.ExecutorService;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 public abstract class HttpClient<CLOSURE, MAP> {

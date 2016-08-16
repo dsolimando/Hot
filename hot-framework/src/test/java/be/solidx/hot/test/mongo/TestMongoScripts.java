@@ -26,15 +26,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.Mongo;
+
 import be.solidx.hot.data.mongo.DBObjectNativeObjectTransformer;
 import be.solidx.hot.data.mongo.js.DB;
-
-import com.mongodb.Mongo;
 
 public class TestMongoScripts {
 	

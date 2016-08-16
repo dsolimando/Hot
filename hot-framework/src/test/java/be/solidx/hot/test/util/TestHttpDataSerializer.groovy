@@ -26,9 +26,7 @@ import static org.junit.Assert.*
 
 import javax.script.CompiledScript
 
-import org.codehaus.jackson.map.ObjectMapper
 import org.junit.Test
-import org.python.core.Py
 import org.springframework.http.converter.FormHttpMessageConverter
 
 import be.solidx.hot.DataConverter
@@ -38,6 +36,7 @@ import be.solidx.hot.nio.http.HttpDataSerializer
 import be.solidx.hot.python.PyDictionaryConverter
 import be.solidx.hot.python.PythonScriptExecutor
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.thoughtworks.xstream.XStream
 
 

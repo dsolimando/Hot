@@ -31,13 +31,14 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.python.apache.xerces.jaxp.DocumentBuilderFactoryImpl;
 import org.python.core.Py;
 import org.python.core.PyDictionary;
 import org.python.core.PyObject;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import be.solidx.hot.python.PyDictionaryConverter;
 

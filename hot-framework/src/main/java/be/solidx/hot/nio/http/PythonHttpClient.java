@@ -28,9 +28,6 @@ import java.util.concurrent.ExecutorService;
 
 import javax.xml.parsers.DocumentBuilder;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.python.core.Py;
@@ -40,12 +37,15 @@ import org.python.core.PyObject;
 import org.python.core.PyString;
 import org.springframework.http.MediaType;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.net.HttpHeaders;
+
 import be.solidx.hot.nio.http.HttpDataSerializer.HttpDataSerializationException;
 import be.solidx.hot.promises.Deferred;
 import be.solidx.hot.promises.python.PythonDeferred;
 import be.solidx.hot.python.PyDictionaryConverter;
-
-import com.google.common.net.HttpHeaders;
 
 public class PythonHttpClient extends HttpClient<PyFunction, PyDictionary> {
 

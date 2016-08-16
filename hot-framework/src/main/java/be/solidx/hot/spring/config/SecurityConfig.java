@@ -33,8 +33,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +67,8 @@ import org.springframework.social.security.SocialAuthenticationServiceLocator;
 import org.springframework.social.security.SocialUserDetailsService;
 import org.springframework.social.security.SpringSocialConfigurer;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.net.HttpHeaders;
 
 import be.solidx.hot.data.jdbc.AbstractDB;

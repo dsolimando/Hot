@@ -1,5 +1,27 @@
 package be.solidx.hot.nio.http;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.xml.sax.SAXException;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.net.HttpHeaders;
+
+import be.solidx.hot.nio.http.Request.Response;
+import be.solidx.hot.promises.Deferred;
+import be.solidx.hot.promises.groovy.GroovyDeferred;
+
 /*
  * #%L
  * Hot
@@ -24,28 +46,6 @@ package be.solidx.hot.nio.http;
 
 import groovy.lang.Closure;
 import groovy.util.XmlSlurper;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.xml.sax.SAXException;
-
-import com.google.common.net.HttpHeaders;
-
-import be.solidx.hot.nio.http.Request.Response;
-import be.solidx.hot.promises.Deferred;
-import be.solidx.hot.promises.groovy.GroovyDeferred;
 
 public class GroovyHttpClient extends HttpClient<Closure<?>, Map<String, Object>> {
 

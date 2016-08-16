@@ -28,7 +28,6 @@ import java.util.concurrent.Executors
 
 import javax.servlet.DispatcherType
 
-import org.codehaus.jackson.map.ObjectMapper
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.FilterHolder
 import org.eclipse.jetty.servlet.ServletContextHandler
@@ -52,6 +51,7 @@ import be.solidx.hot.spring.config.SocialConfig
 import be.solidx.hot.spring.config.ThreadPoolsConfig
 import be.solidx.hot.web.AsyncStaticResourceServlet
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.thoughtworks.xstream.XStream
 
 

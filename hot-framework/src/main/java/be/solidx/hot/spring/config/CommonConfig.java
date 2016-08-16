@@ -28,25 +28,26 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig.Feature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
+import com.fasterxml.jackson.core.JsonGenerator.Feature;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.thoughtworks.xstream.XStream;
+
 import be.solidx.hot.DataConverter;
 import be.solidx.hot.groovy.GroovyMapConverter;
 import be.solidx.hot.js.JsMapConverter;
 import be.solidx.hot.python.PyDictionaryConverter;
-
-import com.thoughtworks.xstream.XStream;
 
 @Configuration
 public class CommonConfig {
@@ -74,11 +75,10 @@ public class CommonConfig {
 	@Bean
 	public ObjectMapper objectMapper() throws JsonParseException, JsonMappingException, IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.getSerializationConfig().enable(Feature.USE_STATIC_TYPING);
+		objectMapper.configure(MapperFeature.USE_STATIC_TYPING, true);
 		if (hotConfig().isDevMode())
-			objectMapper.getSerializationConfig().enable(Feature.INDENT_OUTPUT);
-		objectMapper.getSerializationConfig().enable(Feature.USE_ANNOTATIONS);
-		objectMapper.getSerializationConfig().disable(Feature.WRITE_NULL_MAP_VALUES);
+			objectMapper.configure(SerializationFeature.INDENT_OUTPUT,true);
+		objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
 		return new ObjectMapper();
 	}
 	
@@ -214,10 +214,9 @@ public class CommonConfig {
 	@Bean
 	public HotConfig hotConfig () throws JsonParseException, JsonMappingException, IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.getSerializationConfig().enable(Feature.USE_STATIC_TYPING);
-		objectMapper.getSerializationConfig().enable(Feature.INDENT_OUTPUT);
-		objectMapper.getSerializationConfig().enable(Feature.USE_ANNOTATIONS);
-		objectMapper.getSerializationConfig().disable(Feature.WRITE_NULL_MAP_VALUES);
+		objectMapper.configure(MapperFeature.USE_STATIC_TYPING, true);
+		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+		objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
 		
 		return objectMapper.readValue(configFileURL().openStream(), HotConfig.class);
 	}

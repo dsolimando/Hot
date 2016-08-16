@@ -29,8 +29,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,11 +37,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutorService;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.lmax.disruptor.dsl.ProducerType;
 
+import be.solidx.hot.utils.FileLoader;
 import reactor.core.Environment;
 import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
-import be.solidx.hot.utils.FileLoader;
 
 @Configuration
 @Import({CommonConfig.class})

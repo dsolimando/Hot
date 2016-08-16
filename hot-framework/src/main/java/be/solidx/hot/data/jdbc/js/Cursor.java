@@ -26,10 +26,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeObject;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import be.solidx.hot.data.jdbc.AbstractCursor;
 import be.solidx.hot.data.jdbc.AbstractJoinTree;

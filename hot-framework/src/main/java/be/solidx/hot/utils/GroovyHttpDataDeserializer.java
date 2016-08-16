@@ -1,5 +1,16 @@
 package be.solidx.hot.utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /*
  * #%L
  * Hot
@@ -23,16 +34,6 @@ package be.solidx.hot.utils;
  */
 
 import groovy.util.XmlSlurper;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.xml.sax.SAXException;
 
 public class GroovyHttpDataDeserializer extends AbstractHttpDataDeserializer {
 	

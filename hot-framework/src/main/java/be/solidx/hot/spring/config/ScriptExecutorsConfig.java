@@ -23,13 +23,9 @@ package be.solidx.hot.spring.config;
  */
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,9 +33,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import be.solidx.hot.groovy.GroovyMapConverter;
 import be.solidx.hot.groovy.GroovyWebScriptExecutor;
-import be.solidx.hot.js.JSScriptExecutor;
 import be.solidx.hot.js.JSWebScriptExecutor;
 import be.solidx.hot.js.JsMapConverter;
 import be.solidx.hot.python.PyDictionaryConverter;

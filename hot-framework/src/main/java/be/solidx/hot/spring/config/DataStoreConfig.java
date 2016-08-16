@@ -25,13 +25,14 @@ package be.solidx.hot.spring.config;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ConversionServiceFactoryBean;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import be.solidx.hot.data.DB;
 import be.solidx.hot.data.rest.RestDataStore;

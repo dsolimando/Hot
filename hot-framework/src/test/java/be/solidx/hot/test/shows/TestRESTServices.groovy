@@ -26,7 +26,6 @@ import static org.junit.Assert.*
 
 import java.util.concurrent.Executors
 
-import org.codehaus.jackson.map.ObjectMapper
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
@@ -44,6 +43,7 @@ import be.solidx.hot.shows.rest.RestClosureServlet
 import be.solidx.hot.spring.config.ShowConfig
 import be.solidx.hot.spring.config.ThreadPoolsConfig
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.thoughtworks.xstream.XStream
 
 

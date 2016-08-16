@@ -147,7 +147,7 @@ public abstract class AbstractCursor<T extends Map> implements Cursor<T> {
 	
 	@Override
 	public Integer count() {
-		return namedParameterJdbcTemplate.queryForInt(query.count().build(), criterionValues);
+		return namedParameterJdbcTemplate.queryForObject(query.count().build(), criterionValues, Integer.class);
 	}
 
 	@Override

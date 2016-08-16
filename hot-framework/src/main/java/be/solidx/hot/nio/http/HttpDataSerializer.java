@@ -37,7 +37,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.python.core.Py;
 import org.python.core.PyInstance;
 import org.python.core.PyString;
@@ -52,15 +51,28 @@ import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 
-import be.solidx.hot.DataConverter;
-import be.solidx.hot.utils.XStreamMapEntryConverter;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.CompactWriter;
+
+import be.solidx.hot.DataConverter;
+import be.solidx.hot.utils.XStreamMapEntryConverter;
 
 public class HttpDataSerializer {
 	
 	public static final Charset defaultCharset = Charset.forName("UTF-8");
+	
+	private static final String APPLICATION_XML = MediaType.APPLICATION_XML.getSubtype();
+	
+	private static final String APPLICATION_JSON = MediaType.APPLICATION_JSON.getSubtype();
+	
+	private static final String APPLICATION_FORM_URLENCODED = MediaType.APPLICATION_FORM_URLENCODED.getSubtype();
+	
+	private static final String MULTIPART_FORM_DATA = MediaType.MULTIPART_FORM_DATA.getSubtype();
+	
+	private static final String TEXT_PLAIN = MediaType.TEXT_PLAIN.getSubtype();
+	
+	private static final String TEXT_HTML = MediaType.TEXT_HTML.getSubtype();
 
 	FormHttpMessageConverter formHttpMessageConverter;
 	
@@ -113,9 +125,13 @@ public class HttpDataSerializer {
 	}
 	
 	private byte[] serializeObject (Object data, MediaType mediaType) throws JAXBException, IOException {
-		Charset charset = mediaType.getCharSet() != null?mediaType.getCharSet():defaultCharset;
 		
-		if (mediaType.getSubtype().equals(MediaType.APPLICATION_XML.getSubtype())) {
+		Charset charset = mediaType.getCharset() != null?mediaType.getCharset():defaultCharset;
+		String subtype = mediaType.getSubtype();
+		
+		if (subtype.equals(TEXT_PLAIN) ||subtype.equals(TEXT_HTML)) {
+			return data.toString().getBytes(charset); 
+		} else if (subtype.equals(APPLICATION_XML)) {
 			if (data.getClass().getAnnotation(XmlRootElement.class) != null) {
 				JAXBContext jaxbContext;
 				if (jaxbContextMap.get(data.getClass()) == null) {
@@ -140,9 +156,9 @@ public class HttpDataSerializer {
 			else {
 				return data.toString().getBytes(charset);
 			}
-		} else if (mediaType.getSubtype().equals(MediaType.APPLICATION_JSON.getSubtype())) {
+		} else if (subtype.equals(APPLICATION_JSON)) {
 			return objectMapper.writeValueAsBytes(data);
-		} else if (byteMediaTypes.contains(mediaType.toString()) && data instanceof byte[]) {
+		} else if (byteMediaTypes.contains(subtype) && data instanceof byte[]) {
 			return (byte[]) data;
 		} else {
 			return data.toString().getBytes(charset);
@@ -150,7 +166,9 @@ public class HttpDataSerializer {
 	}
 	
 	private byte[] serializeMap (Map<?,?> data, MediaType mediaType) throws HttpMessageNotWritableException, IOException {
-		if (mediaType.getSubtype().equals(MediaType.APPLICATION_FORM_URLENCODED.getSubtype()) || mediaType.getSubtype().equals(MediaType.MULTIPART_FORM_DATA.getSubtype())) {
+		
+		String subType = mediaType.getSubtype();
+		if (subType.equals(APPLICATION_FORM_URLENCODED) || subType.equals(MULTIPART_FORM_DATA)) {
 
 			final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			LinkedMultiValueMap<String, ?> multiValueMap = dataConverter.toMultiValueMap(data);
@@ -166,9 +184,9 @@ public class HttpDataSerializer {
 			};
 			formHttpMessageConverter.write(multiValueMap, mediaType, outputMessage);
 			return byteArrayOutputStream.toByteArray();
-		} else if (mediaType.getSubtype().equals(MediaType.APPLICATION_XML.getSubtype())) {
+		} else if (subType.equals(APPLICATION_XML)) {
 			return handleXML(data, mediaType);
-		} else if (mediaType.getSubtype().equals(MediaType.APPLICATION_JSON.getSubtype())) {
+		} else if (subType.equals(APPLICATION_JSON)) {
 			return objectMapper.writeValueAsBytes(data);
 		} else {
 			return data.toString().getBytes();
@@ -177,7 +195,7 @@ public class HttpDataSerializer {
 	
 	private byte[] handleXML(Map<?,?> data, MediaType mediaType) throws IOException {
 		
-		Charset charset = mediaType.getCharSet() != null?mediaType.getCharSet():defaultCharset;
+		Charset charset = mediaType.getCharset() != null?mediaType.getCharset():defaultCharset;
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		OutputStreamWriter outputStreamWriter = new  OutputStreamWriter(byteArrayOutputStream, charset);
 		String rootName = "root";

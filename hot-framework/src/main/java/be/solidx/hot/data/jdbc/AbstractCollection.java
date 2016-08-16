@@ -110,7 +110,7 @@ protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 		SelectQuery query = queryBuilder.buildSelectQuery(tableMetadata);
 		Map<String, Object> parameterValues = CollectionUtils.flat(query.addWhereClauses(whereClauses));
 		query.addJoins(joinTree);
-		return namedParameterJdbcTemplate.queryForLong(query.count().build(), parameterValues);
+		return namedParameterJdbcTemplate.queryForObject(query.count().build(), parameterValues,Long.class);
 	}
 
 	@SuppressWarnings("unchecked")

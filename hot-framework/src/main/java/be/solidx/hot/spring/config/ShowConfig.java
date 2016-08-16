@@ -27,8 +27,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.Executors;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -37,12 +35,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.FormHttpMessageConverter;
 
-import reactor.core.Reactor;
-import reactor.core.spec.Reactors;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import be.solidx.hot.nio.http.HttpDataSerializer;
 import be.solidx.hot.shows.ShowsContext;
 import be.solidx.hot.shows.spring.ClosureRequestMappingHandlerMapping;
 import be.solidx.hot.utils.dev.ScriptsWatcher;
+import reactor.core.Reactor;
+import reactor.core.spec.Reactors;
 
 @Configuration
 @Import({CommonConfig.class,ThreadPoolsConfig.class, ScriptExecutorsConfig.class, DataConfig.class})

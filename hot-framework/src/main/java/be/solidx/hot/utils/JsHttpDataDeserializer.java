@@ -26,8 +26,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.mozilla.javascript.NativeObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import be.solidx.hot.Script;
 import be.solidx.hot.js.JSScriptExecutor;
