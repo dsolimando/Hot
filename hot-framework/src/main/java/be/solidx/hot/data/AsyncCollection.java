@@ -46,10 +46,6 @@ public interface AsyncCollection<CLOSURE, T extends Map<?,?>> {
 	
 	Promise<CLOSURE> update (T values, T where);
 	
-	Promise<CLOSURE> update (T values, T where, CLOSURE successCallback);
-	
-	Promise<CLOSURE> update (T values, T where, CLOSURE successCallback, CLOSURE failCallback);
-	
 	Promise<CLOSURE> remove (T t);
 	
 	Promise<CLOSURE> remove (T t, CLOSURE successCallback);

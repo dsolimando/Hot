@@ -191,24 +191,16 @@ public abstract class AbstractAsyncDB<CLOSURE,T extends Map<?, ?>> implements As
 			return count(where, successCallback, null);
 		}
 		
+		
 		@Override
-		public Promise<CLOSURE> update(final T where, final T values, final CLOSURE successCallback, final CLOSURE failCallback) {
+		public Promise<CLOSURE> update(final T where, final T values) {
 			return deferredBlockingCall(new Callable<Object>() {
+
 				@Override
 				public Object call() throws Exception {
 					return collection.update(where, values);
 				}
-			}, successCallback, failCallback);
-		}
-
-		@Override
-		public Promise<CLOSURE> update(final T where, final T values, final CLOSURE successCallback) {
-			return update(where, values, successCallback, null);
-		}
-		
-		@Override
-		public Promise<CLOSURE> update(final T where, final T values) {
-			return update(where, values, null);
+			}, null, null);
 		}
 
 		@Override
