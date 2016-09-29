@@ -201,7 +201,7 @@ public class Hot {
 				println 'initialized'
 				
 				//setup the constraint that causes all http requests to return a !403 error
-				ConstraintSecurityHandler security = new HotConstrainSecurityHandler();
+				ConstraintSecurityHandler security = new HotConstrainSecurityHandler(project.config.redirectHostname);
 				
 				Constraint constraint = new Constraint();
 				constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
