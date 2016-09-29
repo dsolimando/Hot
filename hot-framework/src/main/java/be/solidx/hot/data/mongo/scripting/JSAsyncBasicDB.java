@@ -99,5 +99,15 @@ public class JSAsyncBasicDB extends JSAsyncDB {
 				}
 			}, successCallback, errorCallback);
 		}
+
+		@Override
+		public Promise<NativeFunction> update(final NativeObject q, final NativeObject d, final boolean upsert, final boolean multi) {
+			return deferredBlockingCall(new Callable<Object>() {
+				@Override
+				public Object call() throws Exception {
+					return ((BasicDB<NativeObject>.BasicCollection) collection).update(q, d, upsert, multi);
+				}
+			}, null, null);
+		}
 	}
 }

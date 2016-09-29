@@ -98,9 +98,15 @@ public class PyAsyncBasicDB extends PyAsyncDB {
 				}
 			}, successCallback, errorCallback);
 		}
-	}
-	
-	public static void main(String[] args) {
-		System.out.println(new ObjectId("544cc710e4b09c0980e8452b".getBytes()));
+		
+		@Override
+		public Promise<PyFunction> update(final PyDictionary q, final PyDictionary d, final boolean upsert, final boolean multi) {
+			return deferredBlockingCall(new Callable<Object>() {
+				@Override
+				public Object call() throws Exception {
+					return ((BasicDB<PyDictionary>.BasicCollection) collection).update(q, d, upsert, multi);
+				}
+			}, null, null);
+		}
 	}
 }

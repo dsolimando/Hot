@@ -1,5 +1,17 @@
 package be.solidx.hot.data.mongo.scripting;
 
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+
+import org.bson.types.ObjectId;
+
+import be.solidx.hot.data.mongo.BasicDB;
+import be.solidx.hot.data.mongo.Collection;
+import be.solidx.hot.data.mongo.MongoAsyncCollection;
+import be.solidx.hot.data.scripting.GroovyAsyncDB;
+import be.solidx.hot.promises.Promise;
+
 /*
  * #%L
  * Hot
@@ -23,18 +35,6 @@ package be.solidx.hot.data.mongo.scripting;
  */
 
 import groovy.lang.Closure;
-
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-
-import org.bson.types.ObjectId;
-
-import be.solidx.hot.data.mongo.BasicDB;
-import be.solidx.hot.data.mongo.Collection;
-import be.solidx.hot.data.mongo.MongoAsyncCollection;
-import be.solidx.hot.data.scripting.GroovyAsyncDB;
-import be.solidx.hot.promises.Promise;
 
 
 public class GroovyAsyncBasicDB extends GroovyAsyncDB {
@@ -97,6 +97,16 @@ public class GroovyAsyncBasicDB extends GroovyAsyncDB {
 					return ((BasicDB<Map<String,Object>>.BasicCollection)collection).runCommand(command, t);
 				}
 			}, successCallback, errorCallback);
+		}
+
+		@Override
+		public Promise<Closure<?>> update(final Map<String, Object> q, final Map<String, Object> d, final boolean upsert, final boolean multi) {
+			return deferredBlockingCall(new Callable<Object>() {
+				@Override
+				public Object call() throws Exception {
+					return  ((BasicDB<Map<String,Object>>.BasicCollection)collection).update(q, d, upsert, multi);
+				}
+			}, null, null);
 		}
 	}
 }

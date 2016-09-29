@@ -33,6 +33,8 @@ public interface MongoAsyncCollection<CLOSURE,T extends Map<?, ?>> extends Async
 	Promise<CLOSURE> save (T t,CLOSURE successCallback);
 	Promise<CLOSURE> save (T t,CLOSURE successCallback, CLOSURE errorCallback);
 	
+	Promise<CLOSURE> update (T q, T d, boolean upsert, boolean multi);
+	
 	Promise<CLOSURE> runCommand (String command, T t);
 	Promise<CLOSURE> runCommand (String command, T t, CLOSURE successCallback);
 	Promise<CLOSURE> runCommand (String command, T t, CLOSURE successCallback, CLOSURE errorCallback);
