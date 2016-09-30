@@ -1,5 +1,12 @@
 package be.solidx.hot.exceptions;
 
+import java.util.Arrays;
+import java.util.Collections;
+
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+
+import com.google.common.base.Joiner;
+
 /*
  * #%L
  * Hot
@@ -25,19 +32,34 @@ package be.solidx.hot.exceptions;
 public class ScriptException extends RuntimeException {
 
 	private static final long serialVersionUID = -6053764149659622124L;
-
+	
 	public ScriptException() {
 	}
 
-	public ScriptException(String arg0) {
-		super(arg0);
+	public ScriptException(String sourceFilename) {
+		super(sourceFilename);
 	}
 
-	public ScriptException(Throwable arg0) {
-		super(arg0);
+	public ScriptException(Throwable scriptException) {
+		super(scriptException);
 	}
 
-	public ScriptException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
+	public ScriptException(String sourceFilename, Throwable scriptException) {
+		super(sourceFilename, scriptException);
+	}
+	
+	@Override
+	public String getMessage() {
+		if (getCause() instanceof javax.script.ScriptException) {
+			javax.script.ScriptException se = (javax.script.ScriptException) getCause();
+			if (se.getCause() instanceof MultipleCompilationErrorsException) {
+				String[] splitted = se.getMessage().split(":");
+				if (splitted.length > 3) {
+					return super.getMessage() + ":" + Joiner.on(":").join(Arrays.copyOfRange(splitted, 3, splitted.length));
+				}
+			}
+			return Joiner.on(":").join(super.getMessage(), se.getMessage());
+		}
+		else return getCause().getMessage();
 	}
 }

@@ -45,6 +45,7 @@ import be.solidx.hot.data.AsyncDB;
 import be.solidx.hot.data.DB;
 import be.solidx.hot.data.mongo.BasicDB;
 import be.solidx.hot.data.mongo.groovy.GroovyAsyncBasicDBProxy;
+import be.solidx.hot.exceptions.ScriptException;
 import be.solidx.hot.groovy.GroovyClosure;
 import be.solidx.hot.nio.http.HttpClient;
 import be.solidx.hot.promises.Promise;
@@ -90,7 +91,11 @@ public class GroovyShow extends AbstractShow<Closure<?>,Map<String, Object>,Comp
 		context.put("websocket", websocket);
 		
 		script = new Script<CompiledScript>(loadScript(), new File(filepath.getPath()).getName());
-		scriptExecutor.execute(script, context);
+		try {
+			scriptExecutor.execute(script, context);
+		} catch (ScriptException e) {
+			System.out.println(e.getMessage());
+		}
 	}
 
 	@Override

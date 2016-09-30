@@ -33,6 +33,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import reactor.core.Reactor;
 import reactor.event.Event;
 import reactor.event.selector.Selectors;
@@ -42,6 +45,7 @@ import be.solidx.hot.Script;
 import be.solidx.hot.ScriptExecutor;
 import be.solidx.hot.data.AsyncDB;
 import be.solidx.hot.data.DB;
+import be.solidx.hot.exceptions.ScriptException;
 import be.solidx.hot.nio.http.HttpClient;
 import be.solidx.hot.nio.http.Request;
 import be.solidx.hot.shows.AbstractWebSocket.Options;
@@ -50,6 +54,8 @@ import be.solidx.hot.shows.WebSocket.Handler;
 
 @SuppressWarnings("rawtypes")
 public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> implements Show<CLOSURE,MAP>, ClosureExecutor<CLOSURE>, EventBus<CLOSURE> {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractShow.class);
 	
 	final protected URL filepath;
 	
@@ -287,6 +293,10 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 			this.websocket = webSocketCopy;
 			return ((AbstractWebSocket<CLOSURE, MAP>)this.websocket).refreshSocket(newWebSocket);
 		} catch (IOException e) {
+			return new HashMap<AbstractWebSocket.Options, WebSocket.Handler<CLOSURE>>();
+		} catch (ScriptException e) {
+			System.out.println(e.getMessage());
+			LOGGER.error("",e);
 			return new HashMap<AbstractWebSocket.Options, WebSocket.Handler<CLOSURE>>();
 		}
 	}

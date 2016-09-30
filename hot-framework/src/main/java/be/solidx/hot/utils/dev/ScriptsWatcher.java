@@ -128,9 +128,11 @@ public class ScriptsWatcher implements ApplicationEventPublisherAware {
             		} else {
             			if (LOGGER.isDebugEnabled()) LOGGER.debug("File created:"+child);
             			try {
-							applicationEventPublisher.publishEvent(new ReloadShowEvent(this, new URL("file:"+child.toString()), ReloadReason.ADDED));
+							applicationEventPublisher.publishEvent(new ReloadShowEvent(this, new URL("file:"+child.toRealPath().toString()), ReloadReason.ADDED));
 						} catch (MalformedURLException e) {
 							LOGGER.error("Invalid File path",e);
+						} catch (IOException e) {
+							LOGGER.error("",e);
 						}
             		}
             	} else if (kind == StandardWatchEventKinds.ENTRY_DELETE) {
@@ -139,18 +141,22 @@ public class ScriptsWatcher implements ApplicationEventPublisherAware {
             		} else {
             			if (LOGGER.isDebugEnabled()) LOGGER.debug("File deleted :"+child);
             			try {
-							applicationEventPublisher.publishEvent(new ReloadShowEvent(this, new URL("file:"+child.toString()), ReloadReason.DELETED));
+							applicationEventPublisher.publishEvent(new ReloadShowEvent(this, new URL("file:"+child.toRealPath().toString()), ReloadReason.DELETED));
 						} catch (MalformedURLException e) {
 							LOGGER.error("Invalid File path",e);
+						} catch (IOException e) {
+							LOGGER.error("",e);
 						}
             		}
             	} else if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
             		if (!Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS)) {
             			if (LOGGER.isDebugEnabled()) LOGGER.debug("File modified :"+child);
             			try {
-							applicationEventPublisher.publishEvent(new ReloadShowEvent(this, new URL("file:"+child.toString()), ReloadReason.MODIFIED));
+							applicationEventPublisher.publishEvent(new ReloadShowEvent(this, new URL("file:"+child.toRealPath().toString()), ReloadReason.MODIFIED));
 						} catch (MalformedURLException e) {
 							LOGGER.error("Invalid File path",e);
+						} catch (IOException e) {
+							LOGGER.error("",e);
 						}
             		} 
             	}

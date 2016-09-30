@@ -86,7 +86,7 @@ public abstract class JSR223ScriptExecutor implements ScriptExecutor<CompiledScr
 			if (object == null) return scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
 			return object;
 		} catch (javax.script.ScriptException e) {
-			throw new ScriptException(e);
+			throw new ScriptException(script.getName(), e);
 		}
 	}
 
@@ -104,7 +104,7 @@ public abstract class JSR223ScriptExecutor implements ScriptExecutor<CompiledScr
 			if (object == null) return bindings;
 			return object;
 		} catch (javax.script.ScriptException e) {
-			throw new ScriptException(e);
+			throw new ScriptException(script.getName(),e);
 		}
 	}
 
@@ -121,7 +121,7 @@ public abstract class JSR223ScriptExecutor implements ScriptExecutor<CompiledScr
 			if (object == null) return scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
 			return object;
 		} catch (Exception e) {
-			throw new ScriptException(e);
+			throw new ScriptException(script.getName(), e);
 		}
 	}
 
@@ -141,7 +141,7 @@ public abstract class JSR223ScriptExecutor implements ScriptExecutor<CompiledScr
 			if (object == null) return bindings;
 			return object;
 		} catch (Exception e) {
-			throw new ScriptException(e);
+			throw new ScriptException(script.getName(),e);
 		} 
 	}
 
@@ -152,7 +152,7 @@ public abstract class JSR223ScriptExecutor implements ScriptExecutor<CompiledScr
 			CompiledScript compiledScript = ((Compilable)getEngine()).compile(script.getCodeUTF8());
 			script.setCompiledScript(compiledScript);
 		} catch (javax.script.ScriptException e) {
-			throw new ScriptException(e);
+			throw new ScriptException(script.getName(),e);
 		}
 	}
 	

@@ -221,12 +221,17 @@ public class ShowsContext implements  ApplicationEventPublisherAware, Applicatio
 			}
 			break;
 		case DELETED:
+			if (show == null) 
+				break;
 			((AbstractShow)show).close();
 			shows.remove(show);
 			applicationEventPublisher.publishEvent(new RestRegistrationEvent(this,show,Action.REMOVE));
 			break;
 			
 		case MODIFIED:
+			if (show == null)
+				break;
+			
 			Map webSockethandlersToAddMap = ((AbstractShow)show).reset();
 			applicationEventPublisher.publishEvent(new WebSocketActivationEvent(this, webSockethandlersToAddMap));
 			applicationEventPublisher.publishEvent(new RestRegistrationEvent(this,show,Action.UPDATE));
