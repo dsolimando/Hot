@@ -557,7 +557,10 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 		}
 		
 		private Object processResponseData (byte[] data) {
-			if (response.contentType.equals(MediaType.APPLICATION_OCTET_STREAM.toString())) {
+			if (response.contentType.equals(MediaType.APPLICATION_OCTET_STREAM.toString())
+					|| response.contentType.equals(MediaType.IMAGE_JPEG.toString()) 
+					|| response.contentType.equals(MediaType.IMAGE_GIF.toString()) 
+					|| response.contentType.equals(MediaType.IMAGE_PNG.toString())) {
 				return data;
 			} else if (response.contentType.equals(MediaType.APPLICATION_JSON.toString())) {
 				try {
