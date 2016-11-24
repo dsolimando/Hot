@@ -113,9 +113,15 @@ public class HttpDataSerializer {
 	}
 	
 	private byte[] serializeObject (Object data, MediaType mediaType) throws JAXBException, IOException {
-		Charset charset = mediaType.getCharSet() != null?mediaType.getCharSet():defaultCharset;
 		
-		if (mediaType.getSubtype().equals(MediaType.APPLICATION_XML.getSubtype())) {
+		String subtype = mediaType.getSubtype();
+
+		Charset charset = mediaType.getCharSet();
+		charset = charset == null ? Charset.forName("UTF-8"):charset;
+		
+		if (mediaType == null || mediaType.getType().equals("text")) {
+			return data.toString().getBytes(charset);
+		} else if (subtype.equals(MediaType.APPLICATION_XML.getSubtype())) {
 			if (data.getClass().getAnnotation(XmlRootElement.class) != null) {
 				JAXBContext jaxbContext;
 				if (jaxbContextMap.get(data.getClass()) == null) {
@@ -140,9 +146,9 @@ public class HttpDataSerializer {
 			else {
 				return data.toString().getBytes(charset);
 			}
-		} else if (mediaType.getSubtype().equals(MediaType.APPLICATION_JSON.getSubtype())) {
+		} else if (subtype.equals(MediaType.APPLICATION_JSON.getSubtype())) {
 			return objectMapper.writeValueAsBytes(data);
-		} else if (byteMediaTypes.contains(mediaType.toString()) && data instanceof byte[]) {
+		} else if (data instanceof byte[]) {
 			return (byte[]) data;
 		} else {
 			return data.toString().getBytes(charset);

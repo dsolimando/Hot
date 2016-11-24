@@ -22,12 +22,12 @@ package be.solidx.hot.shows.rest;
  * #L%
  */
 
-import hot.Response;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -78,6 +78,10 @@ import be.solidx.hot.utils.GroovyHttpDataDeserializer;
 import be.solidx.hot.utils.IOUtils;
 import be.solidx.hot.utils.JsHttpDataDeserializer;
 import be.solidx.hot.utils.PythonHttpDataDeserializer;
+
+
+
+import hot.Response;
 
 public class RestClosureServlet extends HttpServlet {
 
@@ -142,11 +146,29 @@ public class RestClosureServlet extends HttpServlet {
 	private void asyncHandleRestRequest (final HttpServletRequest req, final HttpServletResponse resp, final AsyncContext async) {
 		
 		try {
+			// Parse accept media types header
 			String acceptMediaTypeAsString = req.getHeader(com.google.common.net.HttpHeaders.ACCEPT);
-			if (acceptMediaTypeAsString == null) acceptMediaTypeAsString = DEFAULT_ACCEPT+";"+ DEFAULT_CHARSET;
 			
-			final List<MediaType> acceptMediaTypes = MediaType.parseMediaTypes(acceptMediaTypeAsString);
-
+			// Parse accept encoding header
+			Enumeration<String> acceptEncodings = req.getHeaders(com.google.common.net.HttpHeaders.ACCEPT_ENCODING);
+			String charsetAsString = null;
+			
+			if (acceptMediaTypeAsString == null) {
+				acceptMediaTypeAsString = DEFAULT_ACCEPT;
+			}
+			List<MediaType> acceptMediaTypes = MediaType.parseMediaTypes(acceptMediaTypeAsString);
+			MediaType selectedMediatype = acceptMediaTypes.get(0);
+			
+			if (acceptEncodings.hasMoreElements()) {
+				charsetAsString = acceptEncodings.nextElement();
+				if (!Charset.isSupported(charsetAsString)) {
+					charsetAsString = DEFAULT_CHARSET;
+				} 
+			} else {
+				charsetAsString = DEFAULT_CHARSET;
+			}
+			// We construct the final mediatype with encoding from request
+			final MediaType finalMediaType = new MediaType(selectedMediatype.getType(), selectedMediatype.getSubtype(), Charset.forName(charsetAsString));
 			
 			final ClosureRequestMapping closureRequestMapping;
 			
@@ -181,7 +203,7 @@ public class RestClosureServlet extends HttpServlet {
 								promise._done(new DCallback() {
 									@Override
 									public void onDone(Object result) {
-										handleResponse(result, acceptMediaTypes.get(0), resp, async, showEventLoop);
+										handleResponse(result, finalMediaType , resp, async, showEventLoop);
 									}
 								})._fail(new FCallback() {
 									@Override
@@ -202,7 +224,7 @@ public class RestClosureServlet extends HttpServlet {
 											if (o instanceof Throwable) {
 												exception = new Exception((Throwable) o);
 											} else {
-												handleResponse(o, acceptMediaTypes.get(0), resp, async, showEventLoop);
+												handleResponse(o, finalMediaType, resp, async, showEventLoop);
 												return;
 											}
 										} catch (Exception e) {
@@ -216,7 +238,7 @@ public class RestClosureServlet extends HttpServlet {
 									}
 								});
 							} else {
-								handleResponse(response, acceptMediaTypes.get(0), resp, async, showEventLoop);
+								handleResponse(response, finalMediaType, resp, async, showEventLoop);
 							}
 						} catch (Exception e) {
 							if (LOGGER.isDebugEnabled()) 
@@ -282,7 +304,11 @@ public class RestClosureServlet extends HttpServlet {
 		return closureRequestMapping.getClosure().call(restRequest);
 	}
 	
-	private void handleResponse (Object objectResponse, MediaType acceptContentType, HttpServletResponse resp, AsyncContext async, ExecutorService showEventLoop) {
+	private void handleResponse (Object objectResponse, 
+			MediaType acceptContentType, 
+			HttpServletResponse resp, 
+			AsyncContext async, 
+			ExecutorService showEventLoop) {
 		
 		Object convertedResponse = objectResponse;
 		
@@ -305,12 +331,15 @@ public class RestClosureServlet extends HttpServlet {
 				MediaType extractedResponseContentType = extractContentType(headers);
 				
 				resp.setStatus(response.getStatus());
-				resp.setContentType(extractedResponseContentType == null?acceptContentType.toString():extractedResponseContentType.toString());
+				resp.setContentType(
+						extractedResponseContentType == null?acceptContentType.toString():extractedResponseContentType.toString());
 				
 				for (Entry<?, ?> entry : headers.entrySet()) {
 					resp.setHeader(entry.getKey().toString(), entry.getValue().toString());
 				}
-				byte[] body = httpDataSerializer.serialize(content, extractedResponseContentType == null?acceptContentType:extractedResponseContentType);
+				byte[] body = httpDataSerializer.serialize(
+						content, 
+						extractedResponseContentType == null?acceptContentType:extractedResponseContentType);
 				
 				writeBytesToResponseAsync(resp, body, async, showEventLoop);
 			} else {
