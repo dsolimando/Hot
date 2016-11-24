@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +162,11 @@ public class RestClosureServlet extends HttpServlet {
 			
 			if (acceptEncodings.hasMoreElements()) {
 				charsetAsString = acceptEncodings.nextElement();
-				if (!Charset.isSupported(charsetAsString)) {
+				try {
+					if (!Charset.isSupported(charsetAsString)) {
+						charsetAsString = DEFAULT_CHARSET;
+					}
+				} catch (IllegalCharsetNameException e) {
 					charsetAsString = DEFAULT_CHARSET;
 				} 
 			} else {
