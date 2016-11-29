@@ -23,12 +23,14 @@ package be.solidx.hot.shows;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +63,11 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	
 	T requestParams;
 	
+	Session session;
+	
 	Object requestBody;
+	
+	String ip;
 	
 	HttpDataDeserializer httpDatadeSerializer;
 	
@@ -87,9 +93,12 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 		
 		pathParams = scriptMapConverter.toScriptMap(matrixVariables);
 		requestParams = scriptMapConverter.toScriptMap(httpServletRequest.getParameterMap());
+		session = new Session(httpServletRequest.getSession());
+		ip = httpServletRequest.getRemoteAddr();
 		
 		headers = scriptMapConverter.httpHeadersToMap(httpServletRequest);
 		principal = buildPrincipal(httpServletRequest);
+		
 		requestBody = deserializeBody(body, options);
 		this.scriptMapConverter = scriptMapConverter;
 	}
@@ -172,6 +181,14 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	}
 	
 	public abstract T getUser();
+	
+	public Session getSession() {
+		return session;
+	}
+	
+	public String getIp() {
+		return ip;
+	}
 
 	public static class Principal {
 		
@@ -211,6 +228,54 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 			return httpDatadeSerializer.processRequestData(body, contentType);
 		} else {
 			return new String(body);
+		}
+	}
+	
+	public static class Session {
+		
+		private static final String ID = "id";
+		private static final String CREATION_TIME = "creation-time";
+		private static final String LAST_ACCESS_TIME = "last-access-time";
+		private static final String MAX_INTERVAL = "max-interval";
+		
+		HttpSession servletSession;
+		
+		public Session(HttpSession servletSession) {
+			this.servletSession = servletSession;
+		}
+		
+		public Object attribute (String name) {
+			switch (name) {
+			case ID:
+				return servletSession.getId();
+			case CREATION_TIME:
+				return servletSession.getCreationTime();
+			case LAST_ACCESS_TIME:
+				return servletSession.getLastAccessedTime();
+			case MAX_INTERVAL:
+				return servletSession.getMaxInactiveInterval();
+
+			default:
+				return servletSession.getAttribute(name);
+			}
+		}
+		
+		public Object attr(String name) {
+			return attribute(name);
+		}
+		
+		public Session attribute (String name, Object value) {
+			if (value == null) {
+				servletSession.removeAttribute(name);
+			} else if (!Arrays.asList(ID,CREATION_TIME, LAST_ACCESS_TIME, MAX_INTERVAL).contains(name)) {
+				servletSession.setAttribute(name, value);
+			} 
+			return this;
+		}
+		
+		public Session attr(String name, Object value) {
+			attribute(name, value);
+			return this;
 		}
 	}
 }
