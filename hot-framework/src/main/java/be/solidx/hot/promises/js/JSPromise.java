@@ -88,6 +88,9 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 			@Override
 			public org.jdeferred.Promise pipeDone(Object result) {
 				try {
+					if (donePipe == null)
+						return new DeferredObject<>().resolve(result);
+					
 					Context context = Context.enter();
 					Object value;
 					if (result instanceof Object[] && !(result instanceof NativeArray)) {
@@ -145,6 +148,9 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 			@Override
 			public org.jdeferred.Promise pipeDone(Object result) {
 				try {
+					if (donePipe == null)
+						return new DeferredObject<>().resolve(result);
+					
 					Context context = Context.enter();
 					Object value;
 					if (result instanceof Object[] && !(result instanceof NativeArray)) {

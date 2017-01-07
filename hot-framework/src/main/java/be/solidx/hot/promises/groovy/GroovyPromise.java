@@ -78,6 +78,9 @@ public class GroovyPromise extends AbstractPromise<Closure<?>> {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object value) {
 				try {
+					if (donePipeClosure == null)
+						return new DeferredObject<>().resolve(value);
+					
 					Object result;
 					if (value instanceof Object[]) {
 						result = donePipeClosure.call(new Tuple((Object[]) value));
@@ -122,6 +125,8 @@ public class GroovyPromise extends AbstractPromise<Closure<?>> {
 		return new GroovyPromise(promise.then(new DonePipe() {
 			@Override
 			public org.jdeferred.Promise pipeDone(Object value) {
+				if (donePipeClosure == null)
+					return new DeferredObject<>().resolve(value);
 				Object result;
 				if (value instanceof Object[]) {
 					result = donePipeClosure.call(new Tuple((Object[]) value));

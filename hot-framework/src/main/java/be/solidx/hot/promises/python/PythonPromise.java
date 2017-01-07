@@ -73,6 +73,8 @@ public class PythonPromise extends AbstractPromise<PyFunction> implements Promis
 			@Override
 			public org.jdeferred.Promise pipeDone(Object value) {
 				try {
+					if (donePipeClosure == null)
+						return new DeferredObject<>().resolve(value);
 					Object result = Py.tojava(callClosure(value, donePipeClosure), Object.class);
 					if (result instanceof Promise) {
 						return ((Promise) result).getPromise();
@@ -107,6 +109,8 @@ public class PythonPromise extends AbstractPromise<PyFunction> implements Promis
 			@Override
 			public org.jdeferred.Promise pipeDone(Object value) {
 				try {
+					if (donePipeClosure == null)
+						return new DeferredObject<>().resolve(value);
 					Object result = Py.tojava(callClosure(value, donePipeClosure),Object.class);
 					if (result instanceof Promise) {
 						return ((Promise) result).getPromise();
