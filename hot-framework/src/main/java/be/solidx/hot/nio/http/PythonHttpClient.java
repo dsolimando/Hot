@@ -67,7 +67,7 @@ public class PythonHttpClient extends HttpClient<PyFunction, PyDictionary> {
 	}
 
 	@Override
-	public Request<PyFunction, PyDictionary> buildRequest(PyDictionary options) {
+	public Request<PyFunction, PyDictionary> buildRequest(PyDictionary options) throws SSLContextBuilder.SSLContextInitializationException {
 		PyRequest request = new PyRequest(
 				options,
 				eventLoop,

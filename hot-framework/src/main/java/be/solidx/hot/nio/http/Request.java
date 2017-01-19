@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLException;
 import javax.xml.parsers.DocumentBuilder;
 
 import org.codehaus.jackson.JsonParseException;
@@ -114,12 +115,14 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 	CLOSURE progressClosure;
 	
 	Deferred<CLOSURE> deferred;
-	
+
 	boolean ssl;
 	
 	DocumentBuilder documentBuilder;
-	
-	public Request(Map<String, Object> options, 
+    
+	private SslHandler sslHandler;
+
+    public Request(Map<String, Object> options, 
 			ExecutorService eventLoop,
 			ChannelFactory channelFactory, 
 			SSLContextBuilder sslContextBuilder,
@@ -193,11 +196,18 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 		return deferred._fail(callback);
 	}
 	
-	protected void init (ChannelFactory channelFactory) {
+	protected void init (ChannelFactory channelFactory) throws SSLContextBuilder.SSLContextInitializationException {
 		deferred = buildDeferred();
 		clientBootstrap = new ClientBootstrap(channelFactory);
 		clientBootstrap.setPipelineFactory(buildChannelPipelineFactory());
-		
+
+        if (ssl) {
+            SSLContext sslContext = sslContextBuilder.buildSSLContext((Map<String, Object>) (options.get(SSL) != null? options.get(SSL):new HashMap<>()));
+            SSLEngine sslEngine = sslContext.createSSLEngine();
+            sslEngine.setUseClientMode(true);
+            sslHandler = new SslHandler(sslEngine);
+        }
+
 		final URL url = (URL) this.options.get(TARGET_URL);
 		ChannelFuture channelFuture = clientBootstrap.connect(new InetSocketAddress(url.getHost(), url.getPort()!=-1?url.getPort():80));
 		
@@ -281,10 +291,7 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 				ChannelPipeline pipeline = Channels.pipeline();
 				pipeline.addLast("log", new LoggingHandler());
 				if (ssl) {
-					SSLContext sslContext = sslContextBuilder.buildSSLContext((Map<String, Object>) (options.get(SSL) != null? options.get(SSL):new HashMap<>()));
-					SSLEngine sslEngine = sslContext.createSSLEngine();
-					sslEngine.setUseClientMode(true);
-					pipeline.addLast("ssl", new SslHandler(sslEngine));
+					pipeline.addLast("ssl", sslHandler);
 				}
 				pipeline.addLast("codec", new HttpClientCodec());
 				pipeline.addLast("inflater", new HttpContentDecompressor());
@@ -511,7 +518,10 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 								executeSuccessClosure(processedResponseData, response.statusText, response);
 							}
 							deferred.resolve(processedResponseData, httpResponse.getStatus().getReasonPhrase(), response);
-						}
+                            if (ssl) {
+                                sslHandler.close();
+                            }
+                        }
 					});
 //					eventLoopPool.execute(new Runnable() {
 //						@Override
@@ -531,6 +541,9 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 								executeSuccessClosure(processedResponseData, response.statusText, response);
 							}
 							deferred.resolve(processedResponseData, response.statusText, response);
+                            if (ssl) {
+                                sslHandler.close();
+                            }
 						}
 					});
 //					eventLoopPool.execute(new Runnable() {

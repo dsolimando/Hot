@@ -64,7 +64,7 @@ public class GroovyHttpClient extends HttpClient<Closure<?>, Map<String, Object>
 	}
 
 	@Override
-	public Request<Closure<?>, Map<String, Object>> buildRequest(Map<String, Object> options) {
+	public Request<Closure<?>, Map<String, Object>> buildRequest(Map<String, Object> options) throws SSLContextBuilder.SSLContextInitializationException {
 		Request<Closure<?>, Map<String, Object>> request = new GroovyRequest(
 				(Map<String, Object>) options,
 				eventLoop,

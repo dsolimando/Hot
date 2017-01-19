@@ -75,7 +75,7 @@ public class JsHttpClient extends HttpClient<NativeFunction, NativeObject> {
 	}
 
 	@Override
-	public Request<NativeFunction, NativeObject> buildRequest(NativeObject options) {
+	public Request<NativeFunction, NativeObject> buildRequest(NativeObject options) throws SSLContextBuilder.SSLContextInitializationException {
 		Request<NativeFunction, NativeObject> request = new JsRequest(
 				options, 
 				eventLoop,

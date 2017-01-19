@@ -52,5 +52,5 @@ public abstract class HttpClient<CLOSURE, MAP> {
 		this.httpDataSerializer = httpDataSerializer;
 	}
 
-	public abstract Request<CLOSURE, MAP> buildRequest(MAP options);
+	public abstract Request<CLOSURE, MAP> buildRequest(MAP options) throws SSLContextBuilder.SSLContextInitializationException;
 }

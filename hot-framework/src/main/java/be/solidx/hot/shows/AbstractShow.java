@@ -33,6 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import be.solidx.hot.nio.http.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -228,7 +229,7 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 	}
 	
 	@Override
-	public Request<CLOSURE, MAP> http(MAP options) {
+	public Request<CLOSURE, MAP> http(MAP options) throws Exception {
 		return httpClient.buildRequest(options);
 	}
 	
