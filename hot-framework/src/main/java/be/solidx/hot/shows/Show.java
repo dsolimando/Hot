@@ -50,9 +50,11 @@ public interface Show<CLOSURE,MAP extends Map<?,?>> {
 	void clearInterval(ScheduledFuture<?> task);
 	
 	EventBus<CLOSURE> getEventBus();
-	
-	Request<CLOSURE, MAP> http (MAP options) throws Exception;
-	
+
+    Request<CLOSURE, MAP> http (MAP options) throws Exception;
+
+    Request<CLOSURE, MAP> fetch (String url, MAP options) throws Exception;
+
 	Promise<CLOSURE> blocking (CLOSURE closure);
 	
 	Promise<CLOSURE> Deferred ();

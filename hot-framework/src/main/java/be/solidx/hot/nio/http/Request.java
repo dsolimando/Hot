@@ -82,7 +82,8 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Request.class);
 	
 	protected static final String TARGET_URL = "url";
-	protected static final String TYPE = "type";
+    protected static final String TYPE = "type";
+    protected static final String METHOD = "method";
 	protected static final String DATA = "data";
 	protected static final String TIMEOUT = "timeout";
 	protected static final String PROCESS_DATA = "processData";
@@ -307,7 +308,9 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 //		this.options.putAll(options);
 		if (options.get(TYPE) != null) {
 			this.options.put(TYPE, HttpMethod.valueOf(options.get(TYPE).toString()));
-		} else {
+		} else if (options.get(METHOD) != null) {
+            this.options.put(TYPE, HttpMethod.valueOf(options.get(METHOD).toString()));
+        } else {
 			this.options.put(TYPE, HttpMethod.GET);
 		}
 		try {

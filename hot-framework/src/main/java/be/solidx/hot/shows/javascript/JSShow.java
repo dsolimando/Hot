@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
+import be.solidx.hot.nio.http.Request;
 import be.solidx.hot.promises.js.JSPromise;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -153,7 +154,13 @@ public class JSShow extends AbstractShow<NativeFunction, NativeObject, Script> {
 		return jsDeferred.promise();
 	}
 
-	@Override
+    @Override
+    public Request<NativeFunction, NativeObject> fetch(String url, NativeObject options) throws Exception {
+        options.put("url",((JSScriptExecutor)scriptExecutor).getGlobalScope(),url);
+        return http(options);
+	}
+
+    @Override
 	public Promise<NativeFunction> Deferred() {
 		JSScriptExecutor jsScriptExecutor = (JSScriptExecutor) scriptExecutor;
 		return new JSDeferred(jsScriptExecutor.getGlobalScope());

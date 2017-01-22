@@ -222,7 +222,7 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 	public EventBus<CLOSURE> getEventBus() {
 		return eventBus;
 	}
-	
+	Ì
 	@Override
 	public AsyncDB<CLOSURE,MAP> db(String dbname) {
 		return dbs.get(dbname);
@@ -232,7 +232,13 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 	public Request<CLOSURE, MAP> http(MAP options) throws Exception {
 		return httpClient.buildRequest(options);
 	}
-	
+
+    @Override
+    public Request<CLOSURE, MAP> fetch(String url, MAP options) throws Exception {
+        options.put("url", url);
+        http(options);
+    }
+
 	@Override
 	public AsyncDB<CLOSURE,MAP> getDb() {
 		if (dbs.size() > 1) {

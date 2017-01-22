@@ -33,6 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.script.CompiledScript;
 
+import be.solidx.hot.nio.http.Request;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.python.core.Py;
@@ -155,4 +156,6 @@ public class PythonShow extends AbstractShow<PyFunction, PyDictionary, CompiledS
 	public Promise<PyFunction> Deferred() {
 		return new PythonDeferred();
 	}
+
+
 }
