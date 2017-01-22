@@ -41,7 +41,7 @@ public class JSRest extends AbstractRest<NativeFunction> {
 	}
 
 	@Override
-	protected Closure buildShowClosure(NativeFunction closure) {
-		return new JSClosure(closure,globalScope);
+	protected Closure buildShowClosure(NativeFunction closure, boolean async) {
+		return new JSClosure(closure,globalScope, async);
 	}
 }

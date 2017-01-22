@@ -31,12 +31,10 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
+import be.solidx.hot.promises.js.JSPromise;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeFunction;
-import org.mozilla.javascript.NativeObject;
-import org.mozilla.javascript.Script;
+import org.mozilla.javascript.*;
 
 import reactor.core.Reactor;
 import be.solidx.hot.data.AsyncDB;
@@ -111,7 +109,7 @@ public class JSShow extends AbstractShow<NativeFunction, NativeObject, Script> {
 	@Override
 	protected Map<String, AsyncDB<NativeFunction, NativeObject>> buildAsyncDBMap(Map<String, DB<NativeObject>> dbs) {
 		Map<String, AsyncDB<NativeFunction, NativeObject>> adbs = new HashMap<>();
-		
+
 		if (dbs == null) return null;
 		
 		for (Entry<String, DB<NativeObject>> entry : dbs.entrySet()) {
@@ -160,6 +158,16 @@ public class JSShow extends AbstractShow<NativeFunction, NativeObject, Script> {
 		JSScriptExecutor jsScriptExecutor = (JSScriptExecutor) scriptExecutor;
 		return new JSDeferred(jsScriptExecutor.getGlobalScope());
 	}
-	
+
+	public int await (JSPromise promise) {
+		Context cx = Context.enter();
+		try {
+			ContinuationPending pending = cx.captureContinuation();
+			pending.setApplicationState(promise);
+			throw pending;
+		} finally {
+			Context.exit();
+		}
+	}
 	
 }

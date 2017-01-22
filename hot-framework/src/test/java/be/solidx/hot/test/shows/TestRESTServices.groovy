@@ -99,6 +99,26 @@ class TestRESTServices {
 		server.threadPool.join()
 		server.stop()
 	}
+
+    @Test
+    public void testAwait () {
+        def server = createServer()
+        server.start()
+        GroovyHttpClient client = new GroovyHttpClient(Executors.newCachedThreadPool(),cf, sSLContextBuilder, objectMapper, httpDataSerializer)
+        def options = [
+                url: 'http://localhost:8080/rest/asyncawait',
+                type: 'GET'
+        ]
+        client.buildRequest (options).done({ data, textStatus, response ->
+            print data
+            assert data == '10.0'
+            server.stop()
+        }).fail({ response, status, error ->
+            println status
+        })
+        server.threadPool.join()
+        server.stop()
+    }
 	
 	@Test
 	public void testRequestParam() {

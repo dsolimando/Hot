@@ -123,7 +123,7 @@ public class TestShows {
 	@Test
 	public void testJSShow() throws Exception {
 		JSShow jsShow = new JSShow(getClass().getResource("/requestMappingTests/jsshow.show.js"),Executors.newFixedThreadPool(1), Executors.newCachedThreadPool(),null, jsScriptExecutor, null, null);
-		Assert.assertEquals(4, jsShow.getRest().getRequestMappings().size());
+		Assert.assertEquals(5, jsShow.getRest().getRequestMappings().size());
 		
 		ClosureRequestMapping requestMapping = jsShow.getRest().getRequestMappings().get(0);
 		Assert.assertEquals("/items", requestMapping.getPaths().get(0));

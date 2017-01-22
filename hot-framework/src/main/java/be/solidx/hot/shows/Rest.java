@@ -37,7 +37,7 @@ public interface Rest<CLOSURE> {
 	RestAuthHeaders<CLOSURE> post(String path);
 	RestAuthHeaders<CLOSURE> delete(String path);
 
-	public interface RestAuthHeaders<CLOSURE> extends RestClosure<CLOSURE> {
+	interface RestAuthHeaders<CLOSURE> extends RestClosure<CLOSURE> {
 		
 		RestHeaders<CLOSURE> auth (String...roles);
 		RestHeaders<CLOSURE> anonymous ();
@@ -45,18 +45,18 @@ public interface Rest<CLOSURE> {
 		RestAuth<CLOSURE> headers (String header);
 	}
 	
-	public interface RestAuth<CLOSURE> extends RestClosure<CLOSURE> {
+	interface RestAuth<CLOSURE> extends RestClosure<CLOSURE> {
 		RestClosure<CLOSURE> auth (String... roles);
 		RestClosure<CLOSURE> anonymous ();
 	}
 	
-	public interface RestHeaders<CLOSURE> extends RestClosure<CLOSURE> {
+	interface RestHeaders<CLOSURE> extends RestClosure<CLOSURE> {
 		RestClosure<CLOSURE> headers(String[] headers);
 		RestClosure<CLOSURE> headers (String header);
 	}
 	
-	public interface RestClosure<CLOSURE> {
+	interface RestClosure<CLOSURE> {
 		void then (CLOSURE closure);
-		void now(CLOSURE closure);
+		void async(CLOSURE closure);
 	}
 }

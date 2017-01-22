@@ -135,7 +135,7 @@ public abstract class AbstractRest<CLOSURE>  implements Rest<CLOSURE>, RestConfi
 		return closureRequestMapping;
 	}
 	
-	protected abstract Closure buildShowClosure(CLOSURE closure);
+	protected abstract Closure buildShowClosure(CLOSURE closure, boolean async);
 	
 	private class RestClosureImpl implements RestClosure<CLOSURE> {
 		
@@ -147,16 +147,18 @@ public abstract class AbstractRest<CLOSURE>  implements Rest<CLOSURE>, RestConfi
 
 		@Override
 		public void then(CLOSURE closure) {
-			requestMapping.closure = buildShowClosure(closure);
+			requestMapping.closure = buildShowClosure(closure,false);
 			if (!requestMappings.contains(requestMapping)) {
 				requestMappings.add(requestMapping);
 			}
 		}
 		
 		@Override
-		public void now(CLOSURE closure) {
-			requestMapping.setSync(true);
-			then(closure);
+		public void async(CLOSURE closure) {
+            requestMapping.closure = buildShowClosure(closure,true);
+            if (!requestMappings.contains(requestMapping)) {
+                requestMappings.add(requestMapping);
+            }
 		}
 	}
 

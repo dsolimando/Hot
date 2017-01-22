@@ -35,7 +35,7 @@ public class GroovyRest extends AbstractRest<groovy.lang.Closure<?>> {
 	}
 
 	@Override
-	protected Closure buildShowClosure(groovy.lang.Closure<?> closure) {
+	protected Closure buildShowClosure(groovy.lang.Closure<?> closure, boolean async) {
 		return new GroovyClosure(closure);
 	}
 }

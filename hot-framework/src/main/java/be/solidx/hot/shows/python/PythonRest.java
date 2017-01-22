@@ -37,7 +37,7 @@ public class PythonRest extends AbstractRest<PyFunction> {
 	}
 
 	@Override
-	protected Closure buildShowClosure(PyFunction closure) {
+	protected Closure buildShowClosure(PyFunction closure, boolean async) {
 		return new PythonClosure(closure);
 	}
 }

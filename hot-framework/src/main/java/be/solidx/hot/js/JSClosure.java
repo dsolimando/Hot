@@ -22,29 +22,87 @@ package be.solidx.hot.js;
  * #L%
  */
 
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeFunction;
-import org.mozilla.javascript.Scriptable;
+import be.solidx.hot.promises.Promise;
+import be.solidx.hot.promises.js.JSDeferred;
+import be.solidx.hot.promises.js.JSPromise;
+import org.mozilla.javascript.*;
 
 import be.solidx.hot.Closure;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JSClosure implements Closure {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(JSClosure.class);
+
 	protected NativeFunction nativeFunction;
 	protected Scriptable globalscope;
+	protected boolean async;
 	
 	public JSClosure(NativeFunction nativeFunction, Scriptable globalscope) {
 		this.nativeFunction = nativeFunction;
 		this.globalscope = globalscope;
 	}
 
+	public JSClosure(NativeFunction nativeFunction, Scriptable globalscope, boolean async) {
+		this.nativeFunction = nativeFunction;
+		this.globalscope = globalscope;
+		this.async = async;
+	}
+
 	@Override
 	public Object call(Object...objects) {
-		Context context = Context.enter();
-		Object object = nativeFunction.call(context,globalscope,nativeFunction, objects);
-		Context.exit();
-		return object;
-	}
+        final Context context = Context.enter();
+        try {
+            if (async) {
+                JSDeferred jd = new JSDeferred(globalscope);
+                resumeContinuation(jd, null, null, objects);
+                return jd;
+            }
+            else {
+                return nativeFunction.call(context, globalscope, nativeFunction, objects);
+            }
+        } finally {
+            Context.exit();
+        }
+    }
+
+	private void resumeContinuation (final JSDeferred resultDeferred, ContinuationPending pending, NativeArray a ,Object...objects) {
+        final Context context = Context.enter();
+	    try {
+            Object result;
+            if (pending == null) {
+                // initial function call
+                result = context.callFunctionWithContinuations(nativeFunction,globalscope,objects);
+            } else {
+                result = context.resumeContinuation(pending.getContinuation(),globalscope,a);
+            }
+            resultDeferred.resolve(result);
+        } catch (final ContinuationPending pending1) {
+            JSPromise d1 = (JSPromise) pending1.getApplicationState();
+            d1._done(new Promise.DCallback() {
+                @Override
+                public void onDone(Object result) {
+                    Object[] args = new Object[2];
+                    args[0] = result;
+                    args[1] = null;
+                    NativeArray a = new NativeArray(args);
+                    resumeContinuation(resultDeferred, pending1, a);
+                }
+            })._fail(new Promise.FCallback() {
+                @Override
+                public void onFail(Object throwable) {
+                    Object[] args = new Object[2];
+                    args[1] = throwable;
+                    args[0] = null;
+                    NativeArray a = new NativeArray(args);
+                    resumeContinuation(resultDeferred, pending1, a);
+                }
+            });
+        } finally {
+	        Context.exit();
+        }
+    }
 	
 	@Override
 	public boolean equals(Object obj) {

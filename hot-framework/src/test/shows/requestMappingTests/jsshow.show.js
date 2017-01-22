@@ -16,6 +16,21 @@ show.rest.post("/jsitem").headers(["Content-Type: application/x-www-form-urlenco
 	return {items:{name:"lilou", age:8}}
 })
 
+show.rest.get('/asyncawait').async(function(request) {
+    var a = 0;
+    var i = 0
+    while (i < 10) {
+        var t = show.await(show.blocking( function() {
+            java.lang.Thread.sleep(1000);
+            return 1;
+        }))
+        a += t[0]
+        i++
+    }
+
+    return a
+})
+
 show.websocket.addHandler({path:"/jschatroom"}).connect(function(connection) {
 	connection.data(function(data) {
 		connection.write(data)

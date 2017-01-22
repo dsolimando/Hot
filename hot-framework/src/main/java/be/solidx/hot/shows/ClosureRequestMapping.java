@@ -41,8 +41,6 @@ public class ClosureRequestMapping {
 	
 	List<String> params = new ArrayList<String>();
 	
-	boolean sync;
-	
 	Options options = new Options();
 	
 	Closure closure;
@@ -79,14 +77,6 @@ public class ClosureRequestMapping {
 		this.params = params;
 	}
 
-	public boolean isSync() {
-		return sync;
-	}
-
-	public void setSync(boolean sync) {
-		this.sync = sync;
-	}
-	
 	public Options getOptions() {
 		return options;
 	}
