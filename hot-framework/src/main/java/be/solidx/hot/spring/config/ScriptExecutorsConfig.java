@@ -31,10 +31,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.*;
 import org.xml.sax.SAXException;
 
 import be.solidx.hot.groovy.GroovyMapConverter;
@@ -84,7 +81,9 @@ public class ScriptExecutorsConfig {
 	@Bean
 	public JSWebScriptExecutor jSScriptExecutorWithPreExecuteScripts () {
 		JSWebScriptExecutor jsScriptExecutor = new JSWebScriptExecutor();
+		jsScriptExecutor.setInterpretive(true);
 		jsScriptExecutor.setDevMode(hotConfig.isDevMode());
+		jsScriptExecutor.setGlobalScopeScripts(Arrays.asList("/js/backbone.js"));
 		return jsScriptExecutor;
 	}
 	
