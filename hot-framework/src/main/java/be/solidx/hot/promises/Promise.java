@@ -27,8 +27,8 @@ public interface Promise<CLOSURE> {
 	Promise<CLOSURE> then(CLOSURE doneClosure);
 	Promise<CLOSURE> then(CLOSURE doneClosure, CLOSURE failClosure);
 	Promise<CLOSURE> then(CLOSURE doneClosure, CLOSURE failClosure, CLOSURE progressClosure);
-	
-	Promise<CLOSURE> done(CLOSURE closure);
+
+    Promise<CLOSURE> done(CLOSURE closure);
 	Promise<CLOSURE> _done(DCallback callback);
 	
 	Promise<CLOSURE> fail(CLOSURE closure);
@@ -42,10 +42,11 @@ public interface Promise<CLOSURE> {
 	@SuppressWarnings("rawtypes")
 	org.jdeferred.Promise getPromise();
 	
-	public interface DCallback {
+	interface DCallback {
 		void onDone (Object result);
 	}
-	public interface FCallback {
+
+	interface FCallback {
 		void onFail (Object throwable);
 	}
 }
