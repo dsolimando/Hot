@@ -61,7 +61,7 @@ public class JSScriptExecutor implements ScriptExecutor<org.mozilla.javascript.S
 	
 	protected Map<String, Script<org.mozilla.javascript.Script>> compilableMap = new HashMap<String, Script<org.mozilla.javascript.Script>>();
 	
-	protected String commonsjsModuleRoot = "classpath:/escripts/";
+	protected String commonsjsModuleRoot = "classpath:/modules/";
 	
 	@SuppressWarnings("deprecation")
 	public JSScriptExecutor() {
@@ -233,8 +233,8 @@ public class JSScriptExecutor implements ScriptExecutor<org.mozilla.javascript.S
 		}
 	}
 	
-	public void setGlobalScopeScripts(List<String> globalScopeScriptPaths) {
-		for (String path : globalScopeScriptPaths) {
+	public void setGlobalScopeScripts(List<String> globalScopeScriptResourcePaths) {
+		for (String path : globalScopeScriptResourcePaths) {
 			try {
 				Context context = Context.enter();
 				context.setLanguageVersion(Context.VERSION_1_8);
