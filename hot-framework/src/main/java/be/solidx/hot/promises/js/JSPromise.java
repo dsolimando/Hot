@@ -250,12 +250,15 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 			@Override
 			public void onFail(Object result) {
 				Context context = Context.enter();
-				if (result instanceof Object[] && !(result instanceof NativeArray)) {
-					failClosure.call(context, globalScope, failClosure, (Object[]) result);
-				} else {
-					failClosure.call(context, globalScope, failClosure, new Object[]{result});
+				try {
+					if (result instanceof Object[] && !(result instanceof NativeArray)) {
+                        failClosure.call(context, globalScope, failClosure, (Object[]) result);
+                    } else {
+                        failClosure.call(context, globalScope, failClosure, new Object[]{result});
+                    }
+				} finally {
+					Context.exit();
 				}
-				Context.exit();
 			}
 		});
 		return this;
@@ -268,12 +271,15 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 			@Override
 			public void onProgress(Object progress) {
 				Context context = Context.enter();
-				if (progress instanceof Object[]) {
-					progressClosure.call(context, globalScope, progressClosure, (Object[]) progress);
-				} else {
-					progressClosure.call(context, globalScope, progressClosure, new Object[]{progress});
+				try {
+					if (progress instanceof Object[]) {
+                        progressClosure.call(context, globalScope, progressClosure, (Object[]) progress);
+                    } else {
+                        progressClosure.call(context, globalScope, progressClosure, new Object[]{progress});
+                    }
+				} finally {
+					Context.exit();
 				}
-				Context.exit();
 			}
 		});
 		return this;
@@ -286,8 +292,11 @@ public class JSPromise extends AbstractPromise<NativeFunction> implements Promis
 			@Override
 			public void onAlways(State state, Object resolved, Object rejected) {
 				Context context = Context.enter();
-				alwaysClosure.call(context, globalScope, alwaysClosure, new Object[]{});
-				Context.exit();
+				try {
+					alwaysClosure.call(context, globalScope, alwaysClosure, new Object[]{});
+				} finally {
+					Context.exit();
+				}
 			}
 		});
 		return this;

@@ -23,6 +23,7 @@ package be.solidx.hot.promises.js;
  */
 
 import org.jdeferred.impl.DeferredObject;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeFunction;
 import org.mozilla.javascript.Scriptable;
 
@@ -38,23 +39,53 @@ public class JSDeferred extends JSPromise implements Deferred<NativeFunction> {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public JSDeferred resolve(Object... objects) {
-		((DeferredObject)promise).resolve(objects);
+        Context.enter();
+	    try {
+            if (objects.length == 0)
+                ((DeferredObject)promise).resolve(null);
+            else if (objects.length == 1)
+                ((DeferredObject)promise).resolve(Context.javaToJS(objects[0],globalScope));
+            else
+                ((DeferredObject)promise).resolve(objects);
+        } finally {
+            Context.exit();
+        }
 		return this;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public JSDeferred reject(Object... objects) {
-		((DeferredObject)promise).reject(objects);
-		return this;
+        Context.enter();
+        try {
+            if (objects.length == 0)
+                ((DeferredObject)promise).reject(null);
+            else if (objects.length == 1)
+                ((DeferredObject)promise).reject(Context.javaToJS(objects[0],globalScope));
+            else
+                ((DeferredObject)promise).reject(objects);
+        } finally {
+            Context.exit();
+        }
+        return this;
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public JSDeferred notify(Object... notificationValues) {
-		DeferredObject deferredObject = (DeferredObject) super.promise;
-		deferredObject.notify(notificationValues);
-		return this;
+        Context.enter();
+        try {
+            DeferredObject deferredObject = (DeferredObject) super.promise;
+            if (notificationValues.length == 0)
+                ((DeferredObject)promise).notify(null);
+            else if (notificationValues.length == 1)
+                ((DeferredObject)promise).notify(Context.javaToJS(notificationValues[0],globalScope));
+            else
+                ((DeferredObject)promise).notify(notificationValues);
+        } finally {
+            Context.exit();
+        }
+        return this;
 	}
 
 	@Override
