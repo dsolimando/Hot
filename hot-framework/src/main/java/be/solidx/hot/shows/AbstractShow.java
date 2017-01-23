@@ -222,7 +222,7 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 	public EventBus<CLOSURE> getEventBus() {
 		return eventBus;
 	}
-	Ì
+
 	@Override
 	public AsyncDB<CLOSURE,MAP> db(String dbname) {
 		return dbs.get(dbname);
