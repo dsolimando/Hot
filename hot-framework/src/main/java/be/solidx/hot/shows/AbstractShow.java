@@ -236,7 +236,7 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
     @Override
     public Request<CLOSURE, MAP> fetch(String url, MAP options) throws Exception {
         options.put("url", url);
-        http(options);
+        return http(options);
     }
 
 	@Override
