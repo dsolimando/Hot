@@ -93,8 +93,6 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 	@Override
 	protected synchronized void doGet(HttpServletRequest servletRequest, HttpServletResponse resp) throws ServletException, IOException {
 		
-		AsyncContext async = servletRequest.startAsync();
-		
 		if (eventLoop == null) {
 			try {
 				applicationContext = WebApplicationContextUtils.getWebApplicationContext(this.getServletContext());
@@ -106,8 +104,14 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 				LOGGER.error("",e);
 			}
 		}
-		
+
+        AsyncContext async = null;
 		try {
+		    if (servletRequest.getPathInfo().equals("/") && getWelcomePage(servletRequest,resp) == null) {
+                servletRequest.getRequestDispatcher("rest/index.html").forward(servletRequest,resp);
+                return;
+            }
+            async = servletRequest.startAsync();
 			String requestPath = servletRequest.getRequestURL().toString().toLowerCase();
 			if (requestPath.endsWith(".js") || requestPath.endsWith(".js.map")) {
 				asyncLoadResource(servletRequest, resp, "text/javascript", async);
@@ -141,9 +145,10 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 		} catch (Exception e) {
 			
 			writeBytesToResponse(resp,extractStackTrace(e).getBytes());
-			async.complete();
+			if (async != null)
+			    async.complete();
 		}
-	}
+    }
 	
 	private URL getResource (String path) throws MalformedURLException, IOException, URISyntaxException {
 		if (commonConfig.jboss()) {
@@ -161,34 +166,39 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 		return getClass().getResource(path);
 	}
 
+	private URL getWelcomePage (HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws IOException, URISyntaxException, ServletException {
+        URL resourceUrl;
+        String acceptEncoding = servletRequest.getHeader("Accept-Encoding");
+
+	    if (!hotConfig.isDevMode() && acceptEncoding != null && acceptEncoding.contains("gzip")) {
+            resourceUrl = getResource("/index.html.gz");
+            if (resourceUrl != null) {
+                servletResponse.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+                return resourceUrl;
+            }
+        }
+        resourceUrl = getClass().getResource("/index.html");
+        return resourceUrl;
+    }
+
 	private URL getResourceURL(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception {
 		URL resourceUrl;
 		String acceptEncoding = servletRequest.getHeader("Accept-Encoding");
 		// no resource input => index.html
-		if (servletRequest.getPathInfo().equals("/")) {
-			if (!hotConfig.isDevMode() && acceptEncoding != null && acceptEncoding.contains("gzip")) {
-				resourceUrl = getResource("/index.html.gz");
-				if (resourceUrl != null) {
-					servletResponse.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
-					return resourceUrl;
-				}
-			}
-			resourceUrl = getClass().getResource("/index.html");
-		} else {
-			if (!hotConfig.isDevMode() && acceptEncoding != null && acceptEncoding.contains("gzip")) {
-				try {
-					String gzPathInfo = servletRequest.getPathInfo() + ".gz";
-					resourceUrl = getResource(gzPathInfo);
-					if (resourceUrl != null) {
-						servletResponse.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
-						return resourceUrl;
-					}
-				} catch (Exception e) {
-					LOGGER.error("Failed to build gz path info",e);
-				}
-			}
-			resourceUrl = getResource(servletRequest.getPathInfo());
-		}
+
+        if (!hotConfig.isDevMode() && acceptEncoding != null && acceptEncoding.contains("gzip")) {
+            try {
+                String gzPathInfo = servletRequest.getPathInfo() + ".gz";
+                resourceUrl = getResource(gzPathInfo);
+                if (resourceUrl != null) {
+                    servletResponse.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+                    return resourceUrl;
+                }
+            } catch (Exception e) {
+                LOGGER.error("Failed to build gz path info",e);
+            }
+        }
+        resourceUrl = getResource(servletRequest.getPathInfo());
 		return resourceUrl;
 	}
 	
