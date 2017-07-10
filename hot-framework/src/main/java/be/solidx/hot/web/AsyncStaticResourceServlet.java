@@ -108,40 +108,40 @@ public class AsyncStaticResourceServlet extends HttpServlet {
         AsyncContext async = null;
 		try {
 		    if (servletRequest.getPathInfo().equals("/") && getWelcomePage(servletRequest,resp) == null) {
-                servletRequest.getRequestDispatcher("rest/index.html").forward(servletRequest,resp);
+                servletRequest.getRequestDispatcher("rest/index.html").forward(servletRequest, resp);
                 return;
             }
             async = servletRequest.startAsync();
-			String requestPath = servletRequest.getRequestURL().toString().toLowerCase();
-			if (requestPath.endsWith(".js") || requestPath.endsWith(".js.map")) {
-				asyncLoadResource(servletRequest, resp, "text/javascript", async);
-			} else if (requestPath.endsWith(".html") || servletRequest.getPathInfo().equals("/")) {
-				asyncLoadResource(servletRequest, resp, "text/html; charset=utf-8", async);
-			} else if (requestPath.endsWith(".css") || requestPath.endsWith(".css.map")) {
-				asyncLoadResource(servletRequest, resp, "text/css; charset=utf-8", async);
-			} else if (requestPath.endsWith(".png")) {
-				asyncLoadResource(servletRequest, resp, "image/png", async);
-			} else if (requestPath.endsWith(".jpg") || requestPath.endsWith(".jpeg")) {
-				asyncLoadResource(servletRequest, resp, "image/jpg", async);
-			} else if (requestPath.endsWith(".woff")) {
-				asyncLoadResource(servletRequest, resp, "application/font-woff", async);
-			} else if (requestPath.endsWith(".otf")) {
-				asyncLoadResource(servletRequest, resp, "font/opentype", async);
-			} else if (requestPath.endsWith(".ttf")) {
-				asyncLoadResource(servletRequest, resp, "application/x-font-ttf", async);
-			} else if (requestPath.endsWith(".eot")) {
-				asyncLoadResource(servletRequest, resp, "application/vnd.ms-fontobject", async);
-			} else if (requestPath.endsWith(".svg")) {
-				asyncLoadResource(servletRequest, resp, "image/svg+xml", async);
-			} else if (requestPath.endsWith(".swf")) {
-				asyncLoadResource(servletRequest, resp, "application/x-shockwave-flash", async);
-			} else if (requestPath.endsWith(".appcache")) {
-				asyncLoadResource(servletRequest, resp, "application/x-shockwave-flash", async);
-			} else {
-				resp.setStatus(HttpStatus.NOT_FOUND.value());
-				writeBytesToResponse(resp,(requestPath+ " not found").getBytes());
-				async.complete();
-			}
+            String requestPath = servletRequest.getRequestURL().toString().toLowerCase();
+            if (requestPath.endsWith(".js") || requestPath.endsWith(".js.map")) {
+                asyncLoadResource(servletRequest, resp, "text/javascript", async);
+            } else if (requestPath.endsWith(".html") || servletRequest.getPathInfo().equals("/")) {
+                asyncLoadResource(servletRequest, resp, "text/html; charset=utf-8", async);
+            } else if (requestPath.endsWith(".css") || requestPath.endsWith(".css.map")) {
+                asyncLoadResource(servletRequest, resp, "text/css; charset=utf-8", async);
+            } else if (requestPath.endsWith(".png")) {
+                asyncLoadResource(servletRequest, resp, "image/png", async);
+            } else if (requestPath.endsWith(".jpg") || requestPath.endsWith(".jpeg")) {
+                asyncLoadResource(servletRequest, resp, "image/jpg", async);
+            } else if (requestPath.endsWith(".woff")) {
+                asyncLoadResource(servletRequest, resp, "application/font-woff", async);
+            } else if (requestPath.endsWith(".otf")) {
+                asyncLoadResource(servletRequest, resp, "font/opentype", async);
+            } else if (requestPath.endsWith(".ttf")) {
+                asyncLoadResource(servletRequest, resp, "application/x-font-ttf", async);
+            } else if (requestPath.endsWith(".eot")) {
+                asyncLoadResource(servletRequest, resp, "application/vnd.ms-fontobject", async);
+            } else if (requestPath.endsWith(".svg")) {
+                asyncLoadResource(servletRequest, resp, "image/svg+xml", async);
+            } else if (requestPath.endsWith(".swf")) {
+                asyncLoadResource(servletRequest, resp, "application/x-shockwave-flash", async);
+            } else if (requestPath.endsWith(".appcache")) {
+                asyncLoadResource(servletRequest, resp, "application/x-shockwave-flash", async);
+            } else {
+                resp.setStatus(HttpStatus.NOT_FOUND.value());
+                writeBytesToResponse(resp,(requestPath+ " not found").getBytes());
+                async.complete();
+            }
 		} catch (Exception e) {
 			
 			writeBytesToResponse(resp,extractStackTrace(e).getBytes());
@@ -183,6 +183,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 
 	private URL getResourceURL(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception {
 		URL resourceUrl;
+
 		String acceptEncoding = servletRequest.getHeader("Accept-Encoding");
 		// no resource input => index.html
 
@@ -198,8 +199,10 @@ public class AsyncStaticResourceServlet extends HttpServlet {
                 LOGGER.error("Failed to build gz path info",e);
             }
         }
-        resourceUrl = getResource(servletRequest.getPathInfo());
-		return resourceUrl;
+        String pathInfo = servletRequest.getPathInfo();
+        if (pathInfo.equals("/"))
+            pathInfo = "/index.html";
+        return getResource(pathInfo);
 	}
 	
 	protected void asyncLoadResource (
@@ -207,7 +210,8 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 			final HttpServletResponse servletResponse,
 			final String contentType,
 			final AsyncContext async) throws Exception {
-		
+
+
 		URL resourceUrl = getResourceURL(servletRequest,servletResponse);
 		
 		if (resourceUrl == null) {
