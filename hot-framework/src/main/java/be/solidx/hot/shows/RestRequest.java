@@ -79,6 +79,8 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	
 	protected Map<String, Object> userAsMap = new HashMap<>();
 
+	protected HttpServletRequest httpServletRequest;
+
 	@SuppressWarnings("unchecked")
 	public RestRequest(
 			Options options,
@@ -88,12 +90,12 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 			byte[] body) {
 		
 		this.httpDatadeSerializer = httpDataDeserializer;
+		this.httpServletRequest = httpServletRequest;
 		
 		Map<String, MultiValueMap<String, String>> matrixVariables = (Map<String, MultiValueMap<String, String>>) httpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 		
 		pathParams = scriptMapConverter.toScriptMap(matrixVariables);
 		requestParams = scriptMapConverter.toScriptMap(httpServletRequest.getParameterMap());
-		session = new Session(httpServletRequest.getSession());
 		ip = httpServletRequest.getRemoteAddr();
 		
 		headers = scriptMapConverter.httpHeadersToMap(httpServletRequest);
@@ -183,6 +185,10 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	public abstract T getUser();
 	
 	public Session getSession() {
+	    if (session == null) {
+            session = new Session(httpServletRequest.getSession());
+        }
+
 		return session;
 	}
 	
@@ -259,6 +265,10 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 				return servletSession.getAttribute(name);
 			}
 		}
+
+		public void setDuration(int seconds) {
+            servletSession.setMaxInactiveInterval(seconds);
+        }
 		
 		public Object attr(String name) {
 			return attribute(name);

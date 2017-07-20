@@ -65,6 +65,8 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 	protected ExecutorService blockingThreadPool;
 	
 	protected Rest<CLOSURE> rest;
+
+	protected int scale = -1;
 	
 	protected WebSocket<CLOSURE, MAP> websocket;
 	
@@ -84,7 +86,9 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 	
 	List<ScheduledFuture<?>> tasks = new ArrayList<>();
 
-	public AbstractShow(
+	private int index = 0;
+
+    public AbstractShow(
 			URL filepath, 
 			ExecutorService eventLoop, 
 			ExecutorService blockingThreadPool,
@@ -323,16 +327,52 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 	public boolean equals(Object obj) {
 		if (obj != null && obj instanceof AbstractShow) {
 			AbstractShow<CLOSURE, Map, COMPILED_SCRIPT> show = (AbstractShow<CLOSURE, Map, COMPILED_SCRIPT>) obj;
-			return show.script.equals(script);
+
+			if (scale >= 0) {
+			    return show.script.equals(script) && index == show.index;
+            } else {
+                return show.script.equals(script);
+            }
 		}
 		return false;
 	}
-	
+
 	public URL getFilepath() {
 		return filepath;
 	}
 	
 	public Script<COMPILED_SCRIPT> getScript() {
 		return script;
+	}
+
+    public int getScale() {
+        return scale;
+    }
+
+    @Override
+    public void scale() {
+        scale = Runtime.getRuntime().availableProcessors();
+        ((AbstractRest)rest).setScale(scale);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("This show will be scaled on "+scale+ " cores");
+        }
+	}
+
+    @Override
+    public void scale(int numCPU) {
+	    scale = numCPU;
+        //scale = Math.min(numCPU, Runtime.getRuntime().availableProcessors());
+        ((AbstractRest)rest).setScale(scale);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("This show will be scaled on "+scale+ " cores");
+        }
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public int getIndex() {
+        return index;
 	}
 }

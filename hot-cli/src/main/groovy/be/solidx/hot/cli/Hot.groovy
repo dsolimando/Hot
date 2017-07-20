@@ -165,7 +165,7 @@ public class Hot {
 	def startJetty = { Project project, port, sslport ->
 		def config = project.config
 		println("Starting Hot Web Server...")
-		
+
 		Server server = new Server()
 		ServerConnector sslConnector
 		ServerConnector connector
@@ -227,10 +227,8 @@ public class Hot {
 			server.setConnectors(connector)
 			server.setHandler(servletContextHandler)
 		}
-		// Min num threads : acceptors=2 + selectors=4 + request=1
-		server.getThreadPool().setMaxThreads(Math.max(7, Runtime.getRuntime().availableProcessors()))
-		
-		
+
+        server.getThreadPool().setMaxThreads(Math.max(7,Runtime.getRuntime().availableProcessors()*2))
 		
 		AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext()
 		if (config.authList != null && !config.authList.isEmpty()) {

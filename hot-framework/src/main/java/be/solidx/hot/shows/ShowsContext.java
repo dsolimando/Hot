@@ -172,16 +172,36 @@ public class ShowsContext implements  ApplicationEventPublisherAware, Applicatio
 					LOGGER.debug("Found show "+resource.getURL().getPath());
 				}
 					
-				Show<?, ?> show = createShow(resource.getURL());
-					
-				if (show != null) {
-					shows.add(show);
-				}
+				createShows(resource.getURL());
+
 			} catch (IOException e) {
 				LOGGER.error("",e);
 			}
 		}
 	}
+
+	private List<Show<?, ?>> createShows (URL url) throws IOException {
+
+	    List<Show<?, ?>> createdShows = new ArrayList<>();
+
+        Show<?, ?> show = createShow(url);
+        if (show != null) {
+            createdShows.add(show);
+        }
+
+        int scale = ((AbstractShow)show).getScale();
+        if ( scale >= 0 ) {
+            for (int i = 1; i < scale; i++) {
+                show = createShow(url);
+                ((AbstractShow)show).setIndex(i);
+                if (show != null) {
+                    createdShows.add(show);
+                }
+            }
+        }
+        shows.addAll(createdShows);
+        return createdShows;
+    }
 	
 	public List<Show<?,?>> getShows() {
 		return shows;
@@ -199,42 +219,49 @@ public class ShowsContext implements  ApplicationEventPublisherAware, Applicatio
 			LOGGER.debug("Show "+event.getShowUrl().toString()+" changed ["+event.getReloadReason()+"]");
 		}
 		
-		Show<?, ?> show = lookupShow(event.getShowUrl());
+		List<Show<?,?>> shows = lookupShow(event.getShowUrl());
 		
-		if (show == null) {
+		if (shows.isEmpty()) {
 			if (LOGGER.isDebugEnabled()) LOGGER.debug("Show file not found");
 		}
 		
 		switch (event.getReloadReason()) {
 		case ADDED:
-			if (show == null) {
-				show = createShow(event.getShowUrl());
-				if (show != null) {
-					shows.add(show);
-				}
-				applicationEventPublisher.publishEvent(new RestRegistrationEvent(this,show,Action.CREATE));
-				applicationEventPublisher.publishEvent(new WebSocketActivationEvent(this, ((AbstractWebSocket)show.getWebsocket()).getSocketHandlerAdapterMap()));
-			} else {
-				Map webSockethandlersToAddMap = ((AbstractShow)show).reset();
-				applicationEventPublisher.publishEvent(new WebSocketActivationEvent(this, webSockethandlersToAddMap));
-				applicationEventPublisher.publishEvent(new RestRegistrationEvent(this,show,Action.UPDATE));
+			if (shows.isEmpty()) {
+                try {
+                    shows = createShows(event.getShowUrl());
+                    applicationEventPublisher.publishEvent(new WebSocketActivationEvent(this, ((AbstractWebSocket)shows.get(0).getWebsocket()).getSocketHandlerAdapterMap()));
+
+                    for(Show show: shows) {
+                        applicationEventPublisher.publishEvent(new RestRegistrationEvent(this,show,Action.CREATE));
+                    }
+                } catch (IOException e) {
+                    LOGGER.error("",e);
+                }
 			}
 			break;
 		case DELETED:
-			if (show == null) 
+			if (shows.isEmpty())
 				break;
-			((AbstractShow)show).close();
-			shows.remove(show);
-			applicationEventPublisher.publishEvent(new RestRegistrationEvent(this,show,Action.REMOVE));
+
+            for (Show<?,?> show: shows) {
+                ((AbstractShow)show).close();
+                shows.remove(show);
+                applicationEventPublisher.publishEvent(new RestRegistrationEvent(this,show,Action.REMOVE));
+
+            }
 			break;
 			
 		case MODIFIED:
-			if (show == null)
+            if (shows.isEmpty())
 				break;
-			
-			Map webSockethandlersToAddMap = ((AbstractShow)show).reset();
-			applicationEventPublisher.publishEvent(new WebSocketActivationEvent(this, webSockethandlersToAddMap));
-			applicationEventPublisher.publishEvent(new RestRegistrationEvent(this,show,Action.UPDATE));
+
+            Map webSockethandlersToAddMap = ((AbstractShow)shows.get(0)).reset();
+            applicationEventPublisher.publishEvent(new WebSocketActivationEvent(this, webSockethandlersToAddMap));
+
+            for (Show<?,?> show: shows) {
+                applicationEventPublisher.publishEvent(new RestRegistrationEvent(this,show,Action.UPDATE));
+            }
 			break;
 		default:
 			break;
@@ -246,14 +273,16 @@ public class ShowsContext implements  ApplicationEventPublisherAware, Applicatio
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
 	
-	private Show<?, ?> lookupShow (URL url) {
-		for (Show<?, ?> show : shows) {
+	private List<Show<?, ?>> lookupShow (URL url) {
+
+	    List<Show<?, ?>> showsToFind = new ArrayList<>();
+	    for (Show<?, ?> show : shows) {
 			AbstractShow<?, ?, ?> abstractShow = (AbstractShow<?, ?, ?>) show;
 			if (abstractShow.getFilepath().equals(url)) {
-				return show;
+				showsToFind.add(show);
 			}
 		}
-		return null;
+		return showsToFind;
 	}
 	
 	private Show<?, ?> createShow (URL showUrl) {

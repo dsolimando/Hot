@@ -80,26 +80,21 @@ public class IOUtils {
 				
 				@Override
 				public void onDataAvailable() throws IOException {
-					executorService.execute(new Runnable() {
-						@Override
-						public void run() {
-							byte b[] = new byte[2048];
-							int len = 0;
-							
-							try {
-								while (servletInputStream.isReady() && (len = servletInputStream.read(b)) != -1) {
-								    baos.write(b, 0, len);
-								}
-							} catch (IOException e) {
-								LOGGER.error("",e);
-							}
-						}
-					});
+                    byte b[] = new byte[2048];
+                    int len = 0;
+
+                    try {
+                        while (servletInputStream.isReady() && (len = servletInputStream.read(b)) != -1) {
+                            baos.write(b, 0, len);
+                        }
+                    } catch (IOException e) {
+                        LOGGER.error("",e);
+                    }
 				}
 				
 				@Override
 				public void onAllDataRead() throws IOException {
-					promiseResolver.execute(new Runnable() {
+                    promiseResolver.execute(new Runnable() {
 						@Override
 						public void run() {
 							deferredObject.resolve(baos.toByteArray());
@@ -123,30 +118,6 @@ public class IOUtils {
 				}
 			});
 		}
-		
-//		executorService.execute(new Runnable() {
-//			@Override
-//			public void run() {
-//				final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//				try {
-//					IOUtils.toOutputStreamBuffered(req.getInputStream(), outputStream);
-//					promiseResolver.execute(new Runnable() {
-//						@Override
-//						public void run() {
-//							deferredObject.resolve(outputStream.toByteArray());
-//						}
-//					});
-//				} catch (final IOException e) {
-//					promiseResolver.execute(new Runnable() {
-//						@Override
-//						public void run() {
-//							deferredObject.reject(e);
-//						}
-//					});
-//				}
-//			}
-//		});
-		
 		return deferredObject.promise();
 	}
 	

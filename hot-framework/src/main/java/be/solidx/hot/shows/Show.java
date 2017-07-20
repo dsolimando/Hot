@@ -58,4 +58,8 @@ public interface Show<CLOSURE,MAP extends Map<?,?>> {
 	Promise<CLOSURE> blocking (CLOSURE closure);
 	
 	Promise<CLOSURE> Deferred ();
+
+	void scale ();
+
+	void scale (int numCPU);
 }

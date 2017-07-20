@@ -30,9 +30,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import be.solidx.hot.shows.AbstractShow;
+import com.google.common.collect.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -53,14 +56,16 @@ public class ClosureRequestMappingHandlerMapping extends RequestMappingHandlerMa
 
 	ShowsContext showsContext;
 	
-	private final Map<RequestMappingInfo, ClosureRequestMapping> closureMap = new LinkedHashMap<>();
-	
+	private final Multimap<RequestMappingInfo, ClosureRequestMapping> closureMap = HashMultimap.create();
+
 	private final Map<Show<?, ?>, List<RequestMappingInfo>> showRequestMappingInfosMap = new LinkedHashMap<>();
 	
 	private final MultiValueMap<String, RequestMappingInfo> urlMap = new LinkedMultiValueMap<>();
 	
 	RequestMappingMvcRequestMappingAdapter requestMappingMvcRequestMappingAdapter = new RequestMappingMvcRequestMappingAdapter();
-	
+
+	AtomicInteger loadBalancerIndex = new AtomicInteger(0);
+
 	public ClosureRequestMappingHandlerMapping(ShowsContext showsContext) {
 		this.showsContext = showsContext;
 		setUrlDecode(false);
@@ -73,7 +78,7 @@ public class ClosureRequestMappingHandlerMapping extends RequestMappingHandlerMa
 			logger.debug("Looking up handler method for path " + lookupPath);
 		}
 		
-		List<Match> matches = new ArrayList<Match>();
+		List<Match> matches = new ArrayList<>();
 
 		List<RequestMappingInfo> directPathMatches = this.urlMap.get(lookupPath);
 		if (directPathMatches != null) {
@@ -94,13 +99,23 @@ public class ClosureRequestMappingHandlerMapping extends RequestMappingHandlerMa
 			}
 
 			Match bestMatch = matches.get(0);
+
 			if (matches.size() > 1) {
-				Match secondBestMatch = matches.get(1);
-				if (comparator.compare(bestMatch, secondBestMatch) == 0) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Ambiguous closure mapped for HTTP path '" + request.getRequestURL() + "'");
-					}
-				}
+			    if (bestMatch.closureRequestMapping.getScale() >= 0) {
+			        int i = loadBalancerIndex.getAndIncrement();
+                    if (i == bestMatch.closureRequestMapping.getScale()) {
+                        loadBalancerIndex.set(1);
+                        i = 0;
+                    }
+                    bestMatch = matches.get(i);
+			    } else {
+                    Match secondBestMatch = matches.get(1);
+                    if (comparator.compare(bestMatch, secondBestMatch) == 0) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Ambiguous closure mapped for HTTP path '" + request.getRequestURL() + "'");
+                        }
+                    }
+                }
 			}
 			handleMatch(bestMatch.mapping, lookupPath, request);
 			return bestMatch.closureRequestMapping;
@@ -122,7 +137,9 @@ public class ClosureRequestMappingHandlerMapping extends RequestMappingHandlerMa
 		for (RequestMappingInfo mapping : mappings) {
 			RequestMappingInfo match = getMatchingMapping(mapping, request);
 			if (match != null) {
-				matches.add(new Match(match, closureMap.get(mapping)));
+			    for(ClosureRequestMapping crm: closureMap.get(mapping)) {
+                    matches.add(new Match(match, crm));
+                }
 			}
 		}
 	}
@@ -130,17 +147,17 @@ public class ClosureRequestMappingHandlerMapping extends RequestMappingHandlerMa
 	private void registerShowClosures () {
 		closureMap.clear();
 		for (Show<?,?> show : showsContext.getShows()) {
-			registerShowClosure(show);
+			registerShowClosure(show,((AbstractShow)show).getScale() >= 0);
 		}
 	}
 	
-	private void registerShowClosure (Show<?, ?> show, boolean overwriteExisting) {
+	private void registerShowClosure (Show<?, ?> show, boolean scale) {
 		
 		List<RequestMappingInfo> showRequestMappingInfos = new ArrayList<>();
 		for (ClosureRequestMapping requestMapping : show.getRest().getRequestMappings()) {
 			RequestMappingInfo requestMappingInfo = requestMappingMvcRequestMappingAdapter.getRequestMappingInfo(requestMapping);
-			if (closureMap.get(requestMappingInfo) != null) {
-				if (overwriteExisting) {
+			if (!closureMap.get(requestMappingInfo).isEmpty()) {
+				if (scale) {
 					if (LOGGER.isDebugEnabled()) LOGGER.debug("Updating already registered show "+requestMapping.getPaths());
 					closureMap.put(requestMappingInfo, requestMapping);
 					showRequestMappingInfos.add(requestMappingInfo);
@@ -167,32 +184,12 @@ public class ClosureRequestMappingHandlerMapping extends RequestMappingHandlerMa
 		registerShowClosure(show, false);
 	}
 	
-	/**
-	 * Unregister rest paths not defined in show
-	 * 
-	 * @param show
-	 */
-	private void unregisterDeletedShowClosure(Show<?, ?> show) {
-		
-		for (RequestMappingInfo requestMappingInfo : showRequestMappingInfosMap.get(show)) {
-			if (!show.getRest().getRequestMappings().contains(closureMap.get(requestMappingInfo))) {
-				closureMap.remove(requestMappingInfo);
-			}
-		}
-		
-//		for (Entry<RequestMappingInfo, ClosureRequestMapping> entry : new HashMap<RequestMappingInfo, ClosureRequestMapping>(closureMap).entrySet()) {
-//			if (!show.getRest().getRequestMappings().contains(entry.getValue())) {
-//				closureMap.remove(entry.getKey());
-//			}
-//		}
-	}
-	
 	private void unregisterShowClosure(Show<?, ?> show) {
 		showRequestMappingInfosMap.remove(show);
 		for (ClosureRequestMapping requestMapping : show.getRest().getRequestMappings()) {
 			RequestMappingInfo requestMappingInfo = requestMappingMvcRequestMappingAdapter.getRequestMappingInfo(requestMapping);
 			if (LOGGER.isDebugEnabled()) LOGGER.debug("Unregistering "+requestMapping.getPaths());
-			closureMap.remove(requestMappingInfo);
+			closureMap.removeAll(requestMappingInfo);
 			Set<String> patterns = getMappingPathPatterns(requestMappingInfo);
 			for (String pattern : patterns) {
 				if (!getPathMatcher().isPattern(pattern)) {
@@ -234,7 +231,7 @@ public class ClosureRequestMappingHandlerMapping extends RequestMappingHandlerMa
 	}
 
 	@Override
-	public void onApplicationEvent(RestRegistrationEvent event) {
+	synchronized public void onApplicationEvent(RestRegistrationEvent event) {
 		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Received rest registration event "+event.getShow() + " "+event.getAction());
 		}
@@ -248,7 +245,7 @@ public class ClosureRequestMappingHandlerMapping extends RequestMappingHandlerMa
 			break;
 			
 		case UPDATE:
-			unregisterDeletedShowClosure(event.getShow());
+            unregisterShowClosure(event.getShow());
 			registerShowClosure(event.getShow(),true);
 			break;
 		default:

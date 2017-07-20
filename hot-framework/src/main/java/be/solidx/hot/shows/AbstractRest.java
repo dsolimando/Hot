@@ -41,14 +41,24 @@ public abstract class AbstractRest<CLOSURE>  implements Rest<CLOSURE>, RestConfi
 	private static final Log LOG = LogFactory.getLog(AbstractRest.class);
 	
 	ExecutorService eventLoop;
-	
-	public AbstractRest(ExecutorService eventLoop) {
+
+	int scale = -1;
+
+    public AbstractRest(ExecutorService eventLoop) {
 		this.eventLoop = eventLoop;
 	}
 
-	protected List<ClosureRequestMapping> requestMappings = new ArrayList<ClosureRequestMapping>();
+    public int getScale() {
+        return scale;
+    }
 
-	@Override
+    public void setScale(int scale) {
+        this.scale = scale;
+    }
+
+    protected List<ClosureRequestMapping> requestMappings = new ArrayList<ClosureRequestMapping>();
+
+    @Override
 	public List<ClosureRequestMapping> getRequestMappings() {
 		return requestMappings;
 	}
@@ -108,6 +118,7 @@ public abstract class AbstractRest<CLOSURE>  implements Rest<CLOSURE>, RestConfi
 		requestMapping.setPaths(paths);
 		requestMapping.setRequestMethod(requestMethod);
 		requestMapping.setEventLoop(eventLoop);
+		requestMapping.setScale(scale);
 		return requestMapping;
 	}
 	
@@ -115,7 +126,8 @@ public abstract class AbstractRest<CLOSURE>  implements Rest<CLOSURE>, RestConfi
 	protected ClosureRequestMapping buildRequestMapping (List<String> paths, Map<?,?> optionsMap, RequestMethod requestMethod) {
 		ClosureRequestMapping closureRequestMapping = buildRequestMapping(paths, requestMethod);
 		closureRequestMapping.setEventLoop(eventLoop);
-		
+		closureRequestMapping.setScale(scale);
+
 		for (Entry entry : optionsMap.entrySet()) {
 			if (entry.getKey() instanceof String && entry.getKey().equals(Options.REST_OPTIONS_PROCESS_REQUEST_DATA)) {
 				try {

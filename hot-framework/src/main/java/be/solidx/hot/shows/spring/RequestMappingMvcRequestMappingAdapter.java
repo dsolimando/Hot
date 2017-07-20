@@ -23,19 +23,17 @@ package be.solidx.hot.shows.spring;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import org.springframework.web.servlet.mvc.condition.ConsumesRequestCondition;
-import org.springframework.web.servlet.mvc.condition.HeadersRequestCondition;
-import org.springframework.web.servlet.mvc.condition.ParamsRequestCondition;
-import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
-import org.springframework.web.servlet.mvc.condition.ProducesRequestCondition;
-import org.springframework.web.servlet.mvc.condition.RequestMethodsRequestCondition;
+import org.springframework.web.servlet.mvc.condition.*;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 
 import be.solidx.hot.shows.ClosureRequestMapping;
 
 import com.google.common.net.HttpHeaders;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class RequestMappingMvcRequestMappingAdapter {
 	

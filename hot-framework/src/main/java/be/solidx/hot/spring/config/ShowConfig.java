@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.Executors;
 
+import be.solidx.hot.shows.rest.RestClosureDelegate;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -37,12 +38,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.FormHttpMessageConverter;
 
+import org.xml.sax.SAXException;
 import reactor.core.Reactor;
 import reactor.core.spec.Reactors;
 import be.solidx.hot.nio.http.HttpDataSerializer;
 import be.solidx.hot.shows.ShowsContext;
 import be.solidx.hot.shows.spring.ClosureRequestMappingHandlerMapping;
 import be.solidx.hot.utils.dev.ScriptsWatcher;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 @Configuration
 @Import({CommonConfig.class,ThreadPoolsConfig.class, ScriptExecutorsConfig.class, DataConfig.class})
@@ -127,4 +131,20 @@ public class ShowConfig {
 	NioClientSocketChannelFactory 	socketChannelFactory() {
 		return new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool(), 1, ThreadPoolsConfig.AVAILABLE_PROCESSORS);
 	}
+
+	@Bean
+	RestClosureDelegate restClosureDelegate() throws Exception {
+	    return new RestClosureDelegate(
+	            closureRequestMappingHandlerMapping(),
+	            httpDataSerializer(),
+                commonConfig.groovyDataConverter(),
+                commonConfig.pyDictionaryConverter(),
+                commonConfig.jsMapConverter(),
+                scriptExecutorsConfig.groovyHttpDataDeserializer(),
+                scriptExecutorsConfig.pythonHttpDataDeserializer(),
+                scriptExecutorsConfig.jsHttpDataDeserializer(),
+                threadPoolsConfig.blockingTasksThreadPool(),
+                threadPoolsConfig.httpIOEventLoop()
+        );
+    }
 }

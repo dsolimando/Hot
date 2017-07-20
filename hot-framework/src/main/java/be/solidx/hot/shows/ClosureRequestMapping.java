@@ -22,14 +22,13 @@ package be.solidx.hot.shows;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-
+import be.solidx.hot.Closure;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import be.solidx.hot.Closure;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 public class ClosureRequestMapping {
 
@@ -52,7 +51,9 @@ public class ClosureRequestMapping {
 	boolean anonymous;
 	
 	ExecutorService eventLoop;
-	
+
+	int scale = -1;
+
 	public List<String> getPaths() {
 		return paths;
 	}
@@ -135,7 +136,15 @@ public class ClosureRequestMapping {
 		this.anonymous = anonymous;
 	}
 
-	@Override
+    public int getScale() {
+        return scale;
+    }
+
+    public void setScale(int scale) {
+        this.scale = scale;
+    }
+
+    @Override
 	public boolean equals(Object obj) {
 		if (obj != null && obj instanceof ClosureRequestMapping) {
 			ClosureRequestMapping closureRequestMapping = (ClosureRequestMapping) obj;

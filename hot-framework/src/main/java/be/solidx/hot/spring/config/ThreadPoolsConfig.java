@@ -84,7 +84,7 @@ public class ThreadPoolsConfig {
 	@Bean(name="staticResourcesEventLoop")
 	public ExecutorService staticResourcesEventLoop() throws Exception {
 		RingBufferAsyncTaskExecutor rbate = new RingBufferAsyncTaskExecutor(reactorEnvironment())
-	        .setName("httpIOEventLoop")
+	        .setName("staticResourcesEventLoop")
 	        .setProducerType(ProducerType.MULTI)
 	        .setBacklog(2048);
 		rbate.afterPropertiesSet();
