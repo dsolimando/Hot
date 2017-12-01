@@ -22,6 +22,7 @@ package be.solidx.hot.data.mongo.scripting;
  * #L%
  */
 
+import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
@@ -59,7 +60,28 @@ public class JSAsyncBasicDB extends JSAsyncDB {
 			super(collection);
 		}
 
-		@Override
+        @Override
+        public Promise<NativeFunction> count() {
+            return count(new NativeObject());
+        }
+
+        @Override
+        public Promise<NativeFunction> count(NativeFunction successCallback) {
+            return count(successCallback,null);
+        }
+
+        @Override
+        public Promise<NativeFunction> count(NativeFunction successCallback, NativeFunction errorCallback) {
+            return deferredBlockingCall(new Callable<Object>() {
+
+                @Override
+                public Object call() throws Exception {
+                    return ((BasicDB<NativeObject>.BasicCollection) collection).count();
+                }
+            }, successCallback, errorCallback);
+        }
+
+        @Override
 		public Promise<NativeFunction> save(NativeObject t) {
 			return save(t,null);
 		}

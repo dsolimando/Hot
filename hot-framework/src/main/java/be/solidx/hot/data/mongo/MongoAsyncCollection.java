@@ -28,7 +28,11 @@ import be.solidx.hot.data.AsyncCollection;
 import be.solidx.hot.promises.Promise;
 
 public interface MongoAsyncCollection<CLOSURE,T extends Map<?, ?>> extends AsyncCollection<CLOSURE, T> {
-	
+
+    Promise<CLOSURE> count ();
+    Promise<CLOSURE> count (CLOSURE successCallback);
+    Promise<CLOSURE> count (CLOSURE successCallback, CLOSURE errorCallback);
+
 	Promise<CLOSURE> save (T t);
 	Promise<CLOSURE> save (T t,CLOSURE successCallback);
 	Promise<CLOSURE> save (T t,CLOSURE successCallback, CLOSURE errorCallback);

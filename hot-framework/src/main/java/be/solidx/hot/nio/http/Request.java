@@ -257,13 +257,20 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 		if (!hostnameHeader) {
 			httpRequest.headers().set("Host", url.getHost());
 		}
-		
+
+        if (url.getQuery() != null && !url.getQuery().trim().isEmpty())
+            httpRequest.setUri(httpRequest.getUri()+"?"+url.getQuery());
+
 		// Set request payload
 		if (options.get(DATA) != null) {
 			Charset urlDataCharset = requestContentType().getCharSet();
 			if (urlDataCharset == null)  urlDataCharset = Charset.forName("utf-8");
 			if (httpRequest.getMethod().equals(HttpMethod.GET)) {
-				httpRequest.setUri(httpRequest.getUri()+"?"+new String(processRequestData(MediaType.APPLICATION_FORM_URLENCODED), urlDataCharset));
+			    if (url.getQuery() == null || url.getQuery().trim().isEmpty())
+				    httpRequest.setUri(httpRequest.getUri()+"?"+new String(processRequestData(MediaType.APPLICATION_FORM_URLENCODED), urlDataCharset));
+			    else {
+                    httpRequest.setUri(httpRequest.getUri()+"&"+new String(processRequestData(MediaType.APPLICATION_FORM_URLENCODED), urlDataCharset));
+                }
 			} else {
 				if ((boolean) options.get(PROCESS_DATA)) {
 					byte[] processedData = processRequestData();
@@ -516,7 +523,9 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 					eventLoop.execute(new Runnable() {
 						@Override
 						public void run() {
-							final Object processedResponseData = ((Boolean)options.get(PROCESS_RESPONSE))?processResponseData(data):processChunkData(data);
+							final Object processedResponseData = ((Boolean)options.get(PROCESS_RESPONSE))?
+                                    processResponseData(data)
+                                    :processChunkData(data);
 							if (successClosure != null) {
 								executeSuccessClosure(processedResponseData, response.statusText, response);
 							}
@@ -539,7 +548,9 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 					eventLoop.execute(new Runnable() {
 						@Override
 						public void run() {
-							final Object processedResponseData = processResponseData(chunkedBytes.toByteArray());
+                            final Object processedResponseData = ((Boolean)options.get(PROCESS_RESPONSE))?
+                                        processResponseData(chunkedBytes.toByteArray())
+                                            :processChunkData(chunkedBytes.toByteArray());
 							if (successClosure != null) {
 								executeSuccessClosure(processedResponseData, response.statusText, response);
 							}

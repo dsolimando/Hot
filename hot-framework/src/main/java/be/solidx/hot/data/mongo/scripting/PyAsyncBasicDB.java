@@ -58,7 +58,28 @@ public class PyAsyncBasicDB extends PyAsyncDB {
 			super(collection);
 		}
 
-		@Override
+        @Override
+        public Promise<PyFunction> count() {
+            return count(new PyDictionary());
+        }
+
+        @Override
+        public Promise<PyFunction> count(PyFunction successCallback) {
+            return count(successCallback,null);
+        }
+
+        @Override
+        public Promise<PyFunction> count(PyFunction successCallback, PyFunction errorCallback) {
+            return deferredBlockingCall(new Callable<Object>() {
+
+                @Override
+                public Object call() throws Exception {
+                    return ((BasicDB<PyDictionary>.BasicCollection) collection).count();
+                }
+            }, successCallback, errorCallback);
+        }
+
+        @Override
 		public Promise<PyFunction> save(PyDictionary t) {
 			return save(t,null);
 		}

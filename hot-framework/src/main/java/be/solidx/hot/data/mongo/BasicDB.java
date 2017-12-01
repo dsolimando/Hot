@@ -188,7 +188,12 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 			return this;
 		}
 
-		@Override
+        @Override
+        public long count() {
+            return db.getCollection(name).count();
+        }
+
+        @Override
 		public T findOne() {
 			return dbObjectTransformer.fromDBObject((BasicDBObject) db.getCollection(name).findOne());
 		}

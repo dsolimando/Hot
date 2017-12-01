@@ -1,9 +1,11 @@
 package be.solidx.hot.data.mongo.scripting;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.bson.types.ObjectId;
 
 import be.solidx.hot.data.mongo.BasicDB;
@@ -58,8 +60,28 @@ public class GroovyAsyncBasicDB extends GroovyAsyncDB {
 		public GroovyAsyncBasicCollection(Collection<Map<String, Object>> collection) {
 			super(collection);
 		}
-		
-		@Override
+
+        @Override
+        public Promise<Closure<?>> count() {
+		    return count(new HashMap());
+        }
+
+        @Override
+        public Promise<Closure<?>> count(Closure<?> successCallback) {
+            return count(successCallback,null);
+        }
+
+        @Override
+        public Promise<Closure<?>> count(Closure<?> successCallback, Closure<?> errorCallback) {
+            return deferredBlockingCall(new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    return ((BasicDB<Map<String,Object>>.BasicCollection)collection).count();
+                }
+            }, successCallback, errorCallback);
+        }
+
+        @Override
 		public Promise<Closure<?>> save(Map<String,Object> t) {
 			return save(t, null);
 		}
