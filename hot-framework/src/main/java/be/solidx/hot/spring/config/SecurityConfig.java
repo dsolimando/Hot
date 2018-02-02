@@ -460,6 +460,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 						List<String> paths = new ArrayList<>();
 						for (String path : requestMapping.getPaths()) {
 							paths.add("/rest"+path);
+							paths.add("/rest"+path+'/');
 						}
 						if (requestMapping.getRoles().length > 0) {
 							and = and.authorizeRequests()
