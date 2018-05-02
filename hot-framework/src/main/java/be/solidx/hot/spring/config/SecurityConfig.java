@@ -294,6 +294,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				if ((auth.getType() == AuthType.FACEBOOK
 						|| auth.getType() == AuthType.TWITTER
 						|| auth.getType() == AuthType.GOOGLE)) {
+
 					and = and.apply(springSocialConfigurer).and();
 					break;
 				}

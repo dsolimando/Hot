@@ -781,6 +781,7 @@ usage: hot <command> <options>
 			def cli = new HotCLIBuilder(usage: "hot auth-facebook -id <App id> -sec <App secret>", posix:false)
 			cli.id args:1, longOpt:"app-id","Facebook provided application id", required:true
 			cli.sec args:1, longOpt:"app-secret","Facebook provided application secret", required:true
+            cli.scope args:1, longOpt: "oauth2 scope", "Scope of the oauth2 request", required: false
 			
 			def cliRemove = new HotCLIBuilder(usage: "hot auth-facebook -r", posix:false)
 			cliRemove.r "remove facebook based authentication", required: true
@@ -796,7 +797,7 @@ usage: hot <command> <options>
 				println "Adding facebook based authentication capabilities to the app"
 				try {
 					Project project = new Project(projectName, projectsFolder)
-					project.oauth "FACEBOOK", options.id, options.sec, null
+					project.oauth "FACEBOOK", options.id, options.sec, options.scope, null
 				} catch (e) {println e.getMessage()}
 			} catch (e1) {
 				if (!filteredArgs.contains('-r')) {
@@ -809,7 +810,7 @@ usage: hot <command> <options>
 					println "Removing facebook based authentication capabilities"
 					try {
 						Project project = new Project(projectName, projectsFolder)
-						project.oauth 'FACEBOOK', null, null, optionsRemove.r
+						project.oauth 'FACEBOOK', null, null, null, optionsRemove.r
 					} catch (e) {println e.getMessage()}
 				} catch (e2) {
 					cli.usage(); println 'or:'
@@ -838,7 +839,7 @@ usage: hot <command> <options>
 				
 				try {
 					Project project = new Project(projectName, projectsFolder)
-					project.oauth "TWITTER", options.ck, options.cp, null
+					project.oauth "TWITTER", options.ck, options.cp, null, null
 				} catch (e) {println e.getMessage()}
 				
 			} catch (e1) {
@@ -852,7 +853,7 @@ usage: hot <command> <options>
 					println "Removing twitter based authentication capabilities"
 					try {
 						Project project = new Project(projectName, projectsFolder)
-						project.oauth 'TWITTER', null, null, optionsRemove.r
+						project.oauth 'TWITTER', null, null, null, optionsRemove.r
 					} catch (e) {logger.error e.getMessage()}
 				} catch (e2) {
 					cli.usage(); println 'or:'
@@ -865,7 +866,8 @@ usage: hot <command> <options>
 			def cli = new HotCLIBuilder(usage: "hot auth-google -id <client ID> -sec <client secret>", posix:false)
 			cli.id args:1, longOpt:"client-id","The client ID you obtained from the Google Developers Console", required:true
 			cli.sec args:1, longOpt:"client-secret","The client secret you obtained from the Developers Console", required:true
-			
+            cli.scope args:1, longOpt: "oauth2 scope", "Scope of the oauth2 request", required: false
+
 			def cliRemove = new HotCLIBuilder(usage: "hot auth-google -r", posix:false)
 			cliRemove.r "remove Google based authentication", required: false
 			
@@ -881,7 +883,7 @@ usage: hot <command> <options>
 				
 				try {
 					Project project = new Project(projectName, projectsFolder)
-					project.oauth "GOOGLE", options.id, options.sec, null
+					project.oauth "GOOGLE", options.id, options.sec, options.scope, null
 				} catch (e) {println e.getMessage()}
 				
 			} catch (e1) {
@@ -895,7 +897,7 @@ usage: hot <command> <options>
 					println "Removing google based authentication capabilities"
 					try {
 						Project project = new Project(projectName, projectsFolder)
-						project.oauth 'GOOGLE', null, null, optionsRemove.r
+						project.oauth 'GOOGLE', null, null, null, optionsRemove.r
 					} catch (e) {println e.getMessage()}
 				} catch (e2) {
 					cli.usage(); println 'or:'
@@ -1271,7 +1273,7 @@ usage: hot <command> <options>
 			writeConfig config
 		}
 		
-		def oauth = { type, consumerKey, consumerSecret, remove ->
+		def oauth = { type, consumerKey, consumerSecret, scope, remove ->
 			def config = getConfig()
 			
 			if (!config.authList) config.authList = []

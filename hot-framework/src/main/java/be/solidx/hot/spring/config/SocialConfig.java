@@ -25,6 +25,8 @@ package be.solidx.hot.spring.config;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,20 +74,24 @@ public class SocialConfig implements SocialConfigurer {
 		try {
 			boolean facebook = false, 
 					google = false;
-			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
+			for (final Auth auth: commonConfig.hotConfig().getAuthList()) {
 				
 				if ((auth.getType() == AuthType.FACEBOOK || auth.getType() == AuthType.FACEBOOK_CLIENT) && !facebook) {
-					configurer.addConnectionFactory(new FacebookConnectionFactory(auth.getConsumerKey(), auth.getConsumerSecret()));
+					FacebookConnectionFactory fcf = new FacebookConnectionFactory(auth.getConsumerKey(), auth.getConsumerSecret());
+				    fcf.setScope(auth.getScope() != null
+                            ? auth.getScope()
+                            :"public_profile");
+					configurer.addConnectionFactory(fcf);
 					facebook = true;
 				} else if (auth.getType() == AuthType.TWITTER) {
 					configurer.addConnectionFactory(new TwitterConnectionFactory(auth.getConsumerKey(), auth.getConsumerSecret()));
 				} else if ((auth.getType() == AuthType.GOOGLE || auth.getType() == AuthType.GOOGLE_CLIENT) && !google) {
-					configurer.addConnectionFactory(new GoogleConnectionFactory(auth.getConsumerKey(), auth.getConsumerSecret()){
-						@Override
-						public String getScope() {
-							return "profile";
-						}
-					});
+					GoogleConnectionFactory gcf = new GoogleConnectionFactory(auth.getConsumerKey(), auth.getConsumerSecret());
+					gcf.setScope(
+					        auth.getScope() != null
+                            ? auth.getScope()
+                            :"profile");
+				    configurer.addConnectionFactory(gcf);
 					google = true;
 				}
 			}

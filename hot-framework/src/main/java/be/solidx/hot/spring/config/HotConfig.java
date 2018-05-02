@@ -232,6 +232,7 @@ public class HotConfig {
 		
 		String consumerKey;
 		String consumerSecret;
+		String scope;
 
 		public String getLdapServerUrl() {
 			return ldapServerUrl;
@@ -345,7 +346,15 @@ public class HotConfig {
 		public void setWithGroups(boolean withGroups) {
 			this.withGroups = withGroups;
 		}
-	}
+
+        public String getScope() {
+            return scope;
+        }
+
+        public void setScope(String scope) {
+            this.scope = scope;
+        }
+    }
 	
 	public static enum AuthType {
 		DB, LDAP, FACEBOOK, TWITTER, GOOGLE, FACEBOOK_CLIENT, GOOGLE_CLIENT

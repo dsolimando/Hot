@@ -4,7 +4,7 @@
 
 	<groupId>be.solidx.hot</groupId>
 	<artifactId>hot-parent</artifactId>
-	<version>0.9.6-SNAPSHOT</version>
+	<version>0.9.8-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>hot</name>
