@@ -1,3 +1,4 @@
+/*
 package be.solidx.hot.test.async;
 
 import com.ea.async.Async;
@@ -10,9 +11,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 
+*/
 /**
  * Created by dsolimando on 13/04/2018.
- */
+ *//*
+
 public class TestAsync {
 
     static {
@@ -67,3 +70,4 @@ public class TestAsync {
         //Assert.assertEquals("Hello",cf.get());
     }
 }
+*/

@@ -74,8 +74,8 @@
 				<version>3.1</version>
 				<configuration>
 					<compilerId>groovy-eclipse-compiler</compilerId>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 				<dependencies>
 					<dependency>
@@ -430,11 +430,11 @@
 			<artifactId>jcl-over-slf4j</artifactId>
 			<version>1.7.7</version>
 		</dependency>
-        <dependency>
+       <!-- <dependency>
             <groupId>com.ea.async</groupId>
             <artifactId>ea-async</artifactId>
             <version>1.1.1</version>
-        </dependency>
+        </dependency>-->
 		<!-- <dependency> <groupId>org.apache.tomcat</groupId> <artifactId>jasper</artifactId>
 			<version>6.0.35</version> <exclusions> <exclusion> <groupId>org.apache.tomcat</groupId>
 			<artifactId>catalina</artifactId> </exclusion> <exclusion> <groupId>org.eclipse.jdt.core.compiler</groupId>
