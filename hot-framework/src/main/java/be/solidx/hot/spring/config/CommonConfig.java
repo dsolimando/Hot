@@ -22,12 +22,14 @@ package be.solidx.hot.spring.config;
  * #L%
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -221,4 +223,11 @@ public class CommonConfig {
 		
 		return objectMapper.readValue(configFileURL().openStream(), HotConfig.class);
 	}
+
+	@Bean
+	public DiskFileItemFactory diskFileItemFactory() {
+	    DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
+	    diskFileItemFactory.setRepository(new File(System.getProperty("java.io.tmpdir")));
+	    return diskFileItemFactory;
+    }
 }

@@ -916,7 +916,7 @@ usage: hot <command> <options>
 				try {
 					println "Adding Facebook login based authentication capabilities to the app"
 					Project project = new Project(projectName, projectsFolder)
-					project.oauth "FACEBOOK_CLIENT", '', '', null
+					project.oauth "FACEBOOK_CLIENT", '', '', '', null
 				} catch (e) {println e.getMessage()}
 				break
 			}
@@ -926,7 +926,7 @@ usage: hot <command> <options>
 				println "Removing Facebook login based authentication capabilities"
 				try {
 					Project project = new Project(projectName, projectsFolder)
-					project.oauth "FACEBOOK_CLIENT", null, null, optionsRemove.r
+					project.oauth "FACEBOOK_CLIENT", null, null, null, optionsRemove.r
 				} catch (e) {println e.getMessage()}
 			} catch (e2) {
 				cli.usage(); println 'or:'
@@ -944,7 +944,7 @@ usage: hot <command> <options>
 				try {
 					println "Adding Google client based authentication capabilities to the app"
 					Project project = new Project(projectName, projectsFolder)
-					project.oauth "GOOGLE_CLIENT", '', '', null
+					project.oauth "GOOGLE_CLIENT", '', '','', null
 				} catch (e) {println e.getMessage()}
 				break
 			}
@@ -954,7 +954,7 @@ usage: hot <command> <options>
 				println "Removing Google client based authentication capabilities"
 				try {
 					Project project = new Project(projectName, projectsFolder)
-					project.oauth 'GOOGLE_CLIENT', null, null, optionsRemove.r
+					project.oauth 'GOOGLE_CLIENT', null, null, null, optionsRemove.r
 				} catch (e) {println e.getMessage()}
 			} catch (e2) {
 				cli.usage(); println 'or:'

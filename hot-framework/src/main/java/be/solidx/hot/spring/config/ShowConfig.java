@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.Executors;
 
+import be.solidx.hot.shows.RestRequestBuilderFactory;
 import be.solidx.hot.shows.rest.RestClosureDelegate;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -133,18 +134,32 @@ public class ShowConfig {
 	}
 
 	@Bean
-	RestClosureDelegate restClosureDelegate() throws Exception {
-	    return new RestClosureDelegate(
-	            closureRequestMappingHandlerMapping(),
-	            httpDataSerializer(),
-                commonConfig.groovyDataConverter(),
-                commonConfig.pyDictionaryConverter(),
-                commonConfig.jsMapConverter(),
+	RestRequestBuilderFactory restRequestBuilderFactory() throws Exception {
+	    return new RestRequestBuilderFactory(
                 scriptExecutorsConfig.groovyHttpDataDeserializer(),
                 scriptExecutorsConfig.pythonHttpDataDeserializer(),
                 scriptExecutorsConfig.jsHttpDataDeserializer(),
-                threadPoolsConfig.blockingTasksThreadPool(),
-                threadPoolsConfig.httpIOEventLoop()
+                commonConfig.groovyDataConverter(),
+                commonConfig.pyDictionaryConverter(),
+                commonConfig.jsMapConverter()
+        );
+    }
+
+	@Bean
+	RestClosureDelegate restClosureDelegate() throws Exception {
+	    return new RestClosureDelegate(
+            closureRequestMappingHandlerMapping(),
+            httpDataSerializer(),
+            commonConfig.groovyDataConverter(),
+            commonConfig.pyDictionaryConverter(),
+            commonConfig.jsMapConverter(),
+            scriptExecutorsConfig.groovyHttpDataDeserializer(),
+            scriptExecutorsConfig.pythonHttpDataDeserializer(),
+            scriptExecutorsConfig.jsHttpDataDeserializer(),
+            threadPoolsConfig.blockingTasksThreadPool(),
+            threadPoolsConfig.httpIOEventLoop(),
+            restRequestBuilderFactory(),
+            commonConfig.diskFileItemFactory()
         );
     }
 }

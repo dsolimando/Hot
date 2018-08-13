@@ -22,38 +22,22 @@ package be.solidx.hot.shows;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
+import be.solidx.hot.utils.HttpDataDeserializer;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
-import org.springframework.social.connect.ConnectionData;
-import org.springframework.social.security.SocialAuthenticationToken;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.servlet.HandlerMapping;
 
-import com.google.common.net.HttpHeaders;
+import javax.servlet.http.HttpSession;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Map;
 
-import be.solidx.hot.shows.ClosureRequestMapping.Options;
-import be.solidx.hot.shows.groovy.GroovyRestRequest;
-import be.solidx.hot.utils.HttpDataDeserializer;
-import be.solidx.hot.utils.ScriptMapConverter;
-
-public abstract class RestRequest<T extends Map<?, ?>> {
+public class RestRequest<T extends Map<?, ?>> {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(GroovyRestRequest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RestRequest.class);
 	
 	T pathParams;
 	
@@ -62,6 +46,8 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	T headers;
 	
 	T requestParams;
+
+	T user;
 	
 	Session session;
 	
@@ -73,94 +59,7 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	
 	byte[] body;
 	
-	protected Authentication authentication;
-	
-	protected ScriptMapConverter<T> scriptMapConverter;
-	
-	protected Map<String, Object> userAsMap = new HashMap<>();
-
-	protected HttpServletRequest httpServletRequest;
-
-	@SuppressWarnings("unchecked")
-	public RestRequest(
-			Options options,
-			ScriptMapConverter<T> scriptMapConverter,
-			HttpDataDeserializer httpDataDeserializer,
-			HttpServletRequest httpServletRequest,
-			byte[] body) {
-		
-		this.httpDatadeSerializer = httpDataDeserializer;
-		this.httpServletRequest = httpServletRequest;
-		
-		Map<String, MultiValueMap<String, String>> matrixVariables = (Map<String, MultiValueMap<String, String>>) httpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-		
-		pathParams = scriptMapConverter.toScriptMap(matrixVariables);
-		requestParams = scriptMapConverter.toScriptMap(httpServletRequest.getParameterMap());
-		ip = httpServletRequest.getRemoteAddr();
-		
-		headers = scriptMapConverter.httpHeadersToMap(httpServletRequest);
-		principal = buildPrincipal(httpServletRequest);
-		
-		requestBody = deserializeBody(body, options);
-		this.scriptMapConverter = scriptMapConverter;
-	}
-	
-	protected void initUser(Authentication authentication) {
-		
-		if (authentication == null) {
-			userAsMap = null;
-			return;
-		}
-		
-		LOGGER.debug("Authentication Type: "+authentication.getClass());
-		
-		if (authentication instanceof UsernamePasswordAuthenticationToken) {
-			UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = (UsernamePasswordAuthenticationToken) authentication;
-			List<String> roles = new ArrayList<>();
-			
-			if (usernamePasswordAuthenticationToken.getPrincipal() instanceof LdapUserDetailsImpl) {
-				LdapUserDetailsImpl detailsImpl = (LdapUserDetailsImpl) usernamePasswordAuthenticationToken.getPrincipal();
-				userAsMap.put("name", detailsImpl.getUsername());
-				userAsMap.put("username", detailsImpl.getUsername());
-				userAsMap.put("password", detailsImpl.getPassword());
-				userAsMap.put("dn", detailsImpl.getDn());
-				for (GrantedAuthority authority : detailsImpl.getAuthorities()) {
-					roles.add(authority.getAuthority());
-				}
-			} else {
-				
-				Object principal = usernamePasswordAuthenticationToken.getPrincipal();
-				if (principal instanceof String) {
-					userAsMap.put("name", usernamePasswordAuthenticationToken.getPrincipal());
-					userAsMap.put("username", usernamePasswordAuthenticationToken.getPrincipal());
-					userAsMap.put("password", usernamePasswordAuthenticationToken.getCredentials());
-					for (GrantedAuthority authority : usernamePasswordAuthenticationToken.getAuthorities()) {
-						roles.add(authority.getAuthority());
-					}
-				} else if (principal instanceof User) {
-					User userDetails = (User) principal;
-					userAsMap.put("name", userDetails.getUsername());
-					userAsMap.put("username", userDetails.getUsername());
-					userAsMap.put("password", userDetails.getPassword());
-					for (GrantedAuthority authority : userDetails.getAuthorities()) {
-						roles.add(authority.getAuthority());
-					}
-				}
-			}
-			userAsMap.put("roles", roles);
-		} else if (authentication instanceof SocialAuthenticationToken) {
-			SocialAuthenticationToken socialAuthenticationToken = (SocialAuthenticationToken) authentication;
-			ConnectionData connectionData = socialAuthenticationToken.getConnection().createData();
-			userAsMap.put("name", socialAuthenticationToken.getName());
-			userAsMap.put("username", socialAuthenticationToken.getName());
-			userAsMap.put("accessToken", connectionData.getAccessToken());
-			userAsMap.put("picture", connectionData.getImageUrl());
-			userAsMap.put("link", connectionData.getProfileUrl());
-			userAsMap.put("id", connectionData.getProviderUserId());
-			userAsMap.put("provider", connectionData.getProviderId());
-			userAsMap.put("expiresIn", connectionData.getExpireTime());
-		}
-	}
+	public RestRequest() {}
 	
 	public T getPathParams() {
 		return pathParams;
@@ -181,14 +80,16 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 	public Object getRequestBody() {
 		return requestBody;
 	}
+
+	public Object getBody() {
+	    return requestBody;
+	}
 	
-	public abstract T getUser();
+	public T getUser() {
+	    return user;
+    }
 	
 	public Session getSession() {
-	    if (session == null) {
-            session = new Session(httpServletRequest.getSession());
-        }
-
 		return session;
 	}
 	
@@ -208,35 +109,7 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 			return name;
 		}
 	}
-	
-	private Principal buildPrincipal(HttpServletRequest webRequest) {
-		if (webRequest.getUserPrincipal() != null) {
-			return new Principal(webRequest.getUserPrincipal().getName());
-		}
-		return null;
-	}
-	
-	private String extractContentTypeHttpHeader () {
-		for (Entry<?, ?> entry : headers.entrySet()) {
-			if (entry.getKey().equals(HttpHeaders.CONTENT_TYPE)) {
-				return (String) ((List<?>)entry.getValue()).get(0);
-			}
-		}
-		return "text/plain; charset=utf-8";
-	}
-	
-	private Object deserializeBody(byte[] body, Options options) {
-		if (body == null) return null;
-		
-		String contentType = extractContentTypeHttpHeader();
-		
-		if (options.isProcessRequestData()) {
-			return httpDatadeSerializer.processRequestData(body, contentType);
-		} else {
-			return new String(body);
-		}
-	}
-	
+
 	public static class Session {
 		
 		private static final String ID = "id";
@@ -288,4 +161,87 @@ public abstract class RestRequest<T extends Map<?, ?>> {
 			return this;
 		}
 	}
+
+	public static class Part {
+
+	    private String name;
+	    private String value;
+
+        public Part(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public boolean isFile() {
+            return false;
+        }
+    }
+
+    public static class FilePart extends Part {
+
+	    private String contentType;
+
+	    private long size;
+
+	    private boolean inMemory;
+
+	    private byte[] fileContent;
+
+	    private String filename;
+
+	    private InputStream inputStream;
+
+        public FilePart(String name, String contentType, long size, byte[] fileContent) {
+            super(name, null);
+            this.contentType = contentType;
+            this.size = size;
+            this.fileContent = fileContent;
+            inMemory = true;
+        }
+
+        public FilePart(String name, String filename, String contentType, long size, InputStream inputStream) {
+            super(name, null);
+            this.contentType = contentType;
+            this.size = size;
+            this.filename = filename;
+            inMemory = false;
+            this.inputStream = inputStream;
+        }
+
+        public void mv (String destinationPath) throws IOException {
+            IOUtils.copy(inputStream,new FileOutputStream(destinationPath));
+        }
+
+        public String getContentType() {
+            return contentType;
+        }
+
+        public long getSize() {
+            return size;
+        }
+
+        public boolean isInMemory() {
+            return inMemory;
+        }
+
+        public byte[] getFileContent() {
+            return fileContent;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public boolean isFile() {
+            return true;
+        }
+    }
 }

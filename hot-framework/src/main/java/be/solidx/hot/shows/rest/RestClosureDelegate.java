@@ -1,26 +1,28 @@
 package be.solidx.hot.shows.rest;
 
-import be.solidx.hot.groovy.GroovyClosure;
 import be.solidx.hot.groovy.GroovyMapConverter;
-import be.solidx.hot.js.JSClosure;
 import be.solidx.hot.js.JsMapConverter;
 import be.solidx.hot.nio.http.HttpDataSerializer;
 import be.solidx.hot.promises.Promise;
 import be.solidx.hot.python.PyDictionaryConverter;
-import be.solidx.hot.python.PythonClosure;
 import be.solidx.hot.shows.ClosureRequestMapping;
 import be.solidx.hot.shows.RestRequest;
-import be.solidx.hot.shows.groovy.GroovyRestRequest;
-import be.solidx.hot.shows.javascript.JSRestRequest;
-import be.solidx.hot.shows.python.PythonRestRequest;
+import be.solidx.hot.shows.RestRequestBuilderFactory;
 import be.solidx.hot.shows.spring.ClosureRequestMappingHandlerMapping;
 import be.solidx.hot.utils.GroovyHttpDataDeserializer;
 import be.solidx.hot.utils.IOUtils;
 import be.solidx.hot.utils.JsHttpDataDeserializer;
 import be.solidx.hot.utils.PythonHttpDataDeserializer;
 import hot.Response;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.FileCleanerCleanup;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.jdeferred.Deferred;
 import org.jdeferred.DoneCallback;
 import org.jdeferred.FailCallback;
+import org.jdeferred.impl.DeferredObject;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.NativeObject;
@@ -44,10 +46,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * Created by dsolimando on 17/07/2017.
@@ -79,9 +83,25 @@ public class RestClosureDelegate {
 
     ExecutorService blockingTreadPool;
 
-    ExecutorService						httpIOEventLoop;
+    ExecutorService	httpIOEventLoop;
 
-    public RestClosureDelegate(ClosureRequestMappingHandlerMapping closureRequestMappingHandlerMapping, HttpDataSerializer httpDataSerializer, GroovyMapConverter groovyDataConverter, PyDictionaryConverter pyDictionaryConverter, JsMapConverter jsDataConverter, GroovyHttpDataDeserializer groovyHttpDataDeserializer, PythonHttpDataDeserializer pythonHttpDataDeserializer, JsHttpDataDeserializer jsHttpDataDeserializer, ExecutorService blockingTreadPool, ExecutorService httpIOEventLoop) {
+    RestRequestBuilderFactory restRequestBuilderFactory;
+
+    DiskFileItemFactory diskFileItemFactory;
+
+    public RestClosureDelegate(
+            ClosureRequestMappingHandlerMapping closureRequestMappingHandlerMapping,
+            HttpDataSerializer httpDataSerializer,
+            GroovyMapConverter groovyDataConverter,
+            PyDictionaryConverter pyDictionaryConverter,
+            JsMapConverter jsDataConverter,
+            GroovyHttpDataDeserializer groovyHttpDataDeserializer,
+            PythonHttpDataDeserializer pythonHttpDataDeserializer,
+            JsHttpDataDeserializer jsHttpDataDeserializer,
+            ExecutorService blockingTreadPool,
+            ExecutorService httpIOEventLoop,
+            RestRequestBuilderFactory restRequestBuilderFactory,
+            DiskFileItemFactory diskFileItemFactory) {
         this.closureRequestMappingHandlerMapping = closureRequestMappingHandlerMapping;
         this.httpDataSerializer = httpDataSerializer;
         this.groovyDataConverter = groovyDataConverter;
@@ -92,6 +112,8 @@ public class RestClosureDelegate {
         this.jsHttpDataDeserializer = jsHttpDataDeserializer;
         this.blockingTreadPool = blockingTreadPool;
         this.httpIOEventLoop = httpIOEventLoop;
+        this.restRequestBuilderFactory = restRequestBuilderFactory;
+        this.diskFileItemFactory = diskFileItemFactory;
     }
 
     public void asyncHandleRestRequest (final HttpServletRequest req, final HttpServletResponse resp, final AsyncContext async) {
@@ -111,73 +133,138 @@ public class RestClosureDelegate {
 
             if (closureRequestMapping != null) {
 
+                RestRequestBuilderFactory.WithBody withBody =
+                        restRequestBuilderFactory
+                        .build(closureRequestMapping)
+                        .newRestRequest(req)
+                        .authenticate(authentication);
+
                 final ExecutorService showEventLoop = closureRequestMapping.getEventLoop();
-                // Async execution
-                final long tr = System.currentTimeMillis();
-                IOUtils.asyncRead(req, showEventLoop, showEventLoop)
-                        .fail(new FailCallback<Exception>() {
-                            @Override
-                            public void onFail(Exception exception) {
-                                if (LOGGER.isDebugEnabled())
-                                    LOGGER.debug("",exception);
-                                resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-                                writeBytesToResponseAsync(resp, extractStackTrace(exception).getBytes(), async);
-                            }
-                        })
-                        .done(new DoneCallback<byte[]>() {
-                            @SuppressWarnings({ "rawtypes" })
-                            @Override
-                            public void onDone(byte[] body) {
-                                try {
-                                    //System.out.println("Reading request body "+(System.currentTimeMillis()-tr));
-                                    final MediaType finalMediaType = extractMediaType(req);
-                                    long t = System.currentTimeMillis();
-                                    Object response = handleRequest(closureRequestMapping, req, body, authentication);
-                                    //System.out.println("closure call time "+ (System.currentTimeMillis()-t));
-                                    if (LOGGER.isDebugEnabled())
-                                        LOGGER.debug("Response type: "+response.getClass());
 
-                                    t = System.currentTimeMillis();
-                                    if (response instanceof NativeJavaObject) {
-                                        response = ((NativeJavaObject) response).unwrap();
-                                    }
-                                    if (response instanceof Promise) {
-                                        Promise promise = (Promise) response;
-                                        promise._done(new Promise.DCallback() {
-                                            @Override
-                                            public void onDone(Object result) {
-                                                handleResponse(result, finalMediaType , resp, async, showEventLoop);
-                                            }
-                                        })._fail(new Promise.FCallback() {
-                                            @Override
-                                            public void onFail(Object object) {
-                                                handleError(object,finalMediaType,resp,async,showEventLoop);
-                                            }
-                                        });
-                                    } else {
-                                        handleResponse(response, finalMediaType, resp, async, showEventLoop);
-                                        //System.out.println("Handle response time "+ (System.currentTimeMillis()-t));
-                                    }
-                                } catch (Exception e) {
-                                    if (LOGGER.isDebugEnabled())
-                                        LOGGER.debug("",e);
-                                    resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-                                    writeBytesToResponseAsync(resp, extractStackTrace(e).getBytes(), async);
+                org.jdeferred.Promise bodyDeferred;
+
+                if (ServletFileUpload.isMultipartContent(req)) {
+                    bodyDeferred = readMultipartBody(req, showEventLoop);
+                } else {
+                    bodyDeferred = IOUtils.asyncRead(req, showEventLoop, showEventLoop);
+                }
+                bodyDeferred
+                    .fail(new FailCallback<Exception>() {
+                        @Override
+                        public void onFail(Exception exception) {
+                            if (LOGGER.isDebugEnabled())
+                                LOGGER.debug("",exception);
+                            resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                            writeBytesToResponseAsync(resp, extractStackTrace(exception).getBytes(), async);
+                        }
+                    })
+                    .done(new DoneCallback<Object>() {
+                        @SuppressWarnings({ "rawtypes" })
+                        @Override
+                        public void onDone(Object body) {
+                            try {
+                                final MediaType acceptMediaType = extractAcceptMediaType(req);
+                                long t = System.currentTimeMillis();
+                                RestRequest restRequest;
+                                if (body instanceof byte[]) {
+                                    restRequest = withBody.withBodyConversion((byte[]) body).build();
+                                } else {
+                                    restRequest = withBody.withBody(body).build();
                                 }
-                            }
-                        });
 
+                                Object response = closureRequestMapping.getClosure().call(restRequest);
+                                //System.out.println("closure call time "+ (System.currentTimeMillis()-t));
+                                if (LOGGER.isDebugEnabled())
+                                    LOGGER.debug("Response type: "+response.getClass());
+
+                                t = System.currentTimeMillis();
+                                if (response instanceof NativeJavaObject) {
+                                    response = ((NativeJavaObject) response).unwrap();
+                                }
+                                if (response instanceof Promise) {
+                                    Promise promise = (Promise) response;
+                                    promise._done(new Promise.DCallback() {
+                                        @Override
+                                        public void onDone(Object result) {
+                                            handleResponse(result, acceptMediaType, resp, async, showEventLoop);
+                                        }
+                                    })._fail(new Promise.FCallback() {
+                                        @Override
+                                        public void onFail(Object object) {
+                                            handleError(object, acceptMediaType,resp,async,showEventLoop);
+                                        }
+                                    });
+                                } else {
+                                    handleResponse(response, acceptMediaType, resp, async, showEventLoop);
+                                    //System.out.println("Handle response time "+ (System.currentTimeMillis()-t));
+                                }
+                            } catch (Exception e) {
+                                if (LOGGER.isDebugEnabled())
+                                    LOGGER.debug("",e);
+                                resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                                writeBytesToResponseAsync(resp, extractStackTrace(e).getBytes(), async);
+                            }
+                        }
+                    });
             } else {
                 resp.setStatus(HttpStatus.NOT_FOUND.value());
                 writeBytesToResponseAsync(resp, "No closure matching the request".getBytes(), async);
             }
+
         } catch (Exception e) {
             resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             writeBytesToResponseAsync(resp, extractStackTrace(e).getBytes(), async);
         }
     }
 
-    private MediaType extractMediaType (HttpServletRequest req) {
+
+
+    private Deferred readMultipartBody(final HttpServletRequest httpServletRequest, ExecutorService showEventLoop) {
+        Deferred deferred = new DeferredObject();
+        blockingTreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                if(diskFileItemFactory.getFileCleaningTracker() == null && httpServletRequest.getServletContext() != null) {
+                    diskFileItemFactory.setFileCleaningTracker(FileCleanerCleanup.getFileCleaningTracker(httpServletRequest.getServletContext()));
+                }
+                ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
+                try {
+                    List<FileItem> items = upload.parseRequest(httpServletRequest);
+                    List<RestRequest.Part> parts = new ArrayList<>();
+
+                    for (FileItem item: items) {
+                        if (item.isFormField()) {
+                            parts.add(new RestRequest.Part(item.getFieldName(), item.getString()));
+                        } else {
+                            if (item.isInMemory()) {
+                                parts.add(new RestRequest.FilePart(
+                                        item.getFieldName(),
+                                        item.getContentType(),
+                                        item.getSize(),
+                                        item.get()
+                                ));
+
+                            } else {
+                                parts.add(new RestRequest.FilePart(
+                                        item.getFieldName(),
+                                        item.getName(),
+                                        item.getContentType(),
+                                        item.getSize(),
+                                        item.getInputStream()
+                                ));
+                            }
+                        }
+                    }
+                    deferred.resolve(parts);
+                } catch (FileUploadException | IOException e) {
+                    deferred.reject(e);
+                }
+            }
+        });
+        return deferred;
+    }
+
+    private MediaType extractAcceptMediaType(HttpServletRequest req) {
         // Parse accept media types header
         String acceptMediaTypeAsString = req.getHeader(com.google.common.net.HttpHeaders.ACCEPT);
 
@@ -234,23 +321,6 @@ public class RestClosureDelegate {
             LOGGER.debug("",exception);
         resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         writeBytesToResponseAsync(resp, extractStackTrace(exception).getBytes(),async);
-    }
-
-    private Object handleRequest(ClosureRequestMapping closureRequestMapping, HttpServletRequest httpServletRequest, byte[] body, Authentication authentication) {
-
-        RestRequest<?> restRequest;
-
-        if (closureRequestMapping.getClosure() instanceof GroovyClosure) {
-            restRequest = new GroovyRestRequest(closureRequestMapping.getOptions(), groovyDataConverter, groovyHttpDataDeserializer, httpServletRequest, body, authentication);
-        } else if (closureRequestMapping.getClosure() instanceof PythonClosure) {
-            restRequest = new PythonRestRequest(closureRequestMapping.getOptions(), pyDictionaryConverter, pythonHttpDataDeserializer, httpServletRequest, body, authentication);
-        } else if (closureRequestMapping.getClosure() instanceof JSClosure) {
-            restRequest = new JSRestRequest(closureRequestMapping.getOptions(), jsDataConverter, jsHttpDataDeserializer, httpServletRequest, body, authentication);
-        } else {
-            throw new RuntimeException("showClosure is in the wrong type "+closureRequestMapping.getClosure().getClass());
-        }
-        if (LOGGER.isDebugEnabled()) LOGGER.debug("Executing closure");
-        return closureRequestMapping.getClosure().call(restRequest);
     }
 
     private void handleResponse (Object objectResponse,

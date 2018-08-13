@@ -1,3 +1,4 @@
+import be.solidx.hot.shows.RestRequest
 import hot.Response
 import be.solidx.hot.promises.groovy.GroovyDeferred
 
@@ -56,3 +57,19 @@ show.rest.get("/scells-response").headers(["Accept: application/json"]).then({
 		]
 	])
 })
+
+show.rest.post('/upload').then { RestRequest req ->
+    List<RestRequest.Part> parts = req.body
+
+    def resp = parts.collect({ part ->
+
+        def l = [name: part.name, isFile: part.file]
+        if (part.isFile()) {
+            def fpart = (RestRequest.FilePart)part
+            l.filename = fpart.filename
+            fpart.mv('/tmp/chaise.jpg')
+        }
+        l
+    })
+    new Response(['Content-Type':'application/json; charset=iso8859-1'], resp)
+}

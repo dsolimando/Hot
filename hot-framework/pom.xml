@@ -4,7 +4,7 @@
 
 	<groupId>be.solidx.hot</groupId>
 	<artifactId>hot-framework</artifactId>
-	<version>0.9.8-SNAPSHOT</version>
+	<version>0.9.10-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>hot-framework</name>
@@ -430,14 +430,17 @@
 			<artifactId>jcl-over-slf4j</artifactId>
 			<version>1.7.7</version>
 		</dependency>
-       <!-- <dependency>
-            <groupId>com.ea.async</groupId>
-            <artifactId>ea-async</artifactId>
-            <version>1.1.1</version>
-        </dependency>-->
-		<!-- <dependency> <groupId>org.apache.tomcat</groupId> <artifactId>jasper</artifactId>
-			<version>6.0.35</version> <exclusions> <exclusion> <groupId>org.apache.tomcat</groupId>
-			<artifactId>catalina</artifactId> </exclusion> <exclusion> <groupId>org.eclipse.jdt.core.compiler</groupId>
-			<artifactId>ecj</artifactId> </exclusion> </exclusions> </dependency> -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.6</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.5.6</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 </project>

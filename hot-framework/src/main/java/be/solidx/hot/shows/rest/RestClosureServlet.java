@@ -22,68 +22,25 @@ package be.solidx.hot.shows.rest;
  * #L%
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
+import be.solidx.hot.groovy.GroovyMapConverter;
+import be.solidx.hot.js.JsMapConverter;
+import be.solidx.hot.nio.http.HttpDataSerializer;
+import be.solidx.hot.python.PyDictionaryConverter;
+import be.solidx.hot.shows.spring.ClosureRequestMappingHandlerMapping;
+import be.solidx.hot.utils.GroovyHttpDataDeserializer;
+import be.solidx.hot.utils.JsHttpDataDeserializer;
+import be.solidx.hot.utils.PythonHttpDataDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import javax.print.attribute.standard.Media;
-import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.jdeferred.DoneCallback;
-import org.jdeferred.FailCallback;
-import org.mozilla.javascript.NativeArray;
-import org.mozilla.javascript.NativeJavaObject;
-import org.mozilla.javascript.NativeObject;
-import org.python.core.PyDictionary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-
-import be.solidx.hot.groovy.GroovyClosure;
-import be.solidx.hot.groovy.GroovyMapConverter;
-import be.solidx.hot.js.JSClosure;
-import be.solidx.hot.js.JsMapConverter;
-import be.solidx.hot.nio.http.HttpDataSerializer;
-import be.solidx.hot.promises.Promise;
-import be.solidx.hot.promises.Promise.DCallback;
-import be.solidx.hot.promises.Promise.FCallback;
-import be.solidx.hot.python.PyDictionaryConverter;
-import be.solidx.hot.python.PythonClosure;
-import be.solidx.hot.shows.ClosureRequestMapping;
-import be.solidx.hot.shows.RestRequest;
-import be.solidx.hot.shows.groovy.GroovyRestRequest;
-import be.solidx.hot.shows.javascript.JSRestRequest;
-import be.solidx.hot.shows.python.PythonRestRequest;
-import be.solidx.hot.shows.spring.ClosureRequestMappingHandlerMapping;
-import be.solidx.hot.utils.GroovyHttpDataDeserializer;
-import be.solidx.hot.utils.IOUtils;
-import be.solidx.hot.utils.JsHttpDataDeserializer;
-import be.solidx.hot.utils.PythonHttpDataDeserializer;
-
-
-
-import hot.Response;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 public class RestClosureServlet extends HttpServlet {
 
