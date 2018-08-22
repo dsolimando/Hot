@@ -139,6 +139,11 @@ public class RestRequest<T extends Map<?, ?>> {
 			}
 		}
 
+		public Session invalidate() {
+		    servletSession.invalidate();
+		    return this;
+        }
+
 		public void setDuration(int seconds) {
             servletSession.setMaxInactiveInterval(seconds);
         }
