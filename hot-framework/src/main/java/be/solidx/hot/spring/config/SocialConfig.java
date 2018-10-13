@@ -22,12 +22,8 @@ package be.solidx.hot.spring.config;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import be.solidx.hot.spring.config.HotConfig.Auth;
+import be.solidx.hot.spring.config.HotConfig.AuthType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,12 +38,10 @@ import org.springframework.social.UserIdSource;
 import org.springframework.social.config.annotation.ConnectionFactoryConfigurer;
 import org.springframework.social.config.annotation.EnableSocial;
 import org.springframework.social.config.annotation.SocialConfigurer;
-import org.springframework.social.connect.Connection;
-import org.springframework.social.connect.ConnectionFactoryLocator;
-import org.springframework.social.connect.ConnectionSignUp;
-import org.springframework.social.connect.UserProfile;
-import org.springframework.social.connect.UsersConnectionRepository;
+import org.springframework.social.connect.*;
 import org.springframework.social.connect.mem.InMemoryUsersConnectionRepository;
+import org.springframework.social.facebook.api.Facebook;
+import org.springframework.social.facebook.api.User;
 import org.springframework.social.facebook.connect.FacebookConnectionFactory;
 import org.springframework.social.google.connect.GoogleConnectionFactory;
 import org.springframework.social.security.AuthenticationNameUserIdSource;
@@ -56,8 +50,9 @@ import org.springframework.social.security.SocialUserDetails;
 import org.springframework.social.security.SocialUserDetailsService;
 import org.springframework.social.twitter.connect.TwitterConnectionFactory;
 
-import be.solidx.hot.spring.config.HotConfig.Auth;
-import be.solidx.hot.spring.config.HotConfig.AuthType;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @EnableSocial
@@ -116,13 +111,25 @@ public class SocialConfig implements SocialConfigurer {
 			
 			@Override
 			public String execute(Connection<?> connection) {
-				 UserProfile profile = connection.fetchUserProfile();
-				 usernames.add(profile.getUsername()==null?profile.getEmail():profile.getUsername());
-				 return profile.getUsername()==null?profile.getEmail():profile.getUsername();
+                UserProfile profile;
+			    if (connection.getApi() instanceof Facebook) {
+			        profile = fetchFacebookUserProfile(connection);
+                } else {
+                    profile = connection.fetchUserProfile();
+                }
+                usernames.add(profile.getUsername()==null?profile.getEmail():profile.getUsername());
+                return profile.getUsername()==null?profile.getEmail():profile.getUsername();
 			}
 		});
 		return connectionRepository;
 	}
+
+	private UserProfile fetchFacebookUserProfile(Connection<?> connection) {
+        Facebook facebook = (Facebook) connection.getApi();
+        String [] fields = { "id", "email",  "first_name", "last_name" };
+        User profile = facebook.fetchObject("me", User.class, fields);
+        return (new UserProfileBuilder()).setName(profile.getName()).setFirstName(profile.getFirstName()).setLastName(profile.getLastName()).setEmail(profile.getEmail()).build();
+    }
 	
 	@Bean
 	public SocialUserDetailsService socialUserDetailsService() {
