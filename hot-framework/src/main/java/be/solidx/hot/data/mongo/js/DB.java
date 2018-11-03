@@ -22,6 +22,7 @@ package be.solidx.hot.data.mongo.js;
  * #L%
  */
 
+import com.mongodb.MongoClient;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeObject;
 
@@ -34,7 +35,7 @@ import com.mongodb.Mongo;
 
 public class DB extends BasicDB<NativeObject> {
 	
-	public DB(String username, String password, String dbname, Mongo mongo, DBObjectNativeObjectTransformer dbObjectTransformer) {
+	public DB(String username, String password, String dbname, MongoClient mongo, DBObjectNativeObjectTransformer dbObjectTransformer) {
 		super(username, password, dbname, mongo, dbObjectTransformer);
 	}
 	

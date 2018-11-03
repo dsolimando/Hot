@@ -22,10 +22,13 @@ package be.solidx.hot.spring.config;
  * #L%
  */
 
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.mongodb.MongoClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.NativeObject;
@@ -54,12 +57,22 @@ public class MongoConfig {
 	HotConfig hotConfig;
 	
 	@Bean
-	public Map<DataSource,Mongo> mongoDBs () {
-		Map<DataSource,Mongo> mongos = new LinkedHashMap<HotConfig.DataSource, Mongo>();
+	public Map<DataSource,MongoClient> mongoDBs () {
+		Map<DataSource,MongoClient> mongos = new LinkedHashMap<>();
 		for (DataSource dataSource: hotConfig.getDataSources()) {
 			if (dataSource.getEngine() == DBEngine.MONGODB) {
 				try {
-					mongos.put(dataSource,new Mongo(dataSource.getHostname()));
+				    if (dataSource.getUsername() != null && !dataSource.getUsername().isEmpty()) {
+                        mongos.put(dataSource,new MongoClient(String.format("mongo://%s:%s@%s:%s",
+                                dataSource.getUsername(),
+                                URLEncoder.encode(dataSource.getPassword()),
+                                dataSource.getHostname(),
+                                dataSource.getPort())));
+                    } else {
+                        mongos.put(dataSource,new MongoClient(String.format("mongo://%s:%s",
+                                dataSource.getHostname(),
+                                dataSource.getPort())));
+                    }
 				} catch (Exception e) {
 					LOG.error("",e);
 				}
@@ -71,7 +84,7 @@ public class MongoConfig {
 	@Bean
 	public Map<String,DB<Map<String, Object>>> groovyMongoDb () {
 		Map<String,DB<Map<String, Object>>> dbmap = new LinkedHashMap<String,DB<Map<String,Object>>>();
-		for (Entry<DataSource, Mongo> dataSource: mongoDBs().entrySet()) {
+		for (Entry<DataSource, MongoClient> dataSource: mongoDBs().entrySet()) {
 			dbmap.put(dataSource.getKey().getName(), new be.solidx.hot.data.mongo.groovy.DB(
 					dataSource.getKey().getUsername(), 
 					dataSource.getKey().getPassword(), 
@@ -85,7 +98,7 @@ public class MongoConfig {
 	@Bean
 	public Map<String, DB<NativeObject>> jsMongoDB () {
 		Map<String,DB<NativeObject>> dbmap = new LinkedHashMap<String,DB<NativeObject>>();
-		for (Entry<DataSource, Mongo> dataSource: mongoDBs().entrySet()) {
+		for (Entry<DataSource, MongoClient> dataSource: mongoDBs().entrySet()) {
 			dbmap.put(dataSource.getKey().getName(), new be.solidx.hot.data.mongo.js.DB(					
 					dataSource.getKey().getUsername(), 
 					dataSource.getKey().getPassword(), 
@@ -99,7 +112,7 @@ public class MongoConfig {
 	@Bean
 	public Map<String, DB<PyDictionary>> pyMongoDB () {
 		Map<String, DB<PyDictionary>> dbmap = new LinkedHashMap<String, DB<PyDictionary>>();
-		for (Entry<DataSource, Mongo> dataSource: mongoDBs().entrySet()) {
+		for (Entry<DataSource, MongoClient> dataSource: mongoDBs().entrySet()) {
 			dbmap.put(dataSource.getKey().getName(), new BasicDB<PyDictionary>(					
 					dataSource.getKey().getUsername(), 
 					dataSource.getKey().getPassword(), 

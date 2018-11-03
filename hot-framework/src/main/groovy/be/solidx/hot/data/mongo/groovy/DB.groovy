@@ -1,5 +1,7 @@
 package be.solidx.hot.data.mongo.groovy
 
+import be.solidx.hot.data.mongo.BasicDB
+
 /*
  * #%L
  * Hot
@@ -22,15 +24,13 @@ package be.solidx.hot.data.mongo.groovy
  * #L%
  */
 
-import be.solidx.hot.data.mongo.BasicDB
-import be.solidx.hot.data.mongo.DBObjectTransformer
 import be.solidx.hot.data.mongo.BasicDB.BasicCollection
-
-import com.mongodb.Mongo
+import be.solidx.hot.data.mongo.DBObjectTransformer
+import com.mongodb.MongoClient
 
 class DB extends BasicDB<Map<String, Object>> {
 	
-	public DB(String username, String password, String dbname, Mongo mongo, DBObjectTransformer<Map<String, Object>> dbObjectTransformer) {
+	DB(String username, String password, String dbname, MongoClient mongo, DBObjectTransformer<Map<String, Object>> dbObjectTransformer) {
 		super (username, password, dbname, mongo, dbObjectTransformer)
 	}
 	

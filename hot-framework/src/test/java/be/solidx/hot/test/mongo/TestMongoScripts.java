@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
+import com.mongodb.MongoClient;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
@@ -48,7 +49,7 @@ public class TestMongoScripts {
 				"", 
 				"", 
 				"TestMongoTemplat", 
-				new Mongo(), 
+				new MongoClient(),
 				new DBObjectNativeObjectTransformer());
 		ScriptableObject.putProperty(scope, "db", db);
 		context.evaluateReader(scope, new InputStreamReader(TestMongoScripts.class.getResourceAsStream("/js/underscore.js")), "underscore", 1, null);

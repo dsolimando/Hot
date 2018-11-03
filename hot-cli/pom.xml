@@ -3,7 +3,7 @@
 
 	<groupId>be.solidx.hot</groupId>
 	<artifactId>hot</artifactId>
-	<version>0.9.12-SNAPSHOT</version>
+	<version>0.9.13-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>hot-cli</name>
@@ -30,6 +30,20 @@
 		Hot Web Framework is a simple web framework with the PHP dynamic page development approach
 	</description>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>bintray</id>
+            <name>Groovy Bintray</name>
+            <url>https://dl.bintray.com/groovy/maven</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -49,26 +63,31 @@
 					</descriptors>
 				</configuration>
 			</plugin>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
-				<configuration>
-					<compilerId>groovy-eclipse-compiler</compilerId>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>org.codehaus.groovy</groupId>
-						<artifactId>groovy-eclipse-compiler</artifactId>
-						<version>2.9.1-01</version>
-					</dependency>
-					<dependency>
-						<groupId>org.codehaus.groovy</groupId>
-						<artifactId>groovy-eclipse-batch</artifactId>
-						<version>2.4.3-01</version>
-					</dependency>
-				</dependencies>
-				<extensions>true</extensions>
-			</plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <compilerId>groovy-eclipse-compiler</compilerId>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <compilerArguments>
+                        <indy/>
+                    </compilerArguments>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-eclipse-compiler</artifactId>
+                        <version>3.0.0-01</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-eclipse-batch</artifactId>
+                        <version>2.5.3-01</version>
+                    </dependency>
+                </dependencies>
+                <extensions>true</extensions>
+            </plugin>
 		</plugins>
 		<resources>
 	      <resource>

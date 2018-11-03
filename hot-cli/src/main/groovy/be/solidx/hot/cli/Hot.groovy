@@ -1,5 +1,7 @@
 package be.solidx.hot.cli
 
+import groovy.cli.commons.CliBuilder
+
 /*
  * #%L
  * Hot
@@ -685,13 +687,13 @@ usage: hot <command> <options>
 			break
 			
 		case "auth-db":
-			def cli = new HotCLIBuilder(usage: "hot auth-db -n <datasource_name> [-u <username>] [-p <password>] [-roles <coma seperated list of roles>]", posix:false)
-			def cliRemove = new HotCLIBuilder(usage: "hot auth-db -r", posix:false)
+			def cli = new CliBuilder(usage: "hot auth-db -n <datasource_name> [-u <username>] [-p <password>] [-roles <coma seperated list of roles>]", posix:false)
+			def cliRemove = new CliBuilder(usage: "hot auth-db -r", posix:false)
 			
 			cli.n args:1, longOpt:"name","Name of the datasource", required:true
 			cli.u args:1, longOpt:"username","Default username to insert in the DB (optional)", required:false
 			cli.p args:1, longOpt:"password","Default password (associated to username) to insert in the DB (optional)", required:false
-			cli.roles args:1, "List of roles associated to username (optional)", required:false
+			cli.roles args:'+', "List of roles associated to username (optional)", required:false
 			
 			cliRemove.r "remove database based authentication", required: true
 			
@@ -704,10 +706,8 @@ usage: hot <command> <options>
 			try {
 				def options = cli.parse (filteredArgs)
 				println "Adding database based authentication capabilities to the app ..."
-				try {
-					Project project = new Project(projectName, projectsFolder)
-					project.authDb options.n, options.u, options.p, options.roles, null
-				} catch (e) {println e.getMessage()}
+                Project project = new Project(projectName, projectsFolder)
+                project.authDb options.n, options.u, options.p, options.roles, null
 				break;
 			} catch (e1) {
 				if (!filteredArgs.contains('-r')) {
@@ -730,11 +730,11 @@ usage: hot <command> <options>
 			break
 			
 		case "auth-ldap":
-			def cli = new HotCLIBuilder(usage: "hot auth-ldap -url <ldap url> [ -udp <user-dn-patterns> |  -usb <user-search-base> -usf <user-search-filter> ] [ -gsb <group-search-base> -gsf <group-search-filter> ]", posix:false)
-			def cliRemove = new HotCLIBuilder(usage: "hot auth-ldap -r", posix:false)
+			def cli = new CliBuilder(usage: "hot auth-ldap -url <ldap url> [ -udp <user-dn-patterns> |  -usb <user-search-base> -usf <user-search-filter> ] [ -gsb <group-search-base> -gsf <group-search-filter> ]", posix:false)
+			def cliRemove = new CliBuilder(usage: "hot auth-ldap -r", posix:false)
 			
 			cli.url args:1, "ldap url in the form of 'ldap://example.com:389/dc=example,dc=com'", required:true
-			cli.udp args:1, longOpt:"user-dn-patterns","the LDAP patterns for finding the usernames (optional)", required:false
+			cli.udp args:'+', longOpt:"user-dn-patterns","the LDAP patterns for finding the usernames (optional)", required:false
 			cli.usb args:1, longOpt:"user-search-base","search base for user searches (optional)", required:false
 			cli.usf args:1, longOpt:"user-search-filter","the LDAP filter used to search for users (optional)", required:false
 			cli.gsb args:1, longOpt:"group-search-base","search base for group searches (optional)", required:false
@@ -752,11 +752,8 @@ usage: hot <command> <options>
 				def options = cli.parse (filteredArgs)
 				println "Adding LDAP based authentication capabilities to the app"
 				
-				try {
-					Project project = new Project(projectName, projectsFolder)
-					project.authLdap options.url, options.udp, options.usb, options.usf, options.gsb , options.gsf, options.r
-				} catch (e) {println e.getMessage()}
-				
+                Project project = new Project(projectName, projectsFolder)
+                project.authLdap options.url, options.udp, options.usb, options.usf, options.gsb , options.gsf, options.r
 			} catch (e1) {
 				if (!filteredArgs.contains('-r')) {
 					println 'error: '+e1.message
@@ -778,12 +775,12 @@ usage: hot <command> <options>
 			break
 			
 		case "auth-facebook":
-			def cli = new HotCLIBuilder(usage: "hot auth-facebook -id <App id> -sec <App secret>", posix:false)
+			def cli = new CliBuilder(usage: "hot auth-facebook -id <App id> -sec <App secret>", posix:false)
 			cli.id args:1, longOpt:"app-id","Facebook provided application id", required:true
 			cli.sec args:1, longOpt:"app-secret","Facebook provided application secret", required:true
             cli.scope args:1, longOpt: "oauth2 scope", "Scope of the oauth2 request", required: false
 			
-			def cliRemove = new HotCLIBuilder(usage: "hot auth-facebook -r", posix:false)
+			def cliRemove = new CliBuilder(usage: "hot auth-facebook -r", posix:false)
 			cliRemove.r "remove facebook based authentication", required: true
 			
 			if (filteredArgs.isEmpty()) {
@@ -795,10 +792,8 @@ usage: hot <command> <options>
 			try {
 				def options = cli.parse (filteredArgs)
 				println "Adding facebook based authentication capabilities to the app"
-				try {
-					Project project = new Project(projectName, projectsFolder)
-					project.oauth "FACEBOOK", options.id, options.sec, options.scope, null
-				} catch (e) {println e.getMessage()}
+                Project project = new Project(projectName, projectsFolder)
+                project.oauth "FACEBOOK", options.id, options.sec, options.scope, null
 			} catch (e1) {
 				if (!filteredArgs.contains('-r')) {
 					println 'error: '+e1.message
@@ -820,11 +815,11 @@ usage: hot <command> <options>
 			break
 		
 		case "auth-twitter":
-			def cli = new HotCLIBuilder(usage: "hot auth-twitter -ck <consumer key> -cp <consumer password>", posix:false)
+			def cli = new CliBuilder(usage: "hot auth-twitter -ck <consumer key> -cp <consumer password>", posix:false)
 			cli.ck args:1, longOpt:"consumer-key","Twitter provided OAuth consumer key", required:true
 			cli.cp args:1, longOpt:"consumer-password","Twitter provided OAuth consumer password", required:true
 			
-			def cliRemove = new HotCLIBuilder(usage: "hot auth-twitter -r", posix:false)
+			def cliRemove = new CliBuilder(usage: "hot auth-twitter -r", posix:false)
 			cliRemove.r "remove twitter based authentication", required: true
 			
 			if (filteredArgs.isEmpty()) {
@@ -837,11 +832,9 @@ usage: hot <command> <options>
 				def options = cli.parse (filteredArgs)
 				println "Adding twitter based authentication capabilities to the app"
 				
-				try {
-					Project project = new Project(projectName, projectsFolder)
-					project.oauth "TWITTER", options.ck, options.cp, null, null
-				} catch (e) {println e.getMessage()}
-				
+                Project project = new Project(projectName, projectsFolder)
+                project.oauth "TWITTER", options.ck, options.cp, null, null
+
 			} catch (e1) {
 				if (!filteredArgs.contains('-r')) {
 					println 'error: '+e1.message
@@ -863,12 +856,12 @@ usage: hot <command> <options>
 			break
 			
 		case "auth-google":
-			def cli = new HotCLIBuilder(usage: "hot auth-google -id <client ID> -sec <client secret>", posix:false)
+			def cli = new CliBuilder(usage: "hot auth-google -id <client ID> -sec <client secret>", posix:false)
 			cli.id args:1, longOpt:"client-id","The client ID you obtained from the Google Developers Console", required:true
 			cli.sec args:1, longOpt:"client-secret","The client secret you obtained from the Developers Console", required:true
             cli.scope args:1, longOpt: "oauth2 scope", "Scope of the oauth2 request", required: false
 
-			def cliRemove = new HotCLIBuilder(usage: "hot auth-google -r", posix:false)
+			def cliRemove = new CliBuilder(usage: "hot auth-google -r", posix:false)
 			cliRemove.r "remove Google based authentication", required: false
 			
 			if (filteredArgs.isEmpty()) {
@@ -881,11 +874,8 @@ usage: hot <command> <options>
 				def options = cli.parse (filteredArgs)
 				println "Adding Google based authentication capabilities to the app"
 				
-				try {
-					Project project = new Project(projectName, projectsFolder)
-					project.oauth "GOOGLE", options.id, options.sec, options.scope, null
-				} catch (e) {println e.getMessage()}
-				
+                Project project = new Project(projectName, projectsFolder)
+                project.oauth "GOOGLE", options.id, options.sec, options.scope, null
 			} catch (e1) {
 				if (!filteredArgs.contains('-r')) {
 					println 'error: '+e1.message
@@ -907,9 +897,9 @@ usage: hot <command> <options>
 			break
 			
 		case "auth-facebook-client":
-			def cli = new HotCLIBuilder(usage: "hot auth-facebook-client", posix:false)
+			def cli = new CliBuilder(usage: "hot auth-facebook-client", posix:false)
 			
-			def cliRemove = new HotCLIBuilder(usage: "hot auth-facebook-client -r", posix:false)
+			def cliRemove = new CliBuilder(usage: "hot auth-facebook-client -r", posix:false)
 			cliRemove.r "remove facebook login based authentication", required: true
 			
 			if (filteredArgs.isEmpty()) {
@@ -935,9 +925,9 @@ usage: hot <command> <options>
 			break
 			
 		case "auth-google-client":
-			def cli = new HotCLIBuilder(usage: "hot auth-google-client", posix:false)
+			def cli = new CliBuilder(usage: "hot auth-google-client", posix:false)
 			
-			def cliRemove = new HotCLIBuilder(usage: "hot auth-google-client -r", posix:false)
+			def cliRemove = new CliBuilder(usage: "hot auth-google-client -r", posix:false)
 			cliRemove.r "remove google client based authentication", required: true
 			
 			if (filteredArgs.isEmpty()) {

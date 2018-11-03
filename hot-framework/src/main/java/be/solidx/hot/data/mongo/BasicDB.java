@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.python.core.Py;
 import org.python.core.PyObject;
@@ -36,14 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import be.solidx.hot.data.Cursor;
 import be.solidx.hot.data.DB;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.CommandResult;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
-import com.mongodb.WriteResult;
 
 public class BasicDB<T extends Map<?,?>> implements DB<T> {
 	
@@ -59,7 +52,7 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 	
 	protected DBObjectTransformer<T> dbObjectTransformer;
 	
-	public BasicDB(String username, String password, String dbname, Mongo mongo, DBObjectTransformer<T> dbObjectTransformer) {
+	public BasicDB(String username, String password, String dbname, MongoClient mongo, DBObjectTransformer<T> dbObjectTransformer) {
 		this.mongo = mongo;
 		this.username = username;
 		this.password = password;
@@ -76,8 +69,7 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 	@Override
 	public List<String> listCollections() {
 		com.mongodb.DB db = mongo.getDB(dbname);
-//		authenticate(db);
-		return new ArrayList<String>(db.getCollectionNames());
+		return new ArrayList<>(db.getCollectionNames());
 	}
 
 	@Override
@@ -87,12 +79,6 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 	
 	public ObjectId ObjectId (String id) {
 		return new ObjectId(id);
-	}
-	
-	protected void authenticate (com.mongodb.DB db) {
-		if (username != null && !username.isEmpty() && password != null && password.isEmpty()) {
-			db.authenticate(username, password.toCharArray());
-		}
 	}
 	
 	public PyObject __getattr__(String name) {
