@@ -24,11 +24,14 @@ package be.solidx.hot.spring.config;
 
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.NativeObject;
@@ -63,15 +66,21 @@ public class MongoConfig {
 			if (dataSource.getEngine() == DBEngine.MONGODB) {
 				try {
 				    if (dataSource.getUsername() != null && !dataSource.getUsername().isEmpty()) {
-                        mongos.put(dataSource,new MongoClient(String.format("mongo://%s:%s@%s:%s",
+                        MongoCredential credential = MongoCredential.createCredential(
                                 dataSource.getUsername(),
-                                URLEncoder.encode(dataSource.getPassword()),
-                                dataSource.getHostname(),
-                                dataSource.getPort())));
+                                dataSource.getDatabase(),
+                                dataSource.getPassword().toCharArray());
+                        mongos.put(dataSource,new MongoClient(
+                                new ServerAddress(
+                                        dataSource.getHostname(),
+                                        dataSource.getPort()
+                                ),
+                                Arrays.asList(credential)
+                        ));
                     } else {
-                        mongos.put(dataSource,new MongoClient(String.format("mongo://%s:%s",
+                        mongos.put(dataSource,new MongoClient(
                                 dataSource.getHostname(),
-                                dataSource.getPort())));
+                                dataSource.getPort()));
                     }
 				} catch (Exception e) {
 					LOG.error("",e);
