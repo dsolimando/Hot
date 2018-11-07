@@ -22,6 +22,7 @@ package be.solidx.hot.data.jdbc.sql.impl;
  * #L%
  */
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -30,11 +31,16 @@ import be.solidx.hot.data.jdbc.TableMetadata;
 
 abstract public class AbstractUpdateQuery extends AbstractQueryWithCriteria {
 
+    public static final String $SET = "$set";
+
 	private Map<String,Object> updateParameters = new LinkedHashMap<String, Object>();
 	
 	public AbstractUpdateQuery(TableMetadata tableMetadata, Map<String,Object> updateParameters, CriterionFactory criterionFactory) {
 		super(tableMetadata, criterionFactory);
-		this.updateParameters.putAll(updateParameters);
+		if (updateParameters.containsKey($SET))
+		    this.updateParameters.putAll((Map<? extends String, ?>) updateParameters.get($SET));
+		else
+		    this.updateParameters.putAll(fillWithNull(updateParameters));
 	}
 
 	@Override
@@ -47,12 +53,20 @@ abstract public class AbstractUpdateQuery extends AbstractQueryWithCriteria {
 			String keyCopy = key;
 			if (keyCopy.split("\\.").length < 2) keyCopy = tableMetadata.getName() + "." + keyCopy;
 			keyCopy = withSchema(keyCopy);
-			sets += String.format("%s%s=:%s_%s", separator, keyCopy, keyCopy.replaceAll("\\.", "_"),criterionValues.get(keyCopy).size());
+			sets += String.format("%s%s=:%s_%s", separator, key, keyCopy.replaceAll("\\.", "_"),criterionValues.get(keyCopy).size());
 			separator = ", ";
 			criterionValues.put(keyCopy, updateParameters.get(key));
 		}
-		String queryString = String.format(query, tablenameWithSchema(), sets, buildWhereClauses()).trim();
-		System.out.println(queryString);
-		return queryString;
+		return String.format(query, tablenameWithSchema(), sets, buildWhereClauses()).trim();
 	}
+
+    private Map<String,Object> fillWithNull (Map<String,Object> parameters) {
+        Map<String,Object> filledMap = new HashMap<>(parameters);
+	    for (String column: this.tableMetadata.getColumns()) {
+	        if (!parameters.containsKey(column)) {
+	            filledMap.put(column, null);
+            }
+        }
+        return filledMap;
+    }
 }

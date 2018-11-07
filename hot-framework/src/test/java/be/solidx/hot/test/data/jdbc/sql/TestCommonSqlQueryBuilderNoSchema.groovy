@@ -243,8 +243,15 @@ class TestCommonSqlQueryBuilderNoSchema {
 	void testUpdateMethod() {
 		QueryWithCriteria query = queryBuilder.buildUpdateQuery(personnesMetadata, [adresse:"Rue de la rue",age:3])
 		query.addWhereClauses([nom:"Solimando",prenom:"Damien"])
-		assert "UPDATE personnes SET personnes.adresse=:personnes_adresse_0, personnes.age=:personnes_age_0 WHERE ( personnes.nom = :personnes_nom_0 AND personnes.prenom = :personnes_prenom_0 )" == query.build()
+		assert "UPDATE personnes SET network_id=:personnes_network_id_0, classe_floor=:personnes_classe_floor_0, adresse=:personnes_adresse_0, nom=:personnes_nom_1, prenom=:personnes_prenom_1, age=:personnes_age_0, classe_id=:personnes_classe_id_0 WHERE ( personnes.nom = :personnes_nom_0 AND personnes.prenom = :personnes_prenom_0 )" == query.build()
 	}
+
+    @Test
+    void testUpdateMethodWith$Set() {
+        QueryWithCriteria query = queryBuilder.buildUpdateQuery(personnesMetadata, [$set:[adresse:"Rue de la rue",age:3]])
+        query.addWhereClauses([nom:"Solimando",prenom:"Damien"])
+        assert "UPDATE personnes SET adresse=:personnes_adresse_0, age=:personnes_age_0 WHERE ( personnes.nom = :personnes_nom_0 AND personnes.prenom = :personnes_prenom_0 )" == query.build()
+    }
 	
 	@Test
 	void testDeleteMethod() {

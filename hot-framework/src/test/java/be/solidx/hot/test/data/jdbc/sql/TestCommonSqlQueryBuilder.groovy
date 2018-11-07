@@ -244,8 +244,15 @@ public class TestCommonSqlQueryBuilder {
 	void testUpdateMethod() {
 		QueryWithCriteria query = queryBuilder.buildUpdateQuery(personnesMetadata, [adresse:"Rue de la rue",age:3])
 		query.addWhereClauses([nom:"Solimando",prenom:"Damien", adresse:"14 rue du perlonjour"])
-		assert "UPDATE sc1.personnes SET sc1.personnes.adresse=:sc1_personnes_adresse_1, sc1.personnes.age=:sc1_personnes_age_0 WHERE ( sc1.personnes.nom = :sc1_personnes_nom_0 AND sc1.personnes.prenom = :sc1_personnes_prenom_0 AND sc1.personnes.adresse = :sc1_personnes_adresse_0 )" == query.build()
+		assert "UPDATE sc1.personnes SET network_id=:sc1_personnes_network_id_0, classe_floor=:sc1_personnes_classe_floor_0, adresse=:sc1_personnes_adresse_1, nom=:sc1_personnes_nom_1, prenom=:sc1_personnes_prenom_1, age=:sc1_personnes_age_0, classe_id=:sc1_personnes_classe_id_0 WHERE ( sc1.personnes.nom = :sc1_personnes_nom_0 AND sc1.personnes.prenom = :sc1_personnes_prenom_0 AND sc1.personnes.adresse = :sc1_personnes_adresse_0 )" == query.build()
 	}
+
+    @Test
+    void testUpdateMethodWith$Set() {
+        QueryWithCriteria query = queryBuilder.buildUpdateQuery(personnesMetadata, [$set: [adresse:"Rue de la rue",age:3]])
+        query.addWhereClauses([nom:"Solimando",prenom:"Damien", adresse:"14 rue du perlonjour"])
+        assert "UPDATE sc1.personnes SET adresse=:sc1_personnes_adresse_1, age=:sc1_personnes_age_0 WHERE ( sc1.personnes.nom = :sc1_personnes_nom_0 AND sc1.personnes.prenom = :sc1_personnes_prenom_0 AND sc1.personnes.adresse = :sc1_personnes_adresse_0 )" == query.build()
+    }
 	
 	@Test
 	void testDeleteMethod() {
