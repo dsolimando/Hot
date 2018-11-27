@@ -125,6 +125,7 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 			if (valuesDbObject.get("_id") != null) {
 				dbObjectTransformer.put(values, "_id", valuesDbObject.get("_id").toString());
 			}
+
 			return (T) values.get("$set");
 		}
 		
@@ -247,6 +248,7 @@ public class BasicDB<T extends Map<?,?>> implements DB<T> {
 				BasicDBObject basicDBObject = (BasicDBObject) dbObject;
 				results.add(dbObjectTransformer.fromDBObject(basicDBObject));
 			}
+			dbCursor.close();
 			return results.iterator();
 		}
 		

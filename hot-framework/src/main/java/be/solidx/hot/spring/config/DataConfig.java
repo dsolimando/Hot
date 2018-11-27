@@ -22,16 +22,10 @@ package be.solidx.hot.spring.config;
  * #L%
  */
 
-import java.sql.Driver;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.sql.DataSource;
-
+import be.solidx.hot.data.DB;
+import be.solidx.hot.data.jdbc.DBFactory;
+import be.solidx.hot.data.jdbc.sql.QueryBuilderFactory.DBEngine;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,9 +40,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
-import be.solidx.hot.data.DB;
-import be.solidx.hot.data.jdbc.DBFactory;
-import be.solidx.hot.data.jdbc.sql.QueryBuilderFactory.DBEngine;
+import javax.sql.DataSource;
+import java.sql.Driver;
+import java.util.*;
+import java.util.Map.Entry;
 
 @Configuration
 @Import({CommonConfig.class, MongoConfig.class, ThreadPoolsConfig.class})
@@ -161,28 +156,57 @@ public class DataConfig {
 		return dataSources;
 	}
 	
-	public DataSource oracleSimpleDriverDataSource (String host, int port, String service, String username, String password) throws Exception {
-		Driver oracleDriver = (Driver) Class.forName("oracle.jdbc.OracleDriver").newInstance();
-		return new SimpleDriverDataSource(oracleDriver, String.format(ORACLE_JDBC_URL,host,port,service),username,password);
+	public DataSource oracleSimpleDriverDataSource (String host, int port, String service, String username, String password) {
+		return buildDataSource(
+		        String.format(ORACLE_JDBC_URL,host,port,service),
+                "oracle.jdbc.OracleDriver",
+                username,
+                password
+        );
 	}
 	
-	public DataSource db2SimpleDriverDataSource (String host, int port, String dbname, String username, String password) throws Exception {
-		Driver db2Driver = (Driver) Class.forName("com.ibm.db2.jcc.DB2Driver").newInstance();
-		return new SimpleDriverDataSource(db2Driver, String.format(DB2_JDBC_URL,host,port,dbname),username,password);
+	public DataSource db2SimpleDriverDataSource (String host, int port, String dbname, String username, String password) {
+	    return buildDataSource(
+                String.format(DB2_JDBC_URL,host,port,dbname),
+                "com.ibm.db2.jcc.DB2Driver",
+                username,
+                password
+        );
 	}
 	
-	public DataSource mysqlSimpleDriverDataSource (String host, int port, String dbname, String username, String password) throws Exception {
-		Driver mysqlDriver = (Driver) Class.forName("com.mysql.jdbc.Driver").newInstance();
-		return new SimpleDriverDataSource(mysqlDriver, String.format(MYSQL_JDBC_URL,host,port,dbname),username,password);
+	public DataSource mysqlSimpleDriverDataSource (String host, int port, String dbname, String username, String password) {
+	    return buildDataSource(
+                String.format(MYSQL_JDBC_URL,host,port,dbname),
+                "com.mysql.jdbc.Driver",
+                username,
+                password
+        );
 	}
 	
-	public DataSource pgsqlSimpleDriverDataSource (String host, int port, String dbname, String username, String password) throws Exception {
-		Driver pgsqlDriver = (Driver) Class.forName("org.postgresql.Driver").newInstance();
-		return new SimpleDriverDataSource(pgsqlDriver, String.format(PGSQL_JDBC_URL,host,port,dbname),username,password);
+	public DataSource pgsqlSimpleDriverDataSource (String host, int port, String dbname, String username, String password) {
+	    return buildDataSource(
+                String.format(PGSQL_JDBC_URL,host,port,dbname),
+                "org.postgresql.Driver",
+                username,
+                password
+        );
 	}
 	
-	public DataSource hsqldbSimpleDriverDataSource (String dbname, String username, String password) throws Exception {
-		Driver h2Driver = (Driver) Class.forName("org.hsqldb.jdbcDriver").newInstance();
-		return new SimpleDriverDataSource(h2Driver, String.format(HSQLDB_JDBC_URL,dbname),username,password);
+	public DataSource hsqldbSimpleDriverDataSource (String dbname, String username, String password) {
+	    return buildDataSource(
+                String.format(HSQLDB_JDBC_URL,dbname),
+                "org.hsqldb.jdbcDriver",
+                username,
+                password
+        );
 	}
+
+	private DataSource buildDataSource(String jdbcURL, String driverClassName, String username, String password) {
+        HikariDataSource ds = new HikariDataSource();
+        ds.setJdbcUrl(jdbcURL);
+        ds.setUsername(username);
+        ds.setPassword(password);
+        ds.setDriverClassName(driverClassName);
+        return ds;
+    }
 }

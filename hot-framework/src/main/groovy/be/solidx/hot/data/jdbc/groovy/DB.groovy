@@ -34,14 +34,14 @@ import be.solidx.hot.data.jdbc.groovy.JoinableCollection;
 
 
 @CompileStatic
-public class DB extends AbstractDB<Map<String, Object>> {
+class DB extends AbstractDB<Map<String, Object>> {
 	
-	public DB(QueryBuilder queryBuilder, DataSource dataSource, String schema) {
+	DB(QueryBuilder queryBuilder, DataSource dataSource, String schema) {
 		super(queryBuilder, dataSource, schema);
 	}
 
 	@Override
-	public JoinableCollection getCollection(String name) {
+	JoinableCollection getCollection(String name) {
 		return new JoinableCollection(
 				new NamedParameterJdbcTemplate(dataSource),
 				queryBuilder,
