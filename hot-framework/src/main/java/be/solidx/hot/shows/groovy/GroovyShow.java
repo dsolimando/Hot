@@ -117,7 +117,6 @@ public class GroovyShow extends AbstractShow<Closure<?>,Map<String, Object>,Comp
 			@Override
 			public void run() {
 				try {
-					Thread.currentThread().setContextClassLoader(blockingThreadPool.getClass().getClassLoader());
 					final Object result = groovyClosure.call();
 					eventLoop.execute(new Runnable() {
 						@Override

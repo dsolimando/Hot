@@ -40,6 +40,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.converter.FormHttpMessageConverter;
 
 import org.xml.sax.SAXException;
+import reactor.core.Environment;
 import reactor.core.Reactor;
 import reactor.core.spec.Reactors;
 import be.solidx.hot.nio.http.HttpDataSerializer;
@@ -120,9 +121,9 @@ public class ShowConfig {
 	
 	@Bean
 	public Reactor reactor() {
-		return Reactors.reactor().env(threadPoolsConfig.reactorEnvironment()).get();
+		return Reactors.reactor().env(new Environment()).get();
 	}
-	
+
 	@Bean
 	ClosureRequestMappingHandlerMapping closureRequestMappingHandlerMapping () throws Exception {
 		return new ClosureRequestMappingHandlerMapping(showsContext());

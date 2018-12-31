@@ -29,8 +29,12 @@ import java.util.concurrent.ExecutorService;
 import be.solidx.hot.ClosureExecutor;
 import be.solidx.hot.promises.Deferred;
 import be.solidx.hot.promises.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractAsyncDB<CLOSURE,T extends Map<?, ?>> implements AsyncDB<CLOSURE, T>, ClosureExecutor<CLOSURE> {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractAsyncDB.class);
 
 	protected DB<T> db;
 	
@@ -104,8 +108,6 @@ public abstract class AbstractAsyncDB<CLOSURE,T extends Map<?, ?>> implements As
 			@Override
 			public void run() {
 				try {
-					// We are faking a thread creation from outside the eventLoop
-					Thread.currentThread().setContextClassLoader(blockingTasksThreadPool.getClass().getClassLoader());
 					final Object result = callable.call();
 					if (successCallback != null) {
 						eventLoop.execute(new Runnable() {
@@ -122,6 +124,9 @@ public abstract class AbstractAsyncDB<CLOSURE,T extends Map<?, ?>> implements As
 						}
 					});
 				} catch (final Exception e) {
+				    if (LOGGER.isErrorEnabled()) {
+				        LOGGER.error("",e);
+                    }
 					if (failCallback != null) {
 						eventLoop.execute(new Runnable() {
 							@Override

@@ -22,13 +22,7 @@ package be.solidx.hot.spring.config;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
+import be.solidx.hot.utils.FileLoader;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.slf4j.Logger;
@@ -39,11 +33,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutorService;
 
-import com.lmax.disruptor.dsl.ProducerType;
-
-import reactor.core.Environment;
-import reactor.spring.core.task.RingBufferAsyncTaskExecutor;
-import be.solidx.hot.utils.FileLoader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.*;
 
 @Configuration
 @Import({CommonConfig.class})
@@ -54,16 +49,18 @@ public class ThreadPoolsConfig {
 	private int blockingTasksThreadPoolSize = Runtime.getRuntime().availableProcessors()*2;
 	
 	public static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
-	
+
+	private static final int EVENT_LOOP_BACK_LOG_SIZE = 2024;
+
 	@Autowired
 	CommonConfig commonConfig;
 	
 	@Bean(name="blockingTasksThreadPool")
 	public ExecutorService blockingTasksThreadPool () throws JsonParseException, JsonMappingException, IOException {
 		if (commonConfig != null && commonConfig.hotConfig().getAuthList().size() == 0)
-			return Executors.newFixedThreadPool(blockingTasksThreadPoolSize);
+			return executorService(blockingTasksThreadPoolSize);
 		else 
-			return new DelegatingSecurityContextExecutorService(Executors.newFixedThreadPool(blockingTasksThreadPoolSize));
+			return new DelegatingSecurityContextExecutorService(executorService(blockingTasksThreadPoolSize));
 	}
 	
 	@Bean(name="taskManagerExecutorService")
@@ -73,21 +70,12 @@ public class ThreadPoolsConfig {
 	
 	@Bean
 	public EventLoopFactory eventLoopFactory() throws Exception {
-		return new EventLoopFactory(reactorEnvironment(), commonConfig != null && commonConfig.hotConfig().getAuthList().size() > 0);
-	}
-	
-	@Bean
-	public Environment reactorEnvironment() {
-		return new Environment();
+		return new EventLoopFactory(commonConfig != null && commonConfig.hotConfig().getAuthList().size() > 0);
 	}
 	
 	@Bean(name="staticResourcesEventLoop")
 	public ExecutorService staticResourcesEventLoop() throws Exception {
-		RingBufferAsyncTaskExecutor rbate = new RingBufferAsyncTaskExecutor(reactorEnvironment())
-	        .setName("staticResourcesEventLoop")
-	        .setProducerType(ProducerType.MULTI)
-	        .setBacklog(2048);
-		rbate.afterPropertiesSet();
+		ExecutorService rbate = ThreadPoolsConfig.singleThreadExecutorService();
 		if (commonConfig != null && commonConfig.hotConfig().getAuthList().size() > 0) {
 			return new DelegatingSecurityContextExecutorService(rbate);
 		}
@@ -96,17 +84,27 @@ public class ThreadPoolsConfig {
 	
 	@Bean(name="httpIOEventLoop")
 	public ExecutorService httpIOEventLoop() throws Exception {
-		RingBufferAsyncTaskExecutor rbate = new RingBufferAsyncTaskExecutor(reactorEnvironment())
-	        .setName("httpIOEventLoop")
-	        .setProducerType(ProducerType.MULTI)
-	        .setBacklog(2048);
-		rbate.afterPropertiesSet();
+        ExecutorService rbate = singleThreadExecutorService();
 		if (commonConfig != null && commonConfig.hotConfig().getAuthList().size() > 0) {
 			return new DelegatingSecurityContextExecutorService(rbate);
 		}
 		return rbate;
 	}
-	
+
+	public static ExecutorService executorService(int poolSize) {
+	    return new ThreadPoolExecutor(
+                poolSize,
+                poolSize,
+                0,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<Runnable>(EVENT_LOOP_BACK_LOG_SIZE)
+        );
+    }
+
+    static public ExecutorService singleThreadExecutorService() {
+	    return executorService(1);
+    }
+
 	@Bean
 	public FileLoader fileLoader() throws Exception {
 		return new FileLoader(staticResourcesEventLoop());
@@ -118,15 +116,10 @@ public class ThreadPoolsConfig {
 		
 		private int index = 0;
 		
-		public EventLoopFactory(Environment environment, boolean authEnabled) throws Exception {
+		public EventLoopFactory(boolean authEnabled) throws Exception {
 			for (int i = 0; i < AVAILABLE_PROCESSORS; i++) {
-				RingBufferAsyncTaskExecutor rbate = new RingBufferAsyncTaskExecutor(environment)
-			        .setName("ringBufferExecutor")
-			        .setProducerType(ProducerType.MULTI)
-			        .setBacklog(2048);
-//			        .setWaitStrategy(new YieldingWaitStrategy());
-				rbate.afterPropertiesSet();
-				
+				ExecutorService rbate = ThreadPoolsConfig.singleThreadExecutorService();
+
 				if (authEnabled) {
 					if (LOGGER.isDebugEnabled()) {
 						LOGGER.debug("Wrapping ExecutorService with DelegatingSecurityContextExecutorService");

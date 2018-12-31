@@ -133,7 +133,6 @@ public class JSShow extends AbstractShow<NativeFunction, NativeObject, Script> {
 			@Override
 			public void run() {
 				try {
-					Thread.currentThread().setContextClassLoader(blockingThreadPool.getClass().getClassLoader());
 					final Object result = jsClosure.call();
 					eventLoop.execute(new Runnable() {
 						@Override
