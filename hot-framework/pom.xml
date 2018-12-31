@@ -4,7 +4,7 @@
 
 	<groupId>be.solidx.hot</groupId>
 	<artifactId>hot-framework</artifactId>
-	<version>0.9.14-SNAPSHOT</version>
+	<version>0.9.16-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>hot-framework</name>
@@ -357,7 +357,7 @@
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
-			<version>1.3.1</version>
+			<version>1.3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
