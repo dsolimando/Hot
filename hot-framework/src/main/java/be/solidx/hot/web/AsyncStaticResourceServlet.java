@@ -38,6 +38,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import javax.servlet.AsyncContext;
@@ -65,7 +66,6 @@ import be.solidx.hot.utils.FileLoader;
 import be.solidx.hot.utils.FileLoader.Buffer;
 
 import com.google.common.net.HttpHeaders;
-import com.gs.collections.impl.map.mutable.ConcurrentHashMap;
 import com.sun.nio.zipfs.ZipFileSystem;
 
 public class AsyncStaticResourceServlet extends HttpServlet {
@@ -318,7 +318,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 			final AsyncContext async) {
 		
 		final LinkedList<Buffer> queue = new LinkedList<>();
-		
+
 		promise.progress(new ProgressCallback<FileLoader.Buffer>() {
 			@Override public void onProgress(Buffer progress) {
 				queue.add(progress);
@@ -338,7 +338,10 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 							}
 							if (queue.isEmpty() && (promise.isResolved() || promise.isRejected())) {
 								async.complete();
-							}
+							} else if(outputStream.isReady()) {
+							    // we call onWritePossible manually because not called by jetty while outputStream.isReady
+							    onWritePossible();
+                            }
 						} catch (IOException e) {
 							LOGGER.error("", e);
 							async.complete();
@@ -346,7 +349,7 @@ public class AsyncStaticResourceServlet extends HttpServlet {
 					}
 				});
 			}
-			
+
 			@Override
 			public void onError(Throwable t) {
 				LOGGER.error("", t);
