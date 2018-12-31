@@ -29,9 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.NativeObject;
@@ -48,8 +46,6 @@ import be.solidx.hot.data.mongo.DBObjectNativeObjectTransformer;
 import be.solidx.hot.data.mongo.DBObjectPyDictionaryTransformer;
 import be.solidx.hot.spring.config.HotConfig.DBEngine;
 import be.solidx.hot.spring.config.HotConfig.DataSource;
-
-import com.mongodb.Mongo;
 
 @Configuration @Lazy
 public class MongoConfig {
@@ -70,12 +66,16 @@ public class MongoConfig {
                                 dataSource.getUsername(),
                                 dataSource.getDatabase(),
                                 dataSource.getPassword().toCharArray());
+                        MongoClientOptions options = MongoClientOptions.builder()
+                                .connectTimeout(5000)
+                                .socketTimeout(5000).build();
                         mongos.put(dataSource,new MongoClient(
                                 new ServerAddress(
                                         dataSource.getHostname(),
                                         dataSource.getPort()
                                 ),
-                                Arrays.asList(credential)
+                                Arrays.asList(credential),
+                                options
                         ));
                     } else {
                         mongos.put(dataSource,new MongoClient(
