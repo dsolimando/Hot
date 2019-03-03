@@ -119,7 +119,6 @@ public class RestClosureDelegate {
     public void asyncHandleRestRequest (final HttpServletRequest req, final HttpServletResponse resp, final AsyncContext async) {
 
         try {
-
             final ClosureRequestMapping closureRequestMapping;
 
             // Check if requestMapping is in thread local
@@ -128,7 +127,6 @@ public class RestClosureDelegate {
             } else {
                 closureRequestMapping = HotContext.getRequestMapping();
             }
-
             final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (closureRequestMapping != null) {
@@ -164,7 +162,6 @@ public class RestClosureDelegate {
                         public void onDone(Object body) {
                             try {
                                 final MediaType acceptMediaType = extractAcceptMediaType(req);
-                                long t = System.currentTimeMillis();
                                 RestRequest restRequest;
                                 if (body instanceof byte[]) {
                                     restRequest = withBody.withBodyConversion((byte[]) body).build();
@@ -173,11 +170,9 @@ public class RestClosureDelegate {
                                 }
 
                                 Object response = closureRequestMapping.getClosure().call(restRequest);
-                                //System.out.println("closure call time "+ (System.currentTimeMillis()-t));
                                 if (LOGGER.isDebugEnabled())
                                     LOGGER.debug("Response type: "+response.getClass());
 
-                                t = System.currentTimeMillis();
                                 if (response instanceof NativeJavaObject) {
                                     response = ((NativeJavaObject) response).unwrap();
                                 }
@@ -196,7 +191,6 @@ public class RestClosureDelegate {
                                     });
                                 } else {
                                     handleResponse(response, acceptMediaType, resp, async, showEventLoop);
-                                    //System.out.println("Handle response time "+ (System.currentTimeMillis()-t));
                                 }
                             } catch (Exception e) {
                                 if (LOGGER.isDebugEnabled())
@@ -399,8 +393,6 @@ public class RestClosureDelegate {
             final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
             final ServletOutputStream outputStream;
 
-            final long t = System.currentTimeMillis();
-
             if (httpServletResponse instanceof SaveContextOnUpdateOrErrorResponseWrapper) {
                 ((SaveContextOnUpdateOrErrorResponseWrapper) httpServletResponse).getResponse();
                 outputStream = ((SaveContextOnUpdateOrErrorResponseWrapper) httpServletResponse).getResponse().getOutputStream();
@@ -419,7 +411,6 @@ public class RestClosureDelegate {
                             outputStream.write(buffer, 0, len);
                         }
                         if (len == -1) {
-                            //System.out.println("Writing response time "+(System.currentTimeMillis()-t));
                             async.complete();
                         }
                     } catch (IOException e) {

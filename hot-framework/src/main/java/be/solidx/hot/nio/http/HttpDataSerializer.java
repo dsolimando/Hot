@@ -27,17 +27,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.python.core.Py;
 import org.python.core.PyInstance;
 import org.python.core.PyString;
@@ -69,7 +67,7 @@ public class HttpDataSerializer {
 	XStream xStream;
 	
 	DataConverter dataConverter;
-	
+
 	Map<Class<?>, JAXBContext> jaxbContextMap = new HashMap<>();
 	
 	public static List<String> byteMediaTypes = Arrays.asList(
@@ -147,7 +145,12 @@ public class HttpDataSerializer {
 				return data.toString().getBytes(charset);
 			}
 		} else if (subtype.equals(MediaType.APPLICATION_JSON.getSubtype())) {
-			return objectMapper.writeValueAsBytes(data);
+		    if (data instanceof Collection) {
+		        return new JSONArray((Collection)data).toString().getBytes();
+            } else if (data instanceof Map) {
+               return new JSONObject(data).toString().getBytes();
+            }
+            return data.toString().getBytes();
 		} else if (data instanceof byte[]) {
 			return (byte[]) data;
 		} else {
@@ -175,7 +178,7 @@ public class HttpDataSerializer {
 		} else if (mediaType.getSubtype().equals(MediaType.APPLICATION_XML.getSubtype())) {
 			return handleXML(data, mediaType);
 		} else if (mediaType.getSubtype().equals(MediaType.APPLICATION_JSON.getSubtype())) {
-			return objectMapper.writeValueAsBytes(data);
+            return new JSONObject(data).toString().getBytes();
 		} else {
 			return data.toString().getBytes();
 		}

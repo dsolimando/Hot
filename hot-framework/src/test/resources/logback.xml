@@ -8,9 +8,9 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.springframework" level="DEBUG" />
-	<logger name="be.solidx.hot" level="DEBUG" />
-	<logger name="org.eclipse.jetty" level="INFO" />
+	<logger name="org.springframework" level="OFF" />
+	<logger name="be.solidx.hot" level="OFF" />
+	<logger name="org.eclipse.jetty" level="OFF" />
 
 	<root>
 		<level value="off" />

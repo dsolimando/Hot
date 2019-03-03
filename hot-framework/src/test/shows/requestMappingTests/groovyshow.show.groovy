@@ -1,3 +1,7 @@
+import be.solidx.hot.shows.Show
+import groovy.transform.CompileStatic
+import groovy.transform.Field
+
 def s = "hello world in my eyes"
 
 rest.get("/items").headers(["Content-Type: application/xml"]).then({
@@ -18,3 +22,8 @@ show.rest.get("/items").headers(["Content-Type: application/json"]).then({
 show.rest.put("/item").auth().then({
 	print "put"
 })
+
+def h = 'Hello World'
+show.rest.get('/scells-txt').then {
+    h
+}

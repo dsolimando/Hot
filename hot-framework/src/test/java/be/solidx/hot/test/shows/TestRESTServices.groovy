@@ -255,6 +255,31 @@ class TestRESTServices {
 		server.threadPool.join()
 		server.stop()
 	}
+
+    @Test
+    public void testScellsText() {
+        def server = createServer()
+        server.start()
+        GroovyHttpClient client = new GroovyHttpClient(Executors.newCachedThreadPool(),cf, sSLContextBuilder, objectMapper, httpDataSerializer)
+        def options = [
+            url: 'http://localhost:8087/rest/scells-txt',
+            type: 'GET',
+            headers:[
+                'Accept':"text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7"
+            ],
+//			processResponse:false
+        ]
+        def resp
+        client.buildRequest (options).done({ data, textStatus, response ->
+            print data
+            assert data == 'Hello World'
+            server.stop()
+        }).fail({ response, status, error ->
+            error.printStackTrace()
+        })
+        server.threadPool.join()
+        server.stop()
+    }
 	
 	@Test
 	public void testScellsJsonResponse() {

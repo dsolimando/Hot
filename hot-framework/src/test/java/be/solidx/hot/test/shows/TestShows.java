@@ -54,7 +54,7 @@ public class TestShows {
 	@Test
 	public void testGroovyShow() throws Exception {
 		GroovyShow groovyShow = new GroovyShow(getClass().getResource("/requestMappingTests/groovyshow.show.groovy"),Executors.newFixedThreadPool(1),Executors.newCachedThreadPool(), null, groovyScriptExecutor,null,null);
-		Assert.assertEquals(3, groovyShow.getRest().getRequestMappings().size());
+		Assert.assertEquals(4, groovyShow.getRest().getRequestMappings().size());
 		
 		ClosureRequestMapping requestMapping = groovyShow.getRest().getRequestMappings().get(0);
 		Assert.assertEquals("/items", requestMapping.getPaths().get(0));

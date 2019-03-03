@@ -64,7 +64,7 @@ class TestHttpDataSerializer {
 	void testGroovySerializationJSON() {
 		def data = [name:"damien",age:8, values:["toto","titi"], objects:[sub1:"toto",sub2:"titi"]]
 		def url = new String(dataSerializer.serialize(data, "application/json"))
-		assert '{"name":"damien","age":8,"values":["toto","titi"],"objects":{"sub1":"toto","sub2":"titi"}}' == url
+		assert '{"name":"damien","age":8,"values":["toto","titi"],"objects":{"sub2":"titi","sub1":"toto"}}' == url
 	}
 	
 	@Test
@@ -121,7 +121,7 @@ class TestHttpDataSerializer {
 		String js = "var o = { name:'damien',age:8, values:['toto','titi'], objects:{sub1:'toto', sub2:'titi'}};\n o";
 		def data = jsScriptExecutor.execute(new be.solidx.hot.Script<org.mozilla.javascript.Script>(js.bytes,"script"))
 		def url = new String(dataSerializer.serialize(data, "application/json"))
-		assert '{"name":"damien","age":8,"values":["toto","titi"],"objects":{"sub1":"toto","sub2":"titi"}}' == url
+		assert '{"name":"damien","age":8,"values":["toto","titi"],"objects":{"sub2":"titi","sub1":"toto"}}' == url
 	}
 	
 	@Test
@@ -194,7 +194,7 @@ class TestHttpDataSerializer {
 		def res = pythonScriptExecutor.execute(new be.solidx.hot.Script<CompiledScript>(python.bytes,"script"),input)
 		def url = new String(dataSerializer.serialize(res.o, "application/json"))
 		print url
-		assert '{"values":["toto","titi"],"objects":{"sub2":"titi","sub1":"toto"},"name":"damien","age":8}' == url
+		assert '{"name":"damien","age":8,"values":["toto","titi"],"objects":{"sub2":"titi","sub1":"toto"}}' == url
 	}
 	
 	@Test
