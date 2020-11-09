@@ -4,7 +4,7 @@ package be.solidx.hot.shows;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,7 +34,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.mozilla.javascript.NativeObject;
 import org.python.core.PyDictionary;

@@ -4,7 +4,7 @@ package be.solidx.hot.nio.http;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,25 @@ package be.solidx.hot.nio.http;
  * #L%
  */
 
+import be.solidx.hot.nio.http.HttpDataSerializer.HttpDataSerializationException;
+import be.solidx.hot.promises.Deferred;
+import be.solidx.hot.promises.Promise;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.net.HttpHeaders;
+import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.*;
+import org.jboss.netty.handler.codec.http.*;
+import org.jboss.netty.handler.logging.LoggingHandler;
+import org.jboss.netty.handler.ssl.SslHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.codec.Base64;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.xml.parsers.DocumentBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,48 +53,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLException;
-import javax.xml.parsers.DocumentBuilder;
-
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.HttpChunk;
-import org.jboss.netty.handler.codec.http.HttpClientCodec;
-import org.jboss.netty.handler.codec.http.HttpContentDecompressor;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.handler.logging.LoggingHandler;
-import org.jboss.netty.handler.ssl.SslHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
-import org.springframework.security.crypto.codec.Base64;
-import org.w3c.dom.Document;
-
-import be.solidx.hot.nio.http.HttpDataSerializer.HttpDataSerializationException;
-import be.solidx.hot.promises.Deferred;
-import be.solidx.hot.promises.Promise;
-
-import com.google.common.net.HttpHeaders;
 
 public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 	
@@ -459,7 +436,7 @@ public abstract class Request<CLOSURE,MAP> implements Promise<CLOSURE> {
 	abstract void executeErrorClosure(Response<CLOSURE, MAP> response, String status, Throwable exception);
 	
 	abstract Exception buildFailException(Exception exception);
-	abstract Object fromJSON (byte[] json) throws JsonParseException, JsonMappingException, IOException;
+	abstract Object fromJSON (byte[] json) throws IOException;
 	
 	protected abstract Deferred<CLOSURE> buildDeferred();
 	protected abstract Response<CLOSURE, MAP> buildResponse ();

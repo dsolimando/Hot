@@ -4,18 +4,18 @@ package be.solidx.hot.spring.config;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -26,326 +26,346 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HotConfig {
-	
-	public static final String GAE = "gae";
 
-	private String name;
-	
-	private String nature;
-	
-	private String version;
-	
-	private boolean devMode;
-	
-	private boolean ssl;
-	
-	private String redirectHostname;
-	
-	private String keystorePassword;
-	
-	private List<DataSource> dataSources = new ArrayList<HotConfig.DataSource>();
-	
-	private List<Auth> authList = new ArrayList<>();
+    public static final String GAE = "gae";
 
-	public String getName() {
-		return name;
-	}
+    private String name;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    private String nature;
 
-	public String getNature() {
-		return nature;
-	}
+    private String version;
 
-	public void setNature(String nature) {
-		this.nature = nature;
-	}
+    private boolean devMode;
 
-	public String getVersion() {
-		return version;
-	}
+    private boolean ssl;
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
-	
-	public List<DataSource> getDataSources() {
-		return dataSources;
-	}
+    private String redirectHostname;
 
-	public void setDataSources(List<DataSource> dataSources) {
-		this.dataSources = dataSources;
-	}
-	
-	public List<Auth> getAuthList() {
-		return authList;
-	}
+    private String keystorePassword;
 
-	public void setAuthList(List<Auth> authList) {
-		this.authList = authList;
-	}
+    private List<DataSource> dataSources = new ArrayList<HotConfig.DataSource>();
 
-	public boolean isDevMode() {
-		return devMode;
-	}
+    private List<Auth> authList = new ArrayList<>();
 
-	public void setDevMode(boolean devMode) {
-		this.devMode = devMode;
-	}
-	
-	public boolean isSsl() {
-		return ssl;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setSsl(boolean ssl) {
-		this.ssl = ssl;
-	}
-	
-	public String getKeystorePassword() {
-		return keystorePassword;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setKeystorePassword(String keystorePassword) {
-		this.keystorePassword = keystorePassword;
-	}
-	
-	public String getRedirectHostname() {
-		return redirectHostname;
-	}
+    public String getNature() {
+        return nature;
+    }
 
-	public void setRedirectHostname(String redirectHostname) {
-		this.redirectHostname = redirectHostname;
-	}
+    public void setNature(String nature) {
+        this.nature = nature;
+    }
 
-	public static class DataSource {
-		
-		private String name;
-		
-		private DBEngine engine;
-		
-		private String hostname;
-		
-		private int port;
-		
-		private String username;
-		
-		private String password;
-		
-		private String database;
-		
-		private String schema;
-		
-		private boolean rest;
+    public String getVersion() {
+        return version;
+    }
 
-		public String getName() {
-			return name;
-		}
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
-		public void setName(String name) {
-			this.name = name;
-		}
-		
-		public DBEngine getEngine() {
-			return engine;
-		}
-		
-		public void setEngine(DBEngine engine) {
-			this.engine = engine;
-		}
+    public List<DataSource> getDataSources() {
+        return dataSources;
+    }
 
-		public String getHostname() {
-			return hostname;
-		}
+    public void setDataSources(List<DataSource> dataSources) {
+        this.dataSources = dataSources;
+    }
 
-		public void setHostname(String hostname) {
-			this.hostname = hostname;
-		}
+    public List<Auth> getAuthList() {
+        return authList;
+    }
 
-		public int getPort() {
-			return port;
-		}
+    public void setAuthList(List<Auth> authList) {
+        this.authList = authList;
+    }
 
-		public void setPort(int port) {
-			this.port = port;
-		}
+    public boolean isDevMode() {
+        return devMode;
+    }
 
-		public String getDatabase() {
-			return database;
-		}
-		
-		public String getUsername() {
-			return username;
-		}
+    public void setDevMode(boolean devMode) {
+        this.devMode = devMode;
+    }
 
-		public void setUsername(String username) {
-			this.username = username;
-		}
+    public boolean isSsl() {
+        return ssl;
+    }
 
-		public String getPassword() {
-			return password;
-		}
+    public void setSsl(boolean ssl) {
+        this.ssl = ssl;
+    }
 
-		public void setPassword(String password) {
-			this.password = password;
-		}
+    public String getKeystorePassword() {
+        return keystorePassword;
+    }
 
-		public void setDatabase(String database) {
-			this.database = database;
-		}
-		
-		public String getSchema() {
-			return schema;
-		}
+    public void setKeystorePassword(String keystorePassword) {
+        this.keystorePassword = keystorePassword;
+    }
 
-		public void setSchema(String schema) {
-			this.schema = schema;
-		}
+    public String getRedirectHostname() {
+        return redirectHostname;
+    }
 
-		public boolean isRest() {
-			return rest;
-		}
+    public void setRedirectHostname(String redirectHostname) {
+        this.redirectHostname = redirectHostname;
+    }
 
-		public void setRest(boolean rest) {
-			this.rest = rest;
-		}
-	}
-	
-	
-	public static class Auth {
-		
-		AuthType type;
-		
-		String ldapServerUrl;
-		String[] userDnPatterns;
-		String userSearchFilter;
-		String userSearchBase;
-		String groupSearchBase;
-		String groupSearchFilter;
-		
-		String dbname;
-		String dbDefaultUsername;
-		String dbDefaultPassword;
-		List<String> dbDefaultRoles = new ArrayList<>();
-		boolean withGroups;
-		
-		String consumerKey;
-		String consumerSecret;
-		String scope;
+    public static class DataSource {
 
-		public String getLdapServerUrl() {
-			return ldapServerUrl;
-		}
+        private String name;
 
-		public void setLdapServerUrl(String ldapServer) {
-			this.ldapServerUrl = ldapServer;
-		}
+        private DBEngine engine;
 
-		public String[] getUserDnPatterns() {
-			return userDnPatterns;
-		}
+        private String hostname;
 
-		public void setUserDnPatterns(String[] userDnPatterns) {
-			this.userDnPatterns = userDnPatterns;
-		}
+        private int port;
 
-		public String getUserSearchFilter() {
-			return userSearchFilter;
-		}
+        private String username;
 
-		public void setUserSearchFilter(String userSearchFilter) {
-			this.userSearchFilter = userSearchFilter;
-		}
+        private String password;
 
-		public String getUserSearchBase() {
-			return userSearchBase;
-		}
+        private String database;
 
-		public void setUserSearchBase(String userSearchBase) {
-			this.userSearchBase = userSearchBase;
-		}
+        private String schema;
 
-		public String getGroupSearchBase() {
-			return groupSearchBase;
-		}
+        private boolean rest;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public DBEngine getEngine() {
+            return engine;
+        }
+
+        public void setEngine(DBEngine engine) {
+            this.engine = engine;
+        }
+
+        public String getHostname() {
+            return hostname;
+        }
+
+        public void setHostname(String hostname) {
+            this.hostname = hostname;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        public String getDatabase() {
+            return database;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public void setDatabase(String database) {
+            this.database = database;
+        }
+
+        public String getSchema() {
+            return schema;
+        }
+
+        public void setSchema(String schema) {
+            this.schema = schema;
+        }
+
+        public boolean isRest() {
+            return rest;
+        }
+
+        public void setRest(boolean rest) {
+            this.rest = rest;
+        }
+    }
+
+    public enum Algorithm {
+        HS256,
+        HS384,
+        HS512,
+        RS256,
+        RS384,
+        RS512,
+        ES256,
+        ES384,
+        ES512,
+    }
+
+    public static class Auth {
+
+        AuthType type;
+
+        String ldapServerUrl;
+        String[] userDnPatterns;
+        String userSearchFilter;
+        String userSearchBase;
+        String groupSearchBase;
+        String groupSearchFilter;
+
+        String dbname;
+        String dbDefaultUsername;
+        String dbDefaultPassword;
+        List<String> dbDefaultRoles = new ArrayList<>();
+        boolean withGroups;
+
+        String consumerKey;
+        String consumerSecret;
+        String scope;
+
+        // JWT parameters
+        String name;
+        String jwksUrl;
+        String issuer;
+        String audience;
+        String claims = "";
+        Algorithm algorithm = Algorithm.RS256;
+        String secret;
+
+        public String getLdapServerUrl() {
+            return ldapServerUrl;
+        }
+
+        public void setLdapServerUrl(String ldapServer) {
+            this.ldapServerUrl = ldapServer;
+        }
+
+        public String[] getUserDnPatterns() {
+            return userDnPatterns;
+        }
+
+        public void setUserDnPatterns(String[] userDnPatterns) {
+            this.userDnPatterns = userDnPatterns;
+        }
+
+        public String getUserSearchFilter() {
+            return userSearchFilter;
+        }
+
+        public void setUserSearchFilter(String userSearchFilter) {
+            this.userSearchFilter = userSearchFilter;
+        }
+
+        public String getUserSearchBase() {
+            return userSearchBase;
+        }
+
+        public void setUserSearchBase(String userSearchBase) {
+            this.userSearchBase = userSearchBase;
+        }
+
+        public String getGroupSearchBase() {
+            return groupSearchBase;
+        }
 
 
-		public void setGroupSearchBase(String groupSearchBase) {
-			this.groupSearchBase = groupSearchBase;
-		}
-		
-		public String getGroupSearchFilter() {
-			return groupSearchFilter;
-		}
+        public void setGroupSearchBase(String groupSearchBase) {
+            this.groupSearchBase = groupSearchBase;
+        }
 
-		public void setGroupSearchFilter(String groupSearchFilter) {
-			this.groupSearchFilter = groupSearchFilter;
-		}
+        public String getGroupSearchFilter() {
+            return groupSearchFilter;
+        }
 
-		public String getDbname() {
-			return dbname;
-		}
+        public void setGroupSearchFilter(String groupSearchFilter) {
+            this.groupSearchFilter = groupSearchFilter;
+        }
 
-		public void setDbname(String dbname) {
-			this.dbname = dbname;
-		}
+        public String getDbname() {
+            return dbname;
+        }
 
-		public AuthType getType() {
-			return type;
-		}
+        public void setDbname(String dbname) {
+            this.dbname = dbname;
+        }
 
-		public void setType(AuthType authType) {
-			this.type = authType;
-		}
+        public AuthType getType() {
+            return type;
+        }
 
-		public String getConsumerKey() {
-			return consumerKey;
-		}
+        public void setType(AuthType authType) {
+            this.type = authType;
+        }
 
-		public void setConsumerKey(String consumerKey) {
-			this.consumerKey = consumerKey;
-		}
+        public String getConsumerKey() {
+            return consumerKey;
+        }
 
-		public String getConsumerSecret() {
-			return consumerSecret;
-		}
+        public void setConsumerKey(String consumerKey) {
+            this.consumerKey = consumerKey;
+        }
 
-		public void setConsumerSecret(String consumerSecret) {
-			this.consumerSecret = consumerSecret;
-		}
+        public String getConsumerSecret() {
+            return consumerSecret;
+        }
 
-		public String getDbDefaultUsername() {
-			return dbDefaultUsername;
-		}
+        public void setConsumerSecret(String consumerSecret) {
+            this.consumerSecret = consumerSecret;
+        }
 
-		public void setDbDefaultUsername(String dbDefaultUsername) {
-			this.dbDefaultUsername = dbDefaultUsername;
-		}
+        public String getDbDefaultUsername() {
+            return dbDefaultUsername;
+        }
 
-		public String getDbDefaultPassword() {
-			return dbDefaultPassword;
-		}
+        public void setDbDefaultUsername(String dbDefaultUsername) {
+            this.dbDefaultUsername = dbDefaultUsername;
+        }
 
-		public void setDbDefaultPassword(String dbDefaultPassword) {
-			this.dbDefaultPassword = dbDefaultPassword;
-		}
+        public String getDbDefaultPassword() {
+            return dbDefaultPassword;
+        }
 
-		public List<String> getDbDefaultRoles() {
-			return dbDefaultRoles;
-		}
+        public void setDbDefaultPassword(String dbDefaultPassword) {
+            this.dbDefaultPassword = dbDefaultPassword;
+        }
 
-		public void setDbDefaultRoles(List<String> dbDefaultRoles) {
-			this.dbDefaultRoles = dbDefaultRoles;
-		}
+        public List<String> getDbDefaultRoles() {
+            return dbDefaultRoles;
+        }
 
-		public boolean isWithGroups() {
-			return withGroups;
-		}
+        public void setDbDefaultRoles(List<String> dbDefaultRoles) {
+            this.dbDefaultRoles = dbDefaultRoles;
+        }
 
-		public void setWithGroups(boolean withGroups) {
-			this.withGroups = withGroups;
-		}
+        public boolean isWithGroups() {
+            return withGroups;
+        }
+
+        public void setWithGroups(boolean withGroups) {
+            this.withGroups = withGroups;
+        }
 
         public String getScope() {
             return scope;
@@ -354,13 +374,69 @@ public class HotConfig {
         public void setScope(String scope) {
             this.scope = scope;
         }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setJwksUrl(String jwksUrl) {
+            this.jwksUrl = jwksUrl;
+        }
+
+        public String getJwksUrl() {
+            return jwksUrl;
+        }
+
+        public String getAudience() {
+            return audience;
+        }
+
+        public void setAudience(String audience) {
+            this.audience = audience;
+        }
+
+        public String getIssuer() {
+            return issuer;
+        }
+
+        public void setIssuer(String issuer) {
+            this.issuer = issuer;
+        }
+
+        public String getClaims() {
+            return claims;
+        }
+
+        public void setClaims(String claims) {
+            this.claims = claims;
+        }
+
+        public Algorithm getAlgorithm() {
+            return algorithm;
+        }
+
+        public void setAlgorithm(Algorithm algorithm) {
+            this.algorithm = algorithm;
+        }
+
+        public String getSecret() {
+            return secret;
+        }
+
+        public void setSecret(String secret) {
+            this.secret = secret;
+        }
     }
-	
-	public static enum AuthType {
-		DB, LDAP, FACEBOOK, TWITTER, GOOGLE, FACEBOOK_CLIENT, GOOGLE_CLIENT
-	}
-	
-	public static enum DBEngine {
-		MYSQL, PGSQL, ORACLE, DB2, INFORMIX, HSQLDB, H2, MONGODB
-	}
+
+    public static enum AuthType {
+        DB, LDAP, FACEBOOK, TWITTER, GOOGLE, FACEBOOK_CLIENT, GOOGLE_CLIENT, JWT
+    }
+
+    public static enum DBEngine {
+        MYSQL, PGSQL, ORACLE, DB2, INFORMIX, HSQLDB, H2, MONGODB
+    }
 }

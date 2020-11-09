@@ -1,6 +1,6 @@
 var options = {
 	url: 'https://localhost:8443/test',
-	ssl: {
+	ssl: {
 		ca:'ca/ca.crt'
 	}
 }

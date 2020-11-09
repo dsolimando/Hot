@@ -4,7 +4,7 @@ package be.solidx.hot.spring.config;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +22,11 @@ package be.solidx.hot.spring.config;
  * #L%
  */
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.codehaus.jackson.map.ObjectMapper;
+import be.solidx.hot.data.DB;
+import be.solidx.hot.data.rest.RestDataStore;
+import be.solidx.hot.groovy.GroovyMapConverter;
+import be.solidx.hot.spring.config.HotConfig.DataSource;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,10 +34,8 @@ import org.springframework.context.support.ConversionServiceFactoryBean;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import be.solidx.hot.data.DB;
-import be.solidx.hot.data.rest.RestDataStore;
-import be.solidx.hot.groovy.GroovyMapConverter;
-import be.solidx.hot.spring.config.HotConfig.DataSource;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Configuration 
 @EnableWebMvc
@@ -49,7 +48,7 @@ public class DataStoreConfig {
 	HotConfig hotConfig;
 	
 	@Autowired
-	ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 	
 	@Autowired
 	GroovyMapConverter groovyDataConverter;

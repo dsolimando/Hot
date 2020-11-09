@@ -4,7 +4,7 @@ package be.solidx.hot.shows;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,10 +24,7 @@ package be.solidx.hot.shows;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -37,6 +34,10 @@ import be.solidx.hot.nio.http.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import reactor.core.Reactor;
 import reactor.event.Event;
 import reactor.event.selector.Selectors;
@@ -254,8 +255,8 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 			return dbs.values().iterator().next();
 		}
 	}
-	
-	protected abstract void initScriptContext() throws IOException;
+
+    protected abstract void initScriptContext() throws IOException;
 	
 	protected abstract Map<String, AsyncDB<CLOSURE, MAP>> buildAsyncDBMap(Map<String, DB<MAP>> dbs);
 	
@@ -326,7 +327,7 @@ public abstract class AbstractShow<CLOSURE,MAP extends Map,COMPILED_SCRIPT> impl
 	@Override
 	public boolean equals(Object obj) {
 		if (obj != null && obj instanceof AbstractShow) {
-			AbstractShow<CLOSURE, Map, COMPILED_SCRIPT> show = (AbstractShow<CLOSURE, Map, COMPILED_SCRIPT>) obj;
+			AbstractShow<CLOSURE, MAP, COMPILED_SCRIPT> show = (AbstractShow<CLOSURE, MAP, COMPILED_SCRIPT>) obj;
 
 			if (scale >= 0) {
 			    return show.script.equals(script) && index == show.index;

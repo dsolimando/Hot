@@ -4,7 +4,7 @@ package be.solidx.hot.spring.config;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,19 +22,20 @@ package be.solidx.hot.spring.config;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
+import be.solidx.hot.data.jdbc.AbstractDB;
+import be.solidx.hot.data.jdbc.DB;
+import be.solidx.hot.data.mongo.BasicDB;
+import be.solidx.hot.shows.ClosureRequestMapping;
+import be.solidx.hot.shows.Show;
+import be.solidx.hot.shows.rest.HotContext;
+import be.solidx.hot.shows.spring.ClosureRequestMappingHandlerMapping;
+import be.solidx.hot.spring.config.HotConfig.Auth;
+import be.solidx.hot.spring.config.HotConfig.AuthType;
+import be.solidx.hot.spring.config.HotConfig.DBEngine;
+import be.solidx.hot.spring.config.HotConfig.DataSource;
+import be.solidx.hot.spring.security.JWTAuthenticationFilter;
+import be.solidx.hot.spring.security.OAuth2ClientAuthenticationFilter;
+import com.google.common.net.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,20 +70,10 @@ import org.springframework.social.security.SocialAuthenticationServiceLocator;
 import org.springframework.social.security.SocialUserDetailsService;
 import org.springframework.social.security.SpringSocialConfigurer;
 
-import com.google.common.net.HttpHeaders;
-
-import be.solidx.hot.data.jdbc.AbstractDB;
-import be.solidx.hot.data.jdbc.DB;
-import be.solidx.hot.data.mongo.BasicDB;
-import be.solidx.hot.shows.ClosureRequestMapping;
-import be.solidx.hot.shows.Show;
-import be.solidx.hot.shows.rest.HotContext;
-import be.solidx.hot.shows.spring.ClosureRequestMappingHandlerMapping;
-import be.solidx.hot.spring.config.HotConfig.Auth;
-import be.solidx.hot.spring.config.HotConfig.AuthType;
-import be.solidx.hot.spring.config.HotConfig.DBEngine;
-import be.solidx.hot.spring.config.HotConfig.DataSource;
-import be.solidx.hot.spring.security.OAuth2ClientAuthenticationFilter;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
 
 @Configuration
 @EnableWebSecurity
@@ -104,7 +95,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	ShowConfig showConfig;
-	
+
 	@Autowired
 	DataConfig dataConfig;
 	
@@ -273,7 +264,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			HttpSecurity and = http.requestMatcher(new RequestMatcher() {
 				@Override
 				public boolean matches(HttpServletRequest request) {
-					return !request.getRequestURI().startsWith("/rest") && !request.getRequestURI().startsWith("/client-auth") && !request.getRequestURI().startsWith("/rest-login");
+					return !request.getRequestURI().startsWith("/rest")
+                            && !request.getRequestURI().startsWith("/client-auth")
+                            && !request.getRequestURI().startsWith("/jwt")
+                            && !request.getRequestURI().startsWith("/rest-login");
 				}
 			}).csrf().disable();
 			
@@ -295,7 +289,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 						|| auth.getType() == AuthType.TWITTER
 						|| auth.getType() == AuthType.GOOGLE)) {
 
-					and = and.apply(springSocialConfigurer).and();
+					and.apply(springSocialConfigurer).and();
 					break;
 				}
 			}
@@ -334,9 +328,42 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 		}
 	}
+
+    @Configuration
+    @Order(3)
+	public static class JWTAuthConfig extends WebSecurityConfigurerAdapter {
+
+	    @Autowired
+	    JWTAuthenticationFilter jwtAuthenticationFilter;
+
+        @Autowired
+        CommonConfig commonConfig;
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+
+            HttpSecurity and = http.requestMatcher(new RequestMatcher() {
+                @Override
+                public boolean matches(HttpServletRequest request) {
+                    return request.getRequestURI().startsWith("/jwt");
+                }
+            });
+
+            for (Auth auth: commonConfig.hotConfig().getAuthList()) {
+                if (auth.getType() == AuthType.JWT) {
+                    and.addFilterBefore(jwtAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class)
+                            .formLogin().disable()
+                            .csrf().disable()
+                            .httpBasic().disable()
+                            .jee().disable();
+                    break;
+                }
+            }
+        }
+    }
 	
 	@Configuration
-	@Order(3)
+	@Order(4)
 	public static class HtmlRestShowsConfig extends WebSecurityConfigurerAdapter {
 		
 		@Autowired
@@ -429,7 +456,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				if ((auth.getType() == AuthType.FACEBOOK
 						|| auth.getType() == AuthType.TWITTER
 						|| auth.getType() == AuthType.GOOGLE)) {
-					and = and.apply(springSocialConfigurer).and();
+					and.apply(springSocialConfigurer).and();
 					break;
 				}
 			}
@@ -437,7 +464,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	@Configuration
-	@Order(4)
+	@Order(5)
 	public static class RestShowsConfig extends WebSecurityConfigurerAdapter {
 		
 		@Autowired
@@ -519,7 +546,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	@Bean
-	public SpringSocialConfigurer socialConfigurer() throws JsonParseException, JsonMappingException, IOException {
+	public SpringSocialConfigurer socialConfigurer() throws IOException {
 		for (Auth auth: commonConfig.hotConfig().getAuthList()) {
 			if ((auth.getType() == AuthType.FACEBOOK
 					|| auth.getType() == AuthType.TWITTER
@@ -540,6 +567,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				usersConnectionRepository, 
 				authServiceLocator);
 	}
+
+	@Bean
+	public JWTAuthenticationFilter jwtAuthenticationFilter()  {
+	    return new JWTAuthenticationFilter(commonConfig);
+    }
 
 	public UserDetailsService hotMongoUserDetailsService (final be.solidx.hot.data.DB<Map<String, Object>> db, final Auth auth) {
 		
@@ -618,53 +650,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	public PasswordEncoder passwordEncoder () {
 		return new BCryptPasswordEncoder();
 	}
-	
-	
-//	public UserDetailsService hotJdbcUserDetailsService(final DB<Map<String, Object>> db, final Auth auth) {
-//		
-//		return new UserDetailsService() {
-//			
-//			@Override
-//			public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//				if (auth.withGroups) {
-//					Map<String, Object> query = new HashMap<>();
-//					query.put("username", username);
-//					
-//					final Map<String, Object> res = db.getCollection("users").findOne(query);
-//					Set<GrantedAuthority> grantedAuthorities = getUserAuthoritiesFromGroup(username);
-//					
-//					return new User(res.get("username").toString(), res.get("password").toString(), true, true, true, true, grantedAuthorities);
-//				} else return getUserWithAuthorities(username);
-//			}
-//			
-//			private User getUserWithAuthorities (String username) {
-//				
-//				Map<String, Object> query = new HashMap<>();
-//				query.put("username", username);
-//				
-//				Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-//				
-//				final Map<String, Object> res = db.getCollection("users").join(Arrays.asList("authorities")).findOne(query);
-//				
-//				for (Object o : (List<?>)res.get("authorities")) {
-//					Map<String,Object> authority = (Map<String,Object>) o;
-//					grantedAuthorities.add(new SimpleGrantedAuthority(authority.get("authority").toString()));
-//				}
-//				return new User(res.get("username").toString(), res.get("password").toString(), true, true, true, true, grantedAuthorities);
-//			}
-//			
-//			private Set<GrantedAuthority> getUserAuthoritiesFromGroup(String username) {
-//				
-//				Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-//				Map<String, Object> query = new HashMap<>();
-//				query.put("group_members.username", username);
-//				for (Map<String, Object> it : db.getCollection("groups").join(Arrays.asList("group_authorities","group_members")).find(query)) {
-//					for (Map<String, Object> grAuthority : (List<Map<String, Object>>)it.get("group_authorities")) {
-//						grantedAuthorities.add(new SimpleGrantedAuthority(grAuthority.get("authority").toString()));
-//					}
-//				}
-//				return grantedAuthorities;
-//			}
-//		};
-//	}
 }

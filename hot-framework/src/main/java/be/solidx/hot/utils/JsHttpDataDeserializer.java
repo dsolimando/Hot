@@ -4,7 +4,7 @@ package be.solidx.hot.utils;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +22,15 @@ package be.solidx.hot.utils;
  * #L%
  */
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Map;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.mozilla.javascript.NativeObject;
-
 import be.solidx.hot.Script;
 import be.solidx.hot.js.JSScriptExecutor;
 import be.solidx.hot.js.JsMapConverter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.mozilla.javascript.NativeObject;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Map;
 
 public class JsHttpDataDeserializer extends AbstractHttpDataDeserializer {
 

@@ -4,7 +4,7 @@ package be.solidx.hot.spring.security;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -204,12 +204,6 @@ public class OAuth2ClientAuthenticationFilter extends GenericFilterBean {
 			repo.updateConnection(connection);
 		}
 	}
-	
-	private void addSignInAttempt(HttpSession session, Connection<?> connection) {
-		session.setAttribute(ProviderSignInAttempt.SESSION_ATTRIBUTE, new ProviderSignInAttempt(connection));
-	}
-
-	private static final String DEFAULT_FAILURE_URL = "/signin";
 	
 	protected Connection<?> addConnection(SocialAuthenticationService<?> authService, String userId, ConnectionData data) {
 		HashSet<String> userIdSet = new HashSet<String>();

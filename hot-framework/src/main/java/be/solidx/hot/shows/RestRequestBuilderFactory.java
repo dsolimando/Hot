@@ -1,5 +1,27 @@
 package be.solidx.hot.shows;
 
+/*
+ * #%L
+ * Hot
+ * %%
+ * Copyright (C) 2010 - 2020 Solidx
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import be.solidx.hot.groovy.GroovyClosure;
 import be.solidx.hot.groovy.GroovyMapConverter;
 import be.solidx.hot.js.JSClosure;
@@ -8,6 +30,7 @@ import be.solidx.hot.python.PyDictionaryConverter;
 import be.solidx.hot.python.PythonClosure;
 import be.solidx.hot.utils.*;
 import com.google.common.net.HttpHeaders;
+import org.mozilla.javascript.NativeObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -104,7 +127,7 @@ public class RestRequestBuilderFactory {
 
         public Authenticate newRestRequest(HttpServletRequest httpServletRequest) {
             this.httpServletRequest = httpServletRequest;
-            this.restRequest = new RestRequest<T>();
+            this.restRequest = new RestRequest<T>(httpServletRequest, scriptMapConverter);
             return this;
         }
 
@@ -146,7 +169,7 @@ public class RestRequestBuilderFactory {
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("Authentication Type: "+authentication.getClass());
 
-            HashMap userAsMap = new HashMap();
+            Map userAsMap = new HashMap();
 
             if (authentication instanceof UsernamePasswordAuthenticationToken) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = (UsernamePasswordAuthenticationToken) authentication;
@@ -179,6 +202,9 @@ public class RestRequestBuilderFactory {
                         for (GrantedAuthority authority : userDetails.getAuthorities()) {
                             roles.add(authority.getAuthority());
                         }
+                    } else {
+                        restRequest.user = (T) principal;
+                        return this;
                     }
                 }
                 userAsMap.put("roles", roles);

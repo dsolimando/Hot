@@ -1,10 +1,17 @@
 package be.solidx.hot.test.data.jdbc
 
+import be.solidx.hot.data.jdbc.groovy.DB
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+
 /*
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,23 +28,6 @@ package be.solidx.hot.test.data.jdbc
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
- 
-import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import be.solidx.hot.data.jdbc.groovy.DB
-import be.solidx.hot.data.jdbc.sql.QueryBuilder;
-import be.solidx.hot.data.jdbc.sql.QueryBuilderFactory;
-import be.solidx.hot.data.jdbc.sql.QueryBuilderFactory.DBEngine;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration

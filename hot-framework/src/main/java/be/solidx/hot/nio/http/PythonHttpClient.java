@@ -4,7 +4,7 @@ package be.solidx.hot.nio.http;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,30 +22,21 @@ package be.solidx.hot.nio.http;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-
-import javax.xml.parsers.DocumentBuilder;
-
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.python.core.Py;
-import org.python.core.PyDictionary;
-import org.python.core.PyFunction;
-import org.python.core.PyObject;
-import org.python.core.PyString;
-import org.springframework.http.MediaType;
-
 import be.solidx.hot.nio.http.HttpDataSerializer.HttpDataSerializationException;
 import be.solidx.hot.promises.Deferred;
 import be.solidx.hot.promises.python.PythonDeferred;
 import be.solidx.hot.python.PyDictionaryConverter;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
+import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.python.core.*;
+import org.springframework.http.MediaType;
+
+import javax.xml.parsers.DocumentBuilder;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 public class PythonHttpClient extends HttpClient<PyFunction, PyDictionary> {
 
@@ -121,7 +112,7 @@ public class PythonHttpClient extends HttpClient<PyFunction, PyDictionary> {
 		}
 
 		@Override
-		PyDictionary fromJSON(byte[] json) throws JsonParseException, JsonMappingException, IOException {
+		PyDictionary fromJSON(byte[] json) throws IOException {
 			return pyDataConverter.toScriptMap(objectMapper.readValue(json, Map.class));
 		}
 

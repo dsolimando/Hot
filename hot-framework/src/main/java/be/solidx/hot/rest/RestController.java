@@ -4,7 +4,7 @@ package be.solidx.hot.rest;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,18 @@ package be.solidx.hot.rest;
  * #L%
  */
 
+import be.solidx.hot.exceptions.JsonParsingException;
+import be.solidx.hot.exceptions.ScriptException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.WebRequest;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -30,21 +42,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.context.request.WebRequest;
-
-import be.solidx.hot.exceptions.JsonParsingException;
-import be.solidx.hot.exceptions.ScriptException;
-
-import com.google.common.collect.Lists;
 
 @SuppressWarnings("rawtypes")
 public abstract class RestController {
@@ -75,8 +72,6 @@ public abstract class RestController {
 	protected Map<String, Object> readJson (String json) {
 		try {
 			return objectMapper.readValue(json, Map.class);
-		} catch (JsonProcessingException e) {
-			throw new JsonParsingException(json,e);
 		} catch (IOException e) {
 			throw new RuntimeException();
 		}

@@ -4,7 +4,7 @@ package be.solidx.hot.utils;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,17 +22,16 @@ package be.solidx.hot.utils;
  * #L%
  */
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.fileupload.ParameterParser;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
+
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.util.Map;
 
 public abstract class AbstractHttpDataDeserializer implements HttpDataDeserializer {
 	

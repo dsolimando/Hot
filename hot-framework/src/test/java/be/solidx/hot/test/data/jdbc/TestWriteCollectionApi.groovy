@@ -1,10 +1,12 @@
 package be.solidx.hot.test.data.jdbc
 
+import be.solidx.hot.data.jdbc.groovy.DB
+
 /*
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,19 +23,14 @@ package be.solidx.hot.test.data.jdbc
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
- 
-import org.codehaus.jackson.map.ObjectMapper;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import be.solidx.hot.data.jdbc.groovy.DB;
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration

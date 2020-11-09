@@ -4,7 +4,7 @@ package be.solidx.hot.test.mongo;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +22,16 @@ package be.solidx.hot.test.mongo;
  * #L%
  */
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-
+import be.solidx.hot.data.mongo.DBObjectNativeObjectTransformer;
+import be.solidx.hot.data.mongo.js.DB;
 import com.mongodb.MongoClient;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
-import be.solidx.hot.data.mongo.DBObjectNativeObjectTransformer;
-import be.solidx.hot.data.mongo.js.DB;
-
-import com.mongodb.Mongo;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 
 public class TestMongoScripts {
 	
@@ -53,9 +49,6 @@ public class TestMongoScripts {
 				new DBObjectNativeObjectTransformer());
 		ScriptableObject.putProperty(scope, "db", db);
 		context.evaluateReader(scope, new InputStreamReader(TestMongoScripts.class.getResourceAsStream("/js/underscore.js")), "underscore", 1, null);
-		Object result = context.evaluateReader(scope, new InputStreamReader(TestMongoScripts.class.getResourceAsStream("/mongo.js")), "test", 1, null);
-		ObjectMapper objectMapper = new ObjectMapper ();
-//		System.out.println(objectMapper.writeValueAsString(result));;
 		printWriter.flush();
 		Context.exit();
 	}

@@ -1,10 +1,14 @@
-package be.solidx.hot.test.shows;
+package be.solidx.hot.test.shows
+
+import be.solidx.hot.js.JsMapConverter
+import be.solidx.hot.python.PyDictionaryConverter
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /*
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,7 +32,6 @@ import java.util.concurrent.Executors
 
 import javax.servlet.DispatcherType
 
-import org.codehaus.jackson.map.ObjectMapper
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.FilterHolder
 import org.eclipse.jetty.servlet.ServletContextHandler
@@ -59,11 +62,13 @@ class TestSecuredRests {
 	
 	NioClientSocketChannelFactory cf =new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool(), 1, ThreadPoolsConfig.AVAILABLE_PROCESSORS)
 	SSLContextBuilder sSLContextBuilder = new SSLContextBuilder()
-	ObjectMapper objectMapper = new ObjectMapper()
+    ObjectMapper objectMapper = new ObjectMapper()
 	FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter()
 	XStream xStream = new XStream()
 	DataConverter dataConverter = new DataConverter()
-	HttpDataSerializer httpDataSerializer = new HttpDataSerializer(formHttpMessageConverter, objectMapper, xStream, dataConverter)
+    JsMapConverter jsMapConverter = new JsMapConverter()
+    PyDictionaryConverter pyDictionaryConverter = new PyDictionaryConverter()
+	HttpDataSerializer httpDataSerializer = new HttpDataSerializer(formHttpMessageConverter, objectMapper, xStream, dataConverter, jsMapConverter, pyDictionaryConverter)
 
 	def createServer = {
 		Server server = new Server(8080)

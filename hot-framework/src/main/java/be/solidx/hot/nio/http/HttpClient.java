@@ -4,7 +4,7 @@ package be.solidx.hot.nio.http;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +22,11 @@ package be.solidx.hot.nio.http;
  * #L%
  */
 
-import java.util.concurrent.ExecutorService;
-
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.concurrent.ExecutorService;
 
 
 public abstract class HttpClient<CLOSURE, MAP> {
@@ -34,7 +34,7 @@ public abstract class HttpClient<CLOSURE, MAP> {
 	ExecutorService 				eventLoop;
 	NioClientSocketChannelFactory 	channelFactory;
 	SSLContextBuilder				sslContextBuilder;
-	ObjectMapper					objectMapper;
+	ObjectMapper objectMapper;
 	HttpDataSerializer				httpDataSerializer;
 	
 	@Autowired

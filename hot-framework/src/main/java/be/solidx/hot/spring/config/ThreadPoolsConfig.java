@@ -4,7 +4,7 @@ package be.solidx.hot.spring.config;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,8 +23,6 @@ package be.solidx.hot.spring.config;
  */
 
 import be.solidx.hot.utils.FileLoader;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +33,6 @@ import org.springframework.security.concurrent.DelegatingSecurityContextExecutor
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -56,7 +52,7 @@ public class ThreadPoolsConfig {
 	CommonConfig commonConfig;
 	
 	@Bean(name="blockingTasksThreadPool")
-	public ExecutorService blockingTasksThreadPool () throws JsonParseException, JsonMappingException, IOException {
+	public ExecutorService blockingTasksThreadPool () throws IOException {
 		if (commonConfig != null && commonConfig.hotConfig().getAuthList().size() == 0)
 			return executorService(blockingTasksThreadPoolSize);
 		else 

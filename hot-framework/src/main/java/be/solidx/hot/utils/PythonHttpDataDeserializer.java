@@ -4,7 +4,7 @@ package be.solidx.hot.utils;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +22,8 @@ package be.solidx.hot.utils;
  * #L%
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.codehaus.jackson.map.ObjectMapper;
+import be.solidx.hot.python.PyDictionaryConverter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.python.apache.xerces.jaxp.DocumentBuilderFactoryImpl;
 import org.python.core.Py;
 import org.python.core.PyDictionary;
@@ -39,7 +31,13 @@ import org.python.core.PyObject;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import be.solidx.hot.python.PyDictionaryConverter;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.Map;
 
 
 public class PythonHttpDataDeserializer extends AbstractHttpDataDeserializer {

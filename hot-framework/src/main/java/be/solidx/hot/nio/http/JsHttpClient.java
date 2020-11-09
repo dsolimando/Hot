@@ -4,7 +4,7 @@ package be.solidx.hot.nio.http;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,9 +30,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.xml.parsers.DocumentBuilder;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.mozilla.javascript.Context;
@@ -63,7 +61,7 @@ public class JsHttpClient extends HttpClient<NativeFunction, NativeObject> {
 			ExecutorService eventLoop,
 			NioClientSocketChannelFactory nioClientSocketChannelFactory, 
 			SSLContextBuilder sslContextBuilder, 
-			ObjectMapper objectMapper, 
+			ObjectMapper objectMapper,
 			HttpDataSerializer httpDataSerializer,
 			DocumentBuilder documentBuilder,
 			Scriptable globalScope, 
@@ -147,7 +145,7 @@ public class JsHttpClient extends HttpClient<NativeFunction, NativeObject> {
 		}
 		
 		@Override
-		Object fromJSON(byte[] json) throws JsonParseException, JsonMappingException, IOException {
+		Object fromJSON(byte[] json) throws IOException {
 			try {
 				return jsDataConverter.toScriptMap(objectMapper.readValue(json, Map.class));
 			} catch (Exception e) {

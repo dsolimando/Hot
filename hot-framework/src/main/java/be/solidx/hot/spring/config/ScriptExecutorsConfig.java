@@ -4,7 +4,7 @@ package be.solidx.hot.spring.config;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,21 +22,8 @@ package be.solidx.hot.spring.config;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.Arrays;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.*;
-import org.xml.sax.SAXException;
-
 import be.solidx.hot.groovy.GroovyMapConverter;
 import be.solidx.hot.groovy.GroovyWebScriptExecutor;
-import be.solidx.hot.js.JSScriptExecutor;
 import be.solidx.hot.js.JSWebScriptExecutor;
 import be.solidx.hot.js.JsMapConverter;
 import be.solidx.hot.python.PyDictionaryConverter;
@@ -44,6 +31,16 @@ import be.solidx.hot.python.PythonWebScriptExecutor;
 import be.solidx.hot.utils.GroovyHttpDataDeserializer;
 import be.solidx.hot.utils.JsHttpDataDeserializer;
 import be.solidx.hot.utils.PythonHttpDataDeserializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Lazy;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.util.Arrays;
 
 @Configuration @Lazy
 @Import({CommonConfig.class})
@@ -53,7 +50,7 @@ public class ScriptExecutorsConfig {
 	HotConfig hotConfig;
 	
 	@Autowired
-	ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 	
 	@Autowired
 	GroovyMapConverter groovyDataConverter;
@@ -88,7 +85,7 @@ public class ScriptExecutorsConfig {
 	}
 	
 	@Bean
-	public GroovyHttpDataDeserializer groovyHttpDataDeserializer() throws JsonParseException, JsonMappingException, ParserConfigurationException, SAXException, IOException {
+	public GroovyHttpDataDeserializer groovyHttpDataDeserializer() throws ParserConfigurationException, SAXException {
 		return new GroovyHttpDataDeserializer(objectMapper);
 	}
 	

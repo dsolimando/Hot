@@ -13,9 +13,9 @@ var options = {
 }
 
 client.buildRequest(options).done(function(document) {
-	hprint(document.getDocumentElement())
+	//hprint(document.getDocumentElement())
 	server.stop()
 }).fail(function(response, status, error) {
-	error.printStackTrace()
+	//error.printStackTrace()
 	server.stop()
 }) 

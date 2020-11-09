@@ -4,7 +4,7 @@ package be.solidx.hot.spring.config;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,33 +22,31 @@ package be.solidx.hot.spring.config;
  * #L%
  */
 
+import be.solidx.hot.DataConverter;
+import be.solidx.hot.groovy.GroovyMapConverter;
+import be.solidx.hot.js.JsMapConverter;
+import be.solidx.hot.python.PyDictionaryConverter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.thoughtworks.xstream.XStream;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig.Feature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
-
-import be.solidx.hot.DataConverter;
-import be.solidx.hot.groovy.GroovyMapConverter;
-import be.solidx.hot.js.JsMapConverter;
-import be.solidx.hot.python.PyDictionaryConverter;
-
-import com.thoughtworks.xstream.XStream;
+import java.util.Map;
 
 @Configuration
 public class CommonConfig {
@@ -74,14 +72,13 @@ public class CommonConfig {
 	}
 	
 	@Bean
-	public ObjectMapper objectMapper() throws JsonParseException, JsonMappingException, IOException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.getSerializationConfig().enable(Feature.USE_STATIC_TYPING);
-		if (hotConfig().isDevMode())
-			objectMapper.getSerializationConfig().enable(Feature.INDENT_OUTPUT);
-		objectMapper.getSerializationConfig().enable(Feature.USE_ANNOTATIONS);
-		objectMapper.getSerializationConfig().disable(Feature.WRITE_NULL_MAP_VALUES);
-		return new ObjectMapper();
+	public ObjectMapper objectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.getSerializationConfig().with(MapperFeature.USE_STATIC_TYPING);
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.getSerializationConfig().with(MapperFeature.USE_ANNOTATIONS);
+        objectMapper.configOverride(Map.class).setInclude(JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
+        return new ObjectMapper();
 	}
 	
 	@Bean
@@ -214,14 +211,9 @@ public class CommonConfig {
 	}
 	
 	@Bean
-	public HotConfig hotConfig () throws JsonParseException, JsonMappingException, IOException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.getSerializationConfig().enable(Feature.USE_STATIC_TYPING);
-		objectMapper.getSerializationConfig().enable(Feature.INDENT_OUTPUT);
-		objectMapper.getSerializationConfig().enable(Feature.USE_ANNOTATIONS);
-		objectMapper.getSerializationConfig().disable(Feature.WRITE_NULL_MAP_VALUES);
-		
-		return objectMapper.readValue(configFileURL().openStream(), HotConfig.class);
+	public HotConfig hotConfig () throws IOException {
+		ObjectMapper objectMapper = objectMapper();
+        return objectMapper.readValue(configFileURL().openStream(), HotConfig.class);
 	}
 
 	@Bean

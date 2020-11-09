@@ -4,7 +4,7 @@ package be.solidx.hot.utils;
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,17 +22,15 @@ package be.solidx.hot.utils;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import groovy.util.XmlSlurper;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.xml.sax.SAXException;
 
 public class GroovyHttpDataDeserializer extends AbstractHttpDataDeserializer {
 	

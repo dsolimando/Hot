@@ -1,35 +1,26 @@
-package be.solidx.hot.test.util;
-
 /*
  * #%L
  * Hot
  * %%
- * Copyright (C) 2010 - 2016 Solidx
+ * Copyright (C) 2010 - 2020 Solidx
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.Assert.*
-
-import javax.script.CompiledScript
-
-import org.codehaus.jackson.map.ObjectMapper
-import org.junit.Test
-import org.python.core.Py
-import org.springframework.http.converter.FormHttpMessageConverter
+package be.solidx.hot.test.util
 
 import be.solidx.hot.DataConverter
 import be.solidx.hot.js.JSScriptExecutor
@@ -37,17 +28,22 @@ import be.solidx.hot.js.JsMapConverter
 import be.solidx.hot.nio.http.HttpDataSerializer
 import be.solidx.hot.python.PyDictionaryConverter
 import be.solidx.hot.python.PythonScriptExecutor
-
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.thoughtworks.xstream.XStream
+import org.junit.Test
+import org.springframework.http.converter.FormHttpMessageConverter
 
+import javax.script.CompiledScript;
 
 class TestHttpDataSerializer {
 
 	FormHttpMessageConverter converter = new FormHttpMessageConverter()
-	ObjectMapper objectMapper = new ObjectMapper()
+    ObjectMapper objectMapper = new ObjectMapper()
 	XStream xStream = new XStream()
 	DataConverter dataConverter = new DataConverter()
-	HttpDataSerializer dataSerializer = new HttpDataSerializer(converter, objectMapper, xStream, dataConverter)
+    PyDictionaryConverter pyDictionaryConverter = new PyDictionaryConverter()
+    JsMapConverter jsMapConverter = new JsMapConverter()
+	HttpDataSerializer dataSerializer = new HttpDataSerializer(converter, objectMapper, xStream, dataConverter, jsMapConverter, pyDictionaryConverter)
 	JSScriptExecutor jsScriptExecutor = new JSScriptExecutor()
 	JsMapConverter jsDataConverter = new JsMapConverter()
 	PythonScriptExecutor pythonScriptExecutor = new PythonScriptExecutor()
@@ -69,20 +65,20 @@ class TestHttpDataSerializer {
 	
 	@Test
 	void testGroovySerializationXML() {
-		def data = [name:"damién",age:8, values:["toto","titi"], objects:[sub1:"toto",sub2:"titi"]]
+		def data = [name:"damien",age:8, values:["toto","titi"], objects:[sub1:"toto",sub2:"titi"]]
 		def url = new String(dataSerializer.serialize(data, "application/xml"))
-		assert '<root><name>damién</name><age>8</age><values>toto</values><values>titi</values><objects><sub1>toto</sub1><sub2>titi</sub2></objects></root>' == url
+		assert '<root><name>damien</name><age>8</age><values>toto</values><values>titi</values><objects><sub1>toto</sub1><sub2>titi</sub2></objects></root>' == url
 	}
 	
 	@Test
 	void testGroovySerializationXMLArray() {
 		def data = [
-			[name:"damién",age:8, totos:["toto","titi"], objects:[sub1:"toto",sub2:"titi"]],
+			[name:"damien",age:8, totos:["toto","titi"], objects:[sub1:"toto",sub2:"titi"]],
 			[name:"toto",age:8, totos:["titi","titi"], objects:[sub1:"toto",sub2:"titi"]]
 		]
 		def url = new String(dataSerializer.serialize(data, "application/xml"))
 		assert '<items>'+
-				'<item><name>damién</name><age>8</age><totos>toto</totos><totos>titi</totos><objects><sub1>toto</sub1><sub2>titi</sub2></objects></item>'+
+				'<item><name>damien</name><age>8</age><totos>toto</totos><totos>titi</totos><objects><sub1>toto</sub1><sub2>titi</sub2></objects></item>'+
 				'<item><name>toto</name><age>8</age><totos>titi</totos><totos>titi</totos><objects><sub1>toto</sub1><sub2>titi</sub2></objects></item>'+
 				'</items>' == url
 	}
@@ -90,13 +86,13 @@ class TestHttpDataSerializer {
 	@Test
 	void testGroovySerializationXMLArrayWrapper() {
 		def data = [ personne:[
-			[name:"damién",age:8, nom:["toto","titi"], object:[sub1:"toto",sub2:"titi"]],
+			[name:"damien",age:8, nom:["toto","titi"], object:[sub1:"toto",sub2:"titi"]],
 			[name:"toto",age:8, nom:["titi","titi"], object:[sub1:"toto",sub2:"titi"]]
 			]
 		]
 		def url = new String(dataSerializer.serialize(data, "application/xml"))
 		assert '<personnes>'+
-				'<personne><name>damién</name><age>8</age><nom>toto</nom><nom>titi</nom><object><sub1>toto</sub1><sub2>titi</sub2></object></personne>'+
+				'<personne><name>damien</name><age>8</age><nom>toto</nom><nom>titi</nom><object><sub1>toto</sub1><sub2>titi</sub2></object></personne>'+
 				'<personne><name>toto</name><age>8</age><nom>titi</nom><nom>titi</nom><object><sub1>toto</sub1><sub2>titi</sub2></object></personne>'+
 				'</personnes>' == url
 	}
@@ -227,14 +223,14 @@ document = getDOMImplementation().createDocument(EMPTY_NAMESPACE,'Album',None)
 name = document.createElement('name')
 name.appendChild(document.createTextNode('Pornography'))
 band = document.createElement('band')
-band.appendChild(document.createTextNode(u'Thé cure'))
+band.appendChild(document.createTextNode(u'The cure'))
 bband = band.firstChild.nodeValue
 document.documentElement.appendChild(name)
 document.documentElement.appendChild(band)""";
 		def res = pythonScriptExecutor.execute(new be.solidx.hot.Script<CompiledScript>(python.getBytes(),"script"),input)
 		
 		def bytes = dataSerializer.serialize(res.document, "application/xml")
-		assert '<?xml version="1.0" encoding="UTF-8"?>\n<Album><name>Pornography</name><band>Thé cure</band></Album>' == new String(bytes,'utf-8')
+		assert '<?xml version="1.0" encoding="UTF-8"?>\n<Album><name>Pornography</name><band>The cure</band></Album>' == new String(bytes,'utf-8')
 	}
 	
 	@Test
@@ -247,7 +243,7 @@ document = getDOMImplementation().createDocument(EMPTY_NAMESPACE,'Album',None)
 name = document.createElement('name')
 name.appendChild(document.createTextNode('Pornography'))
 band = document.createElement('band')
-band.appendChild(document.createTextNode(u'Thé cure'))
+band.appendChild(document.createTextNode(u'The cure'))
 bband = band.firstChild.nodeValue
 document.documentElement.appendChild(name)
 document.documentElement.appendChild(band)
@@ -257,6 +253,6 @@ document = document.toxml('utf-8').decode('utf-8')
 		
 		def bytes = dataSerializer.serialize(res.document, "application/xml")
 		println new String(bytes).trim()
-		assert '<?xml version="1.0" encoding="utf-8"?>\n<Album><name>Pornography</name><band>Thé cure</band></Album>' == new String(bytes,'utf-8').trim()
+		assert '<?xml version="1.0" encoding="utf-8"?>\n<Album><name>Pornography</name><band>The cure</band></Album>' == new String(bytes,'utf-8').trim()
 	}
 }
