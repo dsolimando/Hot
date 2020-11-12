@@ -992,9 +992,8 @@ usage: hot <command> <options>
 
             case "jwt":
                 if (args[1] == 'add') {
-                    def cli = new CliBuilder(usage: 'hot jwt add -n <name> -iss <issuer> -aud <audience> -c <claims> -a <algorithm> -url <jwks_url> -s <hmac_secret>', posix: false)
+                    def cli = new CliBuilder(usage: 'hot jwt add -n <name> -aud <audience> -c <claims> -a <algorithm> -url <jwks_url> -s <hmac_secret>', posix: false)
                     cli.n args: 1, 'name of the jwt auth endpoint (will be used in auth path like /jwt/apple if name = apple)', required: true
-                    cli.iss args: 1, 'name of the JWT issuer (entity who generated the token)', required: true
                     cli.aud args: 1, 'name of the JWT audience (entity consuming the token)', required: true
                     cli.c args: 1, 'comma separeted list of claimes to extract from token', required: false
                     cli.a args: 1, 'crypto algorithm used to sign the token. Supported algorithms are HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512. (default RS256)', required: false
@@ -1008,7 +1007,7 @@ usage: hot <command> <options>
                             println 'At least a jwks url or a shared secret must be provided to validate JWT signature'
                             break;
                         }
-                        project.jwt options.n, options.url, options.iss, options.aud, options.c, options.a, options.s, null
+                        project.jwt options.n, options.url, options.aud, options.c, options.a, options.s, null
                     } catch (e) {
                         e.printStackTrace()
                     }
@@ -1020,7 +1019,7 @@ usage: hot <command> <options>
 
                     def options = cli.parse(filteredArgs[1..-1])
                     if (options.n) {
-                        project.jwt options.n, null, null, null, null, null, null, true
+                        project.jwt options.n, null, null, null, null, null, true
                         break
                     }
                     println 'JWT auth name is missing'
@@ -1340,7 +1339,7 @@ usage: hot <command> <options>
             writeConfig config
         }
 
-        def jwt = { name, jwksURL, iss, aud, claims, algorithm, secret, r ->
+        def jwt = { name, jwksURL, aud, claims, algorithm, secret, r ->
             def config = getConfig()
             if (r) {
                 config.authList.removeAll {
@@ -1367,7 +1366,6 @@ usage: hot <command> <options>
                 }
                 newAuth.type = "JWT"
                 newAuth.name = name
-                newAuth.issuer = iss
                 newAuth.audience = aud
                 if (claims)
                     newAuth.claims = claims.trim()

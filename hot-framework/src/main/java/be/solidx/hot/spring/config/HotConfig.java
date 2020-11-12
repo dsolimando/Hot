@@ -248,7 +248,6 @@ public class HotConfig {
         // JWT parameters
         String name;
         String jwksUrl;
-        String issuer;
         String audience;
         String claims = "";
         Algorithm algorithm = Algorithm.RS256;
@@ -397,14 +396,6 @@ public class HotConfig {
 
         public void setAudience(String audience) {
             this.audience = audience;
-        }
-
-        public String getIssuer() {
-            return issuer;
-        }
-
-        public void setIssuer(String issuer) {
-            this.issuer = issuer;
         }
 
         public String getClaims() {

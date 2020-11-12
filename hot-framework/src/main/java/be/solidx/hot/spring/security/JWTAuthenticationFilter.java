@@ -154,8 +154,7 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
                 algorithm = getAlgorithm(jwk.getPublicKey(), auth);
             }
             algorithm.verify(jwt);
-            return jwt.getIssuer().equals(auth.getIssuer())
-                    && jwt.getAudience().equals(auth.getAudience().contains(",") ? auth.getAudience().split(",") : Arrays.asList(auth.getAudience()))
+            return jwt.getAudience().equals(auth.getAudience().contains(",") ? auth.getAudience().split(",") : Arrays.asList(auth.getAudience()))
                     && jwt.getExpiresAt().getTime() > System.currentTimeMillis();
 
         } catch (Exception e) {

@@ -8,7 +8,6 @@
   	{
       "type":"JWT",
       "name": "test",
-      "issuer": "oauth0",
       "audience": "scell",
       "claims": "name",
       "algorithm": "HS256",

@@ -733,7 +733,6 @@ class TestScript {
         hot.handleArgs(["create", "-n", "ptest", "-v", "0.1"].toArray())
         hot.handleArgs(["jwt", 'add',
                         "-n", "apple",
-                        "-iss", "https://appleid.apple.com",
                         "-aud", "scell",
                         "-c", "email,is_private_email",
                         "-a", "RS256",
@@ -749,7 +748,6 @@ class TestScript {
                     [
                         'type': 'JWT',
                         'name': 'apple',
-                        'issuer': 'https://appleid.apple.com',
                         'audience': 'scell',
                         'claims': 'email,is_private_email',
                         'algorithm': 'RS256',
@@ -772,7 +770,6 @@ class TestScript {
         hot.handleArgs(["create", "-n", "ptest", "-v", "0.1"].toArray())
         hot.handleArgs(["jwt", 'add',
                         "-n", "apple",
-                        "-iss", "https://appleid.apple.com",
                         "-aud", "scell",
                         "-c", "email,is_private_email",
                         "-a", "RS256",
@@ -788,7 +785,6 @@ class TestScript {
                     [
                         'type': 'JWT',
                         'name': 'apple',
-                        'issuer': 'https://appleid.apple.com',
                         'audience': 'scell',
                         'claims': 'email,is_private_email',
                         'algorithm': 'RS256',
@@ -803,7 +799,6 @@ class TestScript {
         hot.handleArgs(["create", "-n", "ptest", "-v", "0.1"].toArray())
         hot.handleArgs(["jwt", 'add',
                         "-n", "apple",
-                        "-iss", "https://appleid.apple.com",
                         "-aud", "scell",
                         "-c", "email,is_private_email",
                         "-a", "RS256",
