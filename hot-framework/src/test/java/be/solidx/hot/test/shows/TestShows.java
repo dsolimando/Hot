@@ -22,8 +22,11 @@ package be.solidx.hot.test.shows;
  * #L%
  */
 
+import be.solidx.hot.spring.config.HotConfig;
+import be.solidx.hot.spring.security.OAuth2ClientAuthenticationFilter;
 import groovy.lang.Closure;
 
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 import org.junit.Assert;

@@ -21,6 +21,8 @@
  */
 package be.solidx.hot.cli
 
+import be.solidx.hot.rest.JWTServlet
+
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 import javax.servlet.DispatcherType
@@ -240,6 +242,10 @@ class Hot {
             ServletHolder clientAuthHolder = new ServletHolder(ClientAuthServlet.class)
             clientAuthHolder.name = "client-auth"
             servletContextHandler.addServlet(clientAuthHolder, "/client-auth/*")
+
+            ServletHolder jwtClientAuthHolder = new ServletHolder(JWTServlet.class)
+            jwtClientAuthHolder.name = "jwt"
+            servletContextHandler.addServlet(jwtClientAuthHolder, "/jwt/*")
 
             FilterHolder securityFilterHolder = new FilterHolder(DelegatingFilterProxy.class)
             securityFilterHolder.name = "springSecurityFilterChain"
@@ -926,70 +932,6 @@ usage: hot <command> <options>
                 }
                 break
 
-            case "auth-facebook-client":
-                def cli = new CliBuilder(usage: "hot auth-facebook-client", posix: false)
-
-                def cliRemove = new CliBuilder(usage: "hot auth-facebook-client -r", posix: false)
-                cliRemove.r "remove facebook login based authentication", required: true
-
-                if (filteredArgs.isEmpty()) {
-                    try {
-                        println "Adding Facebook login based authentication capabilities to the app"
-                        Project project = new Project(projectName, projectsFolder)
-                        project.oauth "FACEBOOK_CLIENT", '', '', '', null
-                    } catch (e) {
-                        println e.getMessage()
-                    }
-                    break
-                }
-
-                try {
-                    def optionsRemove = cliRemove.parse(filteredArgs)
-                    println "Removing Facebook login based authentication capabilities"
-                    try {
-                        Project project = new Project(projectName, projectsFolder)
-                        project.oauth "FACEBOOK_CLIENT", null, null, null, optionsRemove.r
-                    } catch (e) {
-                        println e.getMessage()
-                    }
-                } catch (e2) {
-                    cli.usage(); println 'or:'
-                    cliRemove.usage()
-                }
-                break
-
-            case "auth-google-client":
-                def cli = new CliBuilder(usage: "hot auth-google-client", posix: false)
-
-                def cliRemove = new CliBuilder(usage: "hot auth-google-client -r", posix: false)
-                cliRemove.r "remove google client based authentication", required: true
-
-                if (filteredArgs.isEmpty()) {
-                    try {
-                        println "Adding Google client based authentication capabilities to the app"
-                        Project project = new Project(projectName, projectsFolder)
-                        project.oauth "GOOGLE_CLIENT", '', '', '', null
-                    } catch (e) {
-                        println e.getMessage()
-                    }
-                    break
-                }
-
-                try {
-                    def optionsRemove = cliRemove.parse(filteredArgs)
-                    println "Removing Google client based authentication capabilities"
-                    try {
-                        Project project = new Project(projectName, projectsFolder)
-                        project.oauth 'GOOGLE_CLIENT', null, null, null, optionsRemove.r
-                    } catch (e) {
-                        println e.getMessage()
-                    }
-                } catch (e2) {
-                    cli.usage(); println 'or:'
-                    cliRemove.usage()
-                }
-                break
-
             case "jwt":
                 if (args[1] == 'add') {
                     def cli = new CliBuilder(usage: 'hot jwt add -n <name> -aud <audience> -c <claims> -a <algorithm> -url <jwks_url> -s <hmac_secret>', posix: false)
@@ -1409,6 +1351,9 @@ usage: hot <command> <options>
             newAuth.type = type
             newAuth.consumerKey = consumerKey
             newAuth.consumerSecret = consumerSecret
+            if (scope) {
+                newAuth.scope = scope
+            }
 
             writeConfig config
         }

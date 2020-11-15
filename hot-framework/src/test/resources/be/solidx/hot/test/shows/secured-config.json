@@ -23,9 +23,9 @@
   		"consumerKey": "xdGLM9ljAhr5URPviqZbKg",
   		"consumerSecret": "kqNGCT6WkOyeCeRjq8iqccTxuCtZLimXsgpH5uMAM"
   	},{
-  		"type":"FACEBOOK_CLIENT",
-  		"consumerKey": "",
-  		"consumerSecret": ""
+  		"type":"FACEBOOK",
+  		"consumerKey": "1234",
+  		"consumerSecret": "1234"
   	},{
   		"type":"GOOGLE",
   		"consumerKey": "311735533795-6pvljpg5a15ka2gmmrrgkgmk8r5kau20.apps.googleusercontent.com",

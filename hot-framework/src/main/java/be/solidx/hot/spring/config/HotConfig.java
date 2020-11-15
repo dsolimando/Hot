@@ -424,7 +424,7 @@ public class HotConfig {
     }
 
     public static enum AuthType {
-        DB, LDAP, FACEBOOK, TWITTER, GOOGLE, FACEBOOK_CLIENT, GOOGLE_CLIENT, JWT
+        DB, LDAP, FACEBOOK, TWITTER, GOOGLE, JWT
     }
 
     public static enum DBEngine {

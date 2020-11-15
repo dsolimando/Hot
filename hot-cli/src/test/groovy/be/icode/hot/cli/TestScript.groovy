@@ -959,64 +959,6 @@ class TestScript {
     }
 
     @Test
-    void testAuthFacebookClient() {
-        Hot hot = new Hot("/tmp", "ptest")
-        hot.handleArgs(["create", "-n", "ptest", "-v", "0.1"].toArray())
-
-        hot.handleArgs(["auth-facebook-client"].toArray())
-
-        assert [
-            "name"    : "ptest",
-            "nature"  : "jee",
-            "version" : "0.1",
-            "devMode" : true,
-            "authList": [[
-                             "type"          : "FACEBOOK_CLIENT",
-                             "consumerKey"   : "",
-                             "consumerSecret": ""
-                         ]]
-        ] == objectMapper.readValue(new File("/tmp/ptest/config.json"), Map.class)
-
-        hot.handleArgs(["auth-facebook-client", "-r"].toArray())
-        assert [
-            "name"   : "ptest",
-            "nature" : "jee",
-            "version": "0.1",
-            "devMode": true
-        ] == objectMapper.readValue(new File("/tmp/ptest/config.json"), Map.class)
-
-    }
-
-    @Test
-    void testAuthgoogleClient() {
-        Hot hot = new Hot("/tmp", "ptest")
-        hot.handleArgs(["create", "-n", "ptest", "-v", "0.1"].toArray())
-
-        hot.handleArgs(["auth-google-client"].toArray())
-
-        assert [
-            "name"    : "ptest",
-            "nature"  : "jee",
-            "version" : "0.1",
-            "devMode" : true,
-            "authList": [[
-                             "type"          : "GOOGLE_CLIENT",
-                             "consumerKey"   : "",
-                             "consumerSecret": ""
-                         ]]
-        ] == objectMapper.readValue(new File("/tmp/ptest/config.json"), Map.class)
-
-        hot.handleArgs(["auth-google-client", "-r"].toArray())
-        assert [
-            "name"   : "ptest",
-            "nature" : "jee",
-            "version": "0.1",
-            "devMode": true
-        ] == objectMapper.readValue(new File("/tmp/ptest/config.json"), Map.class)
-
-    }
-
-    @Test
     void testPrepareWar() {
         Hot hot = new Hot("/tmp", "ptest")
         hot.handleArgs(["create", "-n", "ptest", "-v", "0.2"].toArray())

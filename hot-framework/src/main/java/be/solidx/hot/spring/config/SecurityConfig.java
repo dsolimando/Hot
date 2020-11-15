@@ -220,9 +220,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			
 			if ((hotauth.getType() == AuthType.FACEBOOK
 					|| hotauth.getType() == AuthType.TWITTER
-					|| hotauth.getType() == AuthType.GOOGLE
-					|| hotauth.getType() == AuthType.FACEBOOK_CLIENT
-					|| hotauth.getType() == AuthType.GOOGLE_CLIENT) && !social) {
+					|| hotauth.getType() == AuthType.GOOGLE) && !social) {
 				and.authenticationProvider(new SocialAuthenticationProvider(usersConnectionRepository, socialUserDetailsService));
 				social = true;
 			}
@@ -317,7 +315,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			});
 			
 			for (Auth auth: commonConfig.hotConfig().getAuthList()) {
-				if (auth.getType() == AuthType.FACEBOOK_CLIENT || auth.getType() == AuthType.GOOGLE_CLIENT) {
+				if (auth.getType() == AuthType.FACEBOOK || auth.getType() == AuthType.GOOGLE) {
 					and.addFilterBefore(oAuth2ClientAuthenticationFilter, AbstractPreAuthenticatedProcessingFilter.class)
 					.formLogin().disable()
 					.csrf().disable()
@@ -550,9 +548,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		for (Auth auth: commonConfig.hotConfig().getAuthList()) {
 			if ((auth.getType() == AuthType.FACEBOOK
 					|| auth.getType() == AuthType.TWITTER
-					|| auth.getType() == AuthType.GOOGLE
-					|| auth.getType() == AuthType.FACEBOOK_CLIENT
-					|| auth.getType() == AuthType.GOOGLE_CLIENT)) {
+					|| auth.getType() == AuthType.GOOGLE)) {
 				return new SpringSocialConfigurer();
 			}
 		}
@@ -565,7 +561,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				authenticationManager(), 
 				userIdSource, 
 				usersConnectionRepository, 
-				authServiceLocator);
+				authServiceLocator,
+                commonConfig.hotConfig());
 	}
 
 	@Bean

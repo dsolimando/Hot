@@ -71,7 +71,7 @@ public class SocialConfig implements SocialConfigurer {
 					google = false;
 			for (final Auth auth: commonConfig.hotConfig().getAuthList()) {
 				
-				if ((auth.getType() == AuthType.FACEBOOK || auth.getType() == AuthType.FACEBOOK_CLIENT) && !facebook) {
+				if ((auth.getType() == AuthType.FACEBOOK) && !facebook) {
 					FacebookConnectionFactory fcf = new FacebookConnectionFactory(auth.getConsumerKey(), auth.getConsumerSecret());
 				    fcf.setScope(auth.getScope() != null
                             ? auth.getScope()
@@ -80,7 +80,7 @@ public class SocialConfig implements SocialConfigurer {
 					facebook = true;
 				} else if (auth.getType() == AuthType.TWITTER) {
 					configurer.addConnectionFactory(new TwitterConnectionFactory(auth.getConsumerKey(), auth.getConsumerSecret()));
-				} else if ((auth.getType() == AuthType.GOOGLE || auth.getType() == AuthType.GOOGLE_CLIENT) && !google) {
+				} else if ((auth.getType() == AuthType.GOOGLE) && !google) {
 					GoogleConnectionFactory gcf = new GoogleConnectionFactory(auth.getConsumerKey(), auth.getConsumerSecret());
 					gcf.setScope(
 					        auth.getScope() != null
