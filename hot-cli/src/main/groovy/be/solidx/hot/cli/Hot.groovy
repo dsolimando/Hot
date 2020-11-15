@@ -933,6 +933,10 @@ usage: hot <command> <options>
                 break
 
             case "jwt":
+                if (args.length == 1) {
+                    println "Missing command... Please use 'add' or 'rm'"
+                    break
+                }
                 if (args[1] == 'add') {
                     def cli = new CliBuilder(usage: 'hot jwt add -n <name> -aud <audience> -c <claims> -a <algorithm> -url <jwks_url> -s <hmac_secret>', posix: false)
                     cli.n args: 1, 'name of the jwt auth endpoint (will be used in auth path like /jwt/apple if name = apple)', required: true
@@ -951,7 +955,8 @@ usage: hot <command> <options>
                         }
                         project.jwt options.n, options.url, options.aud, options.c, options.a, options.s, null
                     } catch (e) {
-                        e.printStackTrace()
+                        println e.message
+                        cli.usage()
                     }
                     break
                 } else if (args[1] == 'rm') {
@@ -959,10 +964,15 @@ usage: hot <command> <options>
                     cli.n args: 1, 'name of the jwt auth endpoint to remove', required: true
                     Project project = new Project(projectName, projectsFolder)
 
-                    def options = cli.parse(filteredArgs[1..-1])
-                    if (options.n) {
-                        project.jwt options.n, null, null, null, null, null, true
-                        break
+                    try {
+                        def options = cli.parse(filteredArgs[1..-1])
+                        if (options.n) {
+                            project.jwt options.n, null, null, null, null, null, true
+                            break
+                        }
+                    } catch (e) {
+                        println e.message
+                        cli.usage()
                     }
                     println 'JWT auth name is missing'
                     break
@@ -1284,8 +1294,8 @@ usage: hot <command> <options>
         def jwt = { name, jwksURL, aud, claims, algorithm, secret, r ->
             def config = getConfig()
             if (r) {
+                println "Removing JWt auth ${name}"
                 config.authList.removeAll {
-                    println "Removing JWt auth ${name}"
                     it.type == "JWT" && it.name == name
                 }
                 if (config.authList.empty) config.authList = null;
@@ -1311,7 +1321,8 @@ usage: hot <command> <options>
                 newAuth.audience = aud
                 if (claims)
                     newAuth.claims = claims.trim()
-                newAuth.algorithm = HotConfig.Algorithm.valueOf(algorithm)
+                if (algorithm)
+                    newAuth.algorithm = HotConfig.Algorithm.valueOf(algorithm)
                 if (secret)
                     newAuth.secret = secret
                 if (jwksURL)

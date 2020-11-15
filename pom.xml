@@ -4,11 +4,11 @@
 
 	<groupId>be.solidx.hot</groupId>
 	<artifactId>hot-parent</artifactId>
-	<version>0.9.22-SNAPSHOT</version>
+	<version>0.9.23-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>hot</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/dsolimando/Hot</url>
 
 	<modules>
 		<module>hot-framework</module>
