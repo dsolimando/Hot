@@ -21,6 +21,10 @@ public class JWTServlet extends HttpServlet {
             resp.setStatus(HttpStatus.BAD_REQUEST.value());
             resp.getWriter().write(" authentication failed.");
         }
+    }
 
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doGet(req,resp);
     }
 }

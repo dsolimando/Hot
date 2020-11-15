@@ -29,19 +29,36 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import be.solidx.hot.spring.security.OAuth2ClientAuthenticationFilter;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class ClientAuthServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 3247689618377073739L;
 
-	@Override
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doPost(req,resp);
+    }
+
+    @Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String provider = req.getParameter("provider");
-		if (provider == null || provider.isEmpty()) {
-			resp.setStatus(HttpStatus.BAD_REQUEST.value());
-			resp.getWriter().write("Missing property 'provider'");
-		} else {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            Boolean isAccessTokenValid = (Boolean) req.getSession(true).getAttribute(OAuth2ClientAuthenticationFilter.IS_ACCESS_TOKEN_VALID);
+            if (isAccessTokenValid == null && (provider == null || provider.isEmpty())) {
+                resp.setStatus(HttpStatus.BAD_REQUEST.value());
+                resp.getWriter().write("Missing property 'provider'");
+            } else if (!isAccessTokenValid) {
+                resp.setStatus(HttpStatus.UNAUTHORIZED.value());
+                resp.getWriter().write("Client access token is not valid");
+            } else {
+                resp.setStatus(HttpStatus.BAD_REQUEST.value());
+            }
+        }  else {
 			resp.setStatus(HttpStatus.OK.value());
 			resp.getWriter().write(provider +" authentication succeed.");
 		}

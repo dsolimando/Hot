@@ -70,6 +70,8 @@ public class OAuth2ClientAuthenticationFilter extends GenericFilterBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2ClientAuthenticationFilter.class);
 
+    public static final String IS_ACCESS_TOKEN_VALID = "is_access_token_valid";
+
     private SocialAuthenticationServiceLocator authServiceLocator;
 
     private String connectionAddedRedirectUrl = "/";
@@ -153,8 +155,10 @@ public class OAuth2ClientAuthenticationFilter extends GenericFilterBean {
 
         if (provider.equals("facebook")) {
             if (!isValidFacebookAccessToken(accessToken)) {
+                request.getSession(true).setAttribute(IS_ACCESS_TOKEN_VALID,false);
                 return null;
             }
+            request.getSession(true).setAttribute(IS_ACCESS_TOKEN_VALID,true);
         }
 
         SocialAuthenticationService<?> authService;
