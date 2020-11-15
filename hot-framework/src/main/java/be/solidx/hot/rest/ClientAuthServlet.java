@@ -47,7 +47,7 @@ public class ClientAuthServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String provider = req.getParameter("provider");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
             Boolean isAccessTokenValid = (Boolean) req.getSession(true).getAttribute(OAuth2ClientAuthenticationFilter.IS_ACCESS_TOKEN_VALID);
             if (isAccessTokenValid == null && (provider == null || provider.isEmpty())) {
                 resp.setStatus(HttpStatus.BAD_REQUEST.value());

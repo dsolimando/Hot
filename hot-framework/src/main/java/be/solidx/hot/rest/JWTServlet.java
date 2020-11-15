@@ -14,7 +14,7 @@ public class JWTServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
+        if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
             resp.setStatus(HttpStatus.OK.value());
             resp.getWriter().write(" authentication succeed.");
         } else {
