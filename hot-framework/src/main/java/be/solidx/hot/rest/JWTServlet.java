@@ -25,6 +25,6 @@ public class JWTServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doGet(req,resp);
+        doGet(req,resp);
     }
 }

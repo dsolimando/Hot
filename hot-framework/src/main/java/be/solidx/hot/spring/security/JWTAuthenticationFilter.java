@@ -148,7 +148,7 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
                 }
             } else {
                 JwkProvider jwkProvider = new UrlJwkProvider(new URL(auth.getJwksUrl()));
-                Jwk jwk = jwkProvider.get(jwt.getId());
+                Jwk jwk = jwkProvider.get(jwt.getKeyId());
                 algorithm = getAlgorithm(jwk.getPublicKey(), auth);
             }
             algorithm.verify(jwt);
