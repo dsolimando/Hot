@@ -213,6 +213,7 @@ public class RestRequestBuilderFactory {
                 ConnectionData connectionData = socialAuthenticationToken.getConnection().createData();
                 userAsMap.put("name", socialAuthenticationToken.getName());
                 userAsMap.put("username", socialAuthenticationToken.getName());
+                userAsMap.put("email", socialAuthenticationToken.getName());
                 userAsMap.put("accessToken", connectionData.getAccessToken());
                 userAsMap.put("picture", connectionData.getImageUrl());
                 userAsMap.put("link", connectionData.getProfileUrl());
