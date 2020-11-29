@@ -49,10 +49,10 @@ public class ClientAuthServlet extends HttpServlet {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
             Boolean isAccessTokenValid = (Boolean) req.getSession(true).getAttribute(OAuth2ClientAuthenticationFilter.IS_ACCESS_TOKEN_VALID);
-            if (isAccessTokenValid == null && (provider == null || provider.isEmpty())) {
+            if (provider == null || provider.isEmpty()) {
                 resp.setStatus(HttpStatus.BAD_REQUEST.value());
                 resp.getWriter().write("Missing property 'provider'");
-            } else if (!isAccessTokenValid) {
+            } else if (isAccessTokenValid != null && !isAccessTokenValid) {
                 resp.setStatus(HttpStatus.UNAUTHORIZED.value());
                 resp.getWriter().write("Client access token is not valid");
             } else {

@@ -52,6 +52,7 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -105,6 +106,12 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
     private void doAuthentication(DecodedJWT jwt, HotConfig.Auth auth, HttpServletRequest request) {
         Map<String, String> user = new HashMap<>();
         user.put("id", jwt.getSubject());
+        user.put("provider", jwt.getIssuer());
+        user.put("issuer", jwt.getIssuer());
+        Date exp = jwt.getExpiresAt();
+        if (exp != null) {
+            user.put("expiresIn", jwt.getExpiresAt().getTime()+"");
+        }
 
         String[] claims = auth.getClaims().split(",");
         for (String claim : claims) {
