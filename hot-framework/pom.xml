@@ -13,7 +13,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<groovy.version>2.5.13</groovy.version>
-		<spring.version>4.3.29.RELEASE</spring.version>
+		<spring.version>5.2.22.RELEASE</spring.version>
 		<jetty.version>9.2.30.v20200428</jetty.version>
 	</properties>
 
